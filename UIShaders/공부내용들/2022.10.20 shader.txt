@@ -1,0 +1,3 @@
+텍스쳐와 UV
+	Tiling -> UV 좌표에 곱해준 것
+	Scrolling -> UV좌표에 더해준 것

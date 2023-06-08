@@ -1,0 +1,258 @@
+Mono Start Awake Update,Component, 인스펙터 노출 등등의 역할을 한다
+ShaderLab도 이런 역할을 한다.
+
+BookExamples->CustomShader->ShaderLabHLSL
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// This shader fills the mesh shape with a color predefined in the code.
+Shader "Example/URPUnlitShaderBasic"
+{
+    // The properties block of the Unity shader. In this example this block is empty
+    // because the output color is predefined in the fragment shader code.
+    Properties
+    { }
+
+    // The SubShader block containing the Shader code. 
+    SubShader
+    {
+        // SubShader Tags define when and under which conditions a SubShader block or
+        // a pass is executed.
+        Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalRenderPipeline" }
+
+        Pass
+        {
+            // The HLSL code block. Unity SRP uses the HLSL language.
+            HLSLPROGRAM
+            // This line defines the name of the vertex shader. 
+            #pragma vertex vert
+            // This line defines the name of the fragment shader. 
+            #pragma fragment frag
+
+            // The Core.hlsl file contains definitions of frequently used HLSL
+            // macros and functions, and also contains #include references to other
+            // HLSL files (for example, Common.hlsl, SpaceTransforms.hlsl, etc.).
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"            
+
+            // The structure definition defines which variables it contains.
+            // This example uses the Attributes structure as an input structure in
+            // the vertex shader.
+            struct Attributes
+            {
+                // The positionOS variable contains the vertex positions in object
+                // space.
+                float4 positionOS   : POSITION;                 
+            };
+
+            struct Varyings
+            {
+                // The positions in this struct must have the SV_POSITION semantic.
+                float4 positionHCS  : SV_POSITION;
+            };            
+
+            // The vertex shader definition with properties defined in the Varyings 
+            // structure. The type of the vert function must match the type (struct)
+            // that it returns.
+            Varyings vert(Attributes IN)
+            {
+                // Declaring the output object (OUT) with the Varyings struct.
+                Varyings OUT;
+                // The TransformObjectToHClip function transforms vertex positions
+                // from object space to homogenous space
+                OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz);
+                // Returning the output.
+                return OUT;
+            }
+
+            // The fragment shader definition.            
+            half4 frag() : SV_Target
+            {
+                // Defining the color variable and returning it.
+                half4 customColor;
+                customColor = half4(0.5, 0, 0, 1);
+                return customColor;
+            }
+            ENDHLSL
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+https://docs.unity3d.com/kr/2021.3/Manual/SL-PragmaDirectives.html
+Shader Pragma 지시문
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+셰이더 함수에서 진입점은 Input을 인자로 입력받고 output을 리턴하는 함수가 진입접이 된다.
+각각의 스테이지는 이전 스테이지의 결과값을 그대로 이어받아서 실행된다.
+
+hlsl의
+
+	변수
+	   float
+	   half
+	   float3
+	   half4
+	   float4
+	   float2
+	   int
+	   float3x3
+	
+	함수
+	   
+	   		
+	구조체
+		
+	시멘틱
+	   버텍스 셰이더에서 입력 구조체는 모든 입력 멤버 변수의 의미를 명시해야 한다.
+ 	   -입력-
+	   POSITION : 오브젝트 공간
+	   TEXCOORD : un좌표
+	   COLOR : 디퓨즈, 스펙큘러
+	   NORMAL : 노멀 벡터
+	   TANGENT : 탄젠트	
+
+	   -출력-
+	   버텍스 셰이더의 출력이 픽셀셰이더로 전달되는 과정에서 보간기를 거친다
+	   SV_POSITION : 버텍스 셰이더에서 최종 계산한 버텍스 클립 공간 좌표
+	   TEXCOORD : 포지션 좌표, 텍스쳐 UV등 높의 정밀도
+	   COLOR : 0~1의 낮은 정밀도
+	   
+
+
+	   픽셀셰이더의 출력
+	   SV_Target을 사용
+	   다수의 렌더 타겟을 사용할 경우는 SV_Target0, SV_Target1, SV_Target2....
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Shader "Unlit/MySurfaceShader"
+{
+    //속성은 [MainColor][MainTexture][HDR] 이런식으로 여러개를 설정 가능하다
+    Properties
+    {
+        [MainColor] [HDR]/*속성이게 없으면 _Color가 메인 컬러가 된다.*/ _BaseColor/*레퍼런스 이름*/("Base Color"/*인스펙터 이름*/,Color/*타입*/) = (1,1,1,1)
+        [MainTexture] _BaseMap("Base Map",2D) = "white" {}
+        
+        _Slider("Slider", Range(0,1)) = 0
+
+    }
+
+        SubShader
+    {
+        Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalRenderPipeline" }
+
+        //렌더링한번에 Pass의 개수만큼 연산을 수행한다.
+        Pass
+        {
+            HLSLPROGRAM
+            //vertex셰이더의 함수는 vert
+            #pragma vertex vert
+            //fragment 셰이더의 함수는 frag
+            #pragma fragment frag
+
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"            
+
+
+
+            //positionOS 변수가 POSITION으로 사용된다.
+            struct Attributes
+            {
+                float4 positionOS   : POSITION;
+                float2 uv : TEXCOORD0/*첫번째 텍스쳐의 UV좌표*/;
+            };
+            
+            
+            struct Varyings
+            {
+                float4 positionHCS  : SV_POSITION;
+                float2 uv : TEXCOORD0;
+            };
+            
+            //텍스쳐를 쓸때는 텍스쳐와 샘플러 둘 다 써야 한다.
+            /*TEXTURE2D(_BaseMap);
+            SAMPLER(sampler_BaseMap);*/
+            texture2D _BaseMap;
+            sampler sampler_BaseMap;
+
+            //변수를 이렇게 감싸줘야지 사용가능
+            //텍스쳐와 샘플러응 제외한 모든 변수들은 이 사이에 묶어줘야 한다.
+            CBUFFER_START(UnityPerMaterial)
+                float4 _BaseMap_ST;//TRANSFORM_TEX 함수에서 해당 형식의 이름의 변수가 필요하기 때문에 만들어 준 것이다.
+                half4 _BaseColor;
+                float _Slider;
+            CBUFFER_END
+
+
+            //커스텀 함수
+            void BlackOffset(inout half3 color, half var)
+            {
+                color = color.rgb - var;
+                color = saturate(color.rgb / (1 - var));
+                //return outColor;
+            }
+
+
+            Varyings vert(Attributes IN)
+            {
+                Varyings OUT;
+                //해당 함수가 Core.hlsl 에 정의되어 있다.
+                // TransformObjectToHClip 함수는 오브젝트 좌표계의 버텍스 포지션을 
+                // 클립스페이스로 변환해줍니다. 
+                OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz);
+
+                //_BaseMap의 오프셋과 타일링 값에 따라 IN.uv값을 변경해서 리턴해준다.
+                //Name##_ST 이런 형식의 변수가 필요하다
+                //#define TRANSFORM_TEX(tex, name) ((tex.xy) * name##_ST.xy + name##_ST.zw)
+                OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
+                return OUT;
+            }
+        
+            //픽셀 셰이더 부분
+            half4 frag(Varyings IN) : SV_Target
+            {
+                /*half4 customColor;
+                customColor = half4(0, 1, 0, 1);*/
+                half4 color = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv);
+                color = (_BaseColor * color);
+
+                //half var = 0.4f;
+
+                BlackOffset(color.rgb, _Slider);
+                /*color.rgb = color.rgb - _Slider;
+                color.rgb = saturate(color.rgb / (1 - _Slider));*/
+
+                return color;
+            }
+
+            ENDHLSL
+        }
+    }
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,53 @@
+셰이더의 중요 4요소
+   빛의 각도 (illuminant) <-> (luminant)
+   normal
+   ambient 주변광
+   material
+
+렌더 파이프라인의 순서
+   input assenbly
+	↓
+   vertex shader
+	↓
+   tesselator
+	↓
+   rasterizer
+	↓
+   pixel shader
+
+
+테셀레이터란?
+   정점을 폴리곤으로 만들어 주는것
+   그렇기 때문에 정점셰이더 이후에 진행한다.
+
+레스터라이저란?
+   픽셀화를 말한다.
+   정점 정보를 가지고 이느곳을 채우고 비울 것인지를 정한다.
+
+
+
+hlsl 문법 
+   #pragma vertex vert => vertex shader 단계가 되면 vert함수를 실행 시켜라
+   #pragma fragment frag => pixel shader 단계가 되면 frag함수를 실행 시켜라
+
+보간기
+   픽셀셰이더 단계로 가기 전에 보간기를 이용해 색상 보간을 실행한다.
+
+정반사
+   빛의 고유의 색이 들어온다
+난반사
+   물체의 색이 들어온다
+
+금속의 반사
+   금속의 정반사는 빛의 색이 아닌 금속의 색이 들어온다.
+
+로컬라이징
+  광원 자체의 빛만 계산
+
+엠비언트라이징
+   주변광까지 계산 GI
+
+ambient occlusion
+
+
+

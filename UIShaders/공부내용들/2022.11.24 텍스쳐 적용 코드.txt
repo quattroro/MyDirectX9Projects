@@ -1,0 +1,315 @@
+Shader "Unlit/MySurfaceShader"
+{
+    //속성은 [MainColor][MainTexture][HDR] 이런식으로 여러개를 설정 가능하다
+    Properties
+    {
+        [MainColor] [HDR]/*속성이게 없으면 _Color가 메인 컬러가 된다.*/ _BaseColor/*레퍼런스 이름*/("Base Color"/*인스펙터 이름*/,Color/*타입*/) = (1,1,1,1)
+        [MainTexture] _BaseMap("Base Map",2D) = "white" {}
+        
+        _Slider("Slider", Range(0,1)) = 0
+
+    }
+
+        SubShader
+    {
+        Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalRenderPipeline" }
+
+        //렌더링한번에 Pass의 개수만큼 연산을 수행한다.
+        Pass
+        {
+            HLSLPROGRAM
+            //vertex셰이더의 함수는 vert
+            #pragma vertex vert
+            //fragment 셰이더의 함수는 frag
+            #pragma fragment frag
+
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"            
+
+
+
+            //positionOS 변수가 POSITION으로 사용된다.
+            struct Attributes
+            {
+                float4 positionOS   : POSITION;
+                float2 uv : TEXCOORD0/*첫번째 텍스쳐의 UV좌표*/;
+            };
+            
+            
+            struct Varyings
+            {
+                float4 positionHCS  : SV_POSITION;
+                float2 uv : TEXCOORD0;
+            };
+            
+            //텍스쳐를 쓸때는 텍스쳐와 샘플러 둘 다 써야 한다.
+            /*TEXTURE2D(_BaseMap);
+            SAMPLER(sampler_BaseMap);*/
+            texture2D _BaseMap;
+            sampler sampler_BaseMap;
+
+            //변수를 이렇게 감싸줘야지 사용가능
+            //텍스쳐와 샘플러응 제외한 모든 변수들은 이 사이에 묶어줘야 한다.
+            CBUFFER_START(UnityPerMaterial)
+                float4 _BaseMap_ST;//TRANSFORM_TEX 함수에서 해당 형식의 이름의 변수가 필요하기 때문에 만들어 준 것이다.
+                half4 _BaseColor;
+                float _Slider;
+            CBUFFER_END
+
+
+            //커스텀 함수
+            void BlackOffset(inout half3 color, half var)
+            {
+                color = color.rgb - var;
+                color = saturate(color.rgb / (1 - var));
+                //return outColor;
+            }
+
+
+            Varyings vert(Attributes IN)
+            {
+                Varyings OUT;
+                //해당 함수가 Core.hlsl 에 정의되어 있다.
+                // TransformObjectToHClip 함수는 오브젝트 좌표계의 버텍스 포지션을 
+                // 클립스페이스로 변환해줍니다. 
+                OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz);
+
+                //_BaseMap의 오프셋과 타일링 값에 따라 IN.uv값을 변경해서 리턴해준다.
+                //Name##_ST 이런 형식의 변수가 필요하다
+                //#define TRANSFORM_TEX(tex, name) ((tex.xy) * name##_ST.xy + name##_ST.zw)
+                OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
+                return OUT;
+            }
+        
+            //픽셀 셰이더 부분
+            half4 frag(Varyings IN) : SV_Target
+            {
+                /*half4 customColor;
+                customColor = half4(0, 1, 0, 1);*/
+                half4 color = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv);
+                color = (_BaseColor * color);
+
+                //half var = 0.4f;
+
+                BlackOffset(color.rgb, _Slider);
+                /*color.rgb = color.rgb - _Slider;
+                color.rgb = saturate(color.rgb / (1 - _Slider));*/
+
+                return color;
+            }
+
+            ENDHLSL
+        }
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+BookExamples -> CustomShader -> ShaderLabHLSL
+
+// 이것은 주석입니다. (Comment)
+Shader "Custom/ShaderLab HLSL/CustomUnlitColorTexture"
+{
+    Properties
+    {
+        [MainTexture] _BaseMap("Base Map", 2D) = "white" {}
+        [MainColor] _BaseColor("Base Color", Color) = (1, 1, 1, 1)
+    }
+    SubShader
+    {
+        Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalPipeline" }
+        Pass
+        {
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+            struct Attributes
+            {
+                float4 positionOS   : POSITION;
+                float2 uv           : TEXCOORD0;
+            };
+
+            struct Varyings
+            {
+                float4 positionHCS  : SV_POSITION;
+                float2 uv           : TEXCOORD0;
+            };
+
+            TEXTURE2D(_BaseMap);
+            SAMPLER(sampler_BaseMap);
+
+            CBUFFER_START(UnityPerMaterial)
+                float4 _BaseMap_ST;
+                half4 _BaseColor;
+            CBUFFER_END
+
+            Varyings vert(Attributes IN)
+            {
+                Varyings OUT;
+                OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz);
+                OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
+                return OUT;
+            }
+
+            half4 frag(Varyings IN) : SV_Target
+            {
+                half4 color = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv);
+                color *= _BaseColor;
+                return color;
+            }
+
+            ENDHLSL
+        }
+    }
+}
+
+책의 예제 내용
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+램버트 라이트 사용 예제
+
+Shader "Unlit/CustomUnlitCT"
+{
+    Properties
+    {
+        [MainTexture] _BaseMap ("Base Map", 2D) = "white" {}
+        [MainColor] _BaseColor("Base Color", Color) = (1,1,1,1)
+    }
+    SubShader
+    {
+        Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalPipeline" }
+        LOD 100
+
+        Pass
+        {
+            HLSLPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            //라이팅과 관련된 함수들을 사용 가능하게 하기 위해
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+
+            struct Attributes
+            {
+                float4 positionOS : POSITION;
+                float2 uv : TEXCOORD0;
+                //Vertex의 노말 정보
+                float3 normalOS : NORMAL;
+            };
+
+
+            struct Varyings
+            {
+                float4 positionHDS : SV_POSITION;
+                float2 uv :TEXCOORD0;
+                float3 normal : TEXCOORD1;
+                float3 lightDir : TEXCOORD2;
+            };
+
+            TEXTURE2D(_BaseMap);
+            SAMPLER(sampler_BaseMap);
+
+            CBUFFER_START(UnityPerMaterial)
+                float4 _BaseMap_ST;
+                half4 _BaseColor;
+            CBUFFER_END
+
+            Varyings vert(Attributes IN)
+            {
+                Varyings OUT;
+                OUT.positionHDS = TransformObjectToHClip(IN.positionOS.xyz);
+                OUT.uv = TRANSFORM_TEX(IN.uv, _BaseMap);
+
+                //TransformObjectToWorldNormal 은 Core.hlsl 여기에 있는 함수
+                //로컬 노말좌표를 월드좌표로 바꿔준다.
+                OUT.normal = TransformObjectToWorldNormal(IN.normalOS);
+
+                //_MainLightPosition은 URP렌더 파이프 라인에 자동으로 설정되는 함수
+                OUT.lightDir = normalize(_MainLightPosition.xyz);
+                return OUT;
+            }
+
+            half4 frag(Varyings IN) : SV_Target
+            {
+                IN.normal = normalize(IN.normal);
+
+                half4 color = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv);
+                color *= _BaseColor;
+
+                //램버트 라이트 공식
+                float NDotL = saturate(dot(IN.normal, IN.lightDir));
+
+                //SampleSH 는 Lighting.hlsl 여기에 있는 함수
+                //SampleSH 함수는 노멀 방향의 Ambient(GI) 컬러 정보를 얻어오는 함수로, 라이트 프로브나 스카이박스로부터 값을 얻어오는 것입니다.
+                //주변광을 받아와서 더해주지 않으면 빛의 반대방향은 완전 검은색으로 들어와 버린다.
+                half3 ambient = SampleSH(IN.normal);
+
+                //_MainLightColor은 URP렌더 파이프 라인에 자동으로 설정되는 함수
+                half3 lighting = NDotL * _MainLightColor.rgb + ambient;
+                color.rgb *= lighting;
+
+                return color;
+            }
+
+
+            ENDHLSL
+        }
+
+            //그림자를 만들게 해준다.
+        UsePass "Universal Render Pipeline/Lit/ShadowCaster"
+    }
+            
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+https://mingyu0403.tistory.com/231
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+

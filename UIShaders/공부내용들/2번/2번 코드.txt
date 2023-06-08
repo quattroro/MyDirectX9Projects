@@ -1,0 +1,61 @@
+Shader "Custom/SoldierShader"
+{
+    Properties
+    {
+        _Color("Color", Color) = (1,1,1,1)
+        _MainTex("Albedo (RGB)", 2D) = "white" {}
+        _Fat("_Fat", Range(0.0,0.1)) = 0.01
+    }
+
+    SubShader
+    {
+        Tags { "RenderType" = "Opaque" }
+        LOD 200
+
+        Pass
+        {
+            CGPROGRAM
+
+            #pragma vertex vert
+            #pragma fragment frag
+
+            sampler2D _MainTex;
+            float4 _MainTex_ST;
+            fixed4 _Color;
+            half _Fat;
+
+            struct Input
+            {
+                float4 vertex: POSITION;
+                float4 texcoord: TEXCOORD0;
+                float3 normal:NORMAL;
+            };
+
+            struct Output
+            {
+                float4 pos: SV_POSITION;
+                float4 texcoord: TEXCOORD0;
+            };
+
+            
+            Output vert(Input v)
+            {
+                Output o;
+
+                o.pos = UnityObjectToClipPos(v.vertex + v.normal* _Fat);
+                o.texcoord.xy = (v.texcoord.xy * _MainTex_ST.xy + _MainTex_ST.zw);
+
+                return o;
+            }
+
+            half4 frag(Output i) : COLOR
+            {
+                return tex2D(_MainTex, i.texcoord) * _Color;
+            }
+
+            ENDCG
+        }
+        
+    }
+    FallBack "Diffuse"
+}

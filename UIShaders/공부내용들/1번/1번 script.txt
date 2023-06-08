@@ -1,0 +1,26 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CapsuleScript : MonoBehaviour
+{
+    public float updateTime = 0.01f;
+    private float lastupdate = 0;
+    public float powerUpVal = 0.1f;
+
+    void Update()
+    {
+        if(Time.time- lastupdate>=updateTime)
+        {
+            float power = GetComponent<Renderer>().material.GetFloat("_power");
+            power += powerUpVal;
+            if(power>=100)
+            {
+                power = 0.0f;
+            }
+            GetComponent<Renderer>().material.SetFloat("_power", power);
+        }
+
+
+    }
+}
