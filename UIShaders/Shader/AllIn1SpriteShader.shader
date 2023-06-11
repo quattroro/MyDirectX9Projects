@@ -1002,9 +1002,9 @@
 				//OUTLINE-------------------------------------------------------------
 				#if OUTBASE_ON
 					#if OUTBASEPIXELPERF_ON
-					half2 destUv = half2(_OutlinePixelWidth * _MainTex_TexelSize.x, _OutlinePixelWidth * _MainTex_TexelSize.y);
+					half2 destUv = half2(_OutlinePixelWidth * _MainTex_TexelSize.x, _OutlinePixelWidth * _MainTex_TexelSize.y);//_OutlienPixelWidth =1 , _MainTex_TexelSize는 시스템 해상도에 따른 픽셀 하나ㅏ의 크기를 의미한다.
 					#else
-					half2 destUv = half2(_OutlineWidth * _MainTex_TexelSize.x * 200, _OutlineWidth * _MainTex_TexelSize.y * 200);
+					half2 destUv = half2(_OutlineWidth * _MainTex_TexelSize.x * 200, _OutlineWidth * _MainTex_TexelSize.y * 200);//OutlineWidth = 0.04
 					#endif
 
 					#if OUTDIST_ON
@@ -1029,13 +1029,13 @@
 					half spriteTopRight = tex2D(_MainTex, i.uv + half2(-destUv.x, destUv.y)).a;
 					half spriteBotLeft = tex2D(_MainTex, i.uv + half2(destUv.x, -destUv.y)).a;
 					half spriteBotRight = tex2D(_MainTex, i.uv + half2(-destUv.x, -destUv.y)).a;
-					result = result + spriteTopLeft + spriteTopRight + spriteBotLeft + spriteBotRight;
+					result = result + spriteTopLeft + spriteTopRight + spriteBotLeft + spriteBotRight;// 현재  UV좌표에서 8방향으로 움직여서 텍스쳐가 있는지 없는지 확인한다.
 					#endif
 					
-					result = step(0.05, saturate(result));
+					result = step(0.05, saturate(result));// 8방향을 확인한 값이 0.05 이상이면 해당 영역은 outline이 그려지는 영역이다.
 
 					#if OUTTEX_ON
-					i.uvOutTex.x += ((_Time + randomSeed) * _OutlineTexXSpeed) % 1;
+					i.uvOutTex.x += ((_Time + randomSeed) * _OutlineTexXSpeed) % 1;///뭔가 움직인다...
 					i.uvOutTex.y += ((_Time + randomSeed) * _OutlineTexYSpeed) % 1;
 					#if ATLAS_ON
 					i.uvOutTex = half2((i.uvOutTex.x - _MinXUV) / (_MaxXUV - _MinXUV), (i.uvOutTex.y - _MinYUV) / (_MaxYUV - _MinYUV));
