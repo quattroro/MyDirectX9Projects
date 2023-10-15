@@ -44,7 +44,18 @@ CUSTOMVERTEX g_Vertices[] =
         { D3DXVECTOR3(2.0f , -2.0f,  0.0f) ,  0xffffffff ,1,1 },// 오른 아래
 };
 
+struct Container
+{
+    int a;
+    int b;
+};
 
+struct Container_EX
+{
+    Container info;
+    int c;
+    int d;
+};
 
 WORD g_indexes[] =
 {
