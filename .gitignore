@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+/UIShaders/Tut05_Textures/Debug
+Debug
+.vs

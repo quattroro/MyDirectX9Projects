@@ -29,6 +29,8 @@ void SceneManager::LoadScene(wstring sceneName)
 
 	_activeScene->Awake();
 	_activeScene->Start();
+
+
 }
 
 

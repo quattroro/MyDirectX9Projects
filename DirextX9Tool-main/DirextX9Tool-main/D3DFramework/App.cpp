@@ -45,7 +45,26 @@ SceneManager* scenemanager = new SceneManager();
 Shader* shader;
 
 
+Mesh* LoadRectMesh()
+{
+    vector<Vertex> vec(4);
+    // ¾Õ¸é
+    vec[0] = Vertex(Vector3(-2.0f, -2.0f, 0.0f), Vector2(0.0f, 1.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(1.0f, 0.0f, 0.0f));
+    vec[1] = Vertex(Vector3(-2.0f, 2.0f, 0.0f), Vector2(0.0f, 0.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(1.0f, 0.0f, 0.0f));
+    vec[2] = Vertex(Vector3(2.0f, 2.0f, 0.0f), Vector2(1.0f, 0.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(1.0f, 0.0f, 0.0f));
+    vec[3] = Vertex(Vector3(2.0f, -2.0f, 0.0f), Vector2(1.0f, 1.0f), Vector3(0.0f, 0.0f, -1.0f), Vector3(1.0f, 0.0f, 0.0f));
 
+
+    vector<WORD> idx(6);
+
+    idx[0] = 0; idx[1] = 1; idx[2] = 2;
+    idx[3] = 0; idx[4] = 2; idx[5] = 3;
+
+    Mesh* mesh = new Mesh();
+    mesh->Init(vec, idx);
+
+    return mesh;
+}
 
 Mesh* LoadCubeMesh()
 {
@@ -258,7 +277,8 @@ void Init()
     sphere = new GameObject();
     sphere->AddComponent(new Transform());
     MeshRenderer* meshrenderer = new MeshRenderer();
-    Mesh* mesh = LoadCubeMesh();
+   // Mesh* mesh = LoadCubeMesh();
+    Mesh* mesh = LoadRectMesh();
     meshrenderer->setMesh(mesh);
     sphere->AddComponent(meshrenderer);
 
