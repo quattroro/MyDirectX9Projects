@@ -1,0 +1,28 @@
+
+float4x4 VeiwProjMatrix;
+
+float4 Blue = {0.0f,0.0f,1.0f,1.0f};
+
+struct VS_INPUT
+{
+	float4 position : POSITION;
+	float2 uv : TEXCOORD;
+	float3 normal : NORMAL;
+	float3 tan : TANGENT;
+};
+
+struct VS_OUTPUT
+{
+	float4 position : POSITION;
+	float4 diffuse : COLOR;
+};
+
+
+
+VS_OUTPUT VS_Main(VS_INPUT input)
+{
+	VS_OUTPUT output = (VS_OUTPUT)0;
+	//output.position = mul(float4(input.position.x,input.position.y,input.position.z,1.0f), VeiwProjMatrix);
+	output.diffuse = Blue;
+	return output;
+}

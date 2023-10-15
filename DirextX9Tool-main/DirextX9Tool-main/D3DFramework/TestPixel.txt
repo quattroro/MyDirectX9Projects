@@ -1,0 +1,23 @@
+
+struct PS_IN
+{
+
+	//float2 uv1 : TEXCOORD;
+	float4 position : POSITION;
+	float4 diffuse : COLOR;
+};
+
+struct PS_OUT
+{
+	float4 diffuse:COLOR;
+};
+
+
+PS_OUT PS_Main(PS_IN input): COLOR
+{
+	PS_OUT output = (PS_OUT)0;
+	output.diffuse = float4(0.0f,0.0f,1.0f,1.0f);
+	
+
+    	return  output;
+}
