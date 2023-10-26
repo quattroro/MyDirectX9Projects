@@ -31,5 +31,6 @@ public:
 
 	D3DXHANDLE g_Val_Handle = nullptr;
 
+
 };
 

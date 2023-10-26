@@ -404,8 +404,9 @@ bool Render(float time)
             ////Scene->
 
 
-
-            shader->pTbv->SetMatrix(g_pd3dDevice, shader->g_Val_Handle, &WorldViewMat);
+            //잠시 제거
+            //shader->pTbv->SetMatrix(g_pd3dDevice, shader->g_Val_Handle, &WorldViewMat);
+            
             scenemanager->Render(shader);
 
             // End the scene

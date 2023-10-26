@@ -37,20 +37,21 @@ float4 PS_Main(VS_OUT input) : SV_Target
     float4 color = g_tex_0.Sample(g_sam_0, input.uv);
     //float4 color = float4(1.f,1.f,1.f,1.f);
 
-    LightColor totalColor = (LightColor)0.f;
+    ////////////////////////////
+    //LightColor totalColor = (LightColor)0.f;
 
-    //각각의 픽셀마다 빛에대한 컬러들을 구해서 세팅해준다.
-    for (int i = 0; i < g_lightCount; ++i)
-    {
-        LightColor color = CalculateLightColor(i, input.viewNormal, input.viewPos);
-        totalColor.diffuse += color.diffuse;
-        totalColor.ambient += color.ambient;
-        totalColor.specular += color.specular;
-    }
+    ////각각의 픽셀마다 빛에대한 컬러들을 구해서 세팅해준다.
+    //for (int i = 0; i < g_lightCount; ++i)
+    //{
+    //    LightColor color = CalculateLightColor(i, input.viewNormal, input.viewPos);
+    //    totalColor.diffuse += color.diffuse;
+    //    totalColor.ambient += color.ambient;
+    //    totalColor.specular += color.specular;
+    //}
 
-    color.xyz = (totalColor.diffuse.xyz * color.xyz)
-        + totalColor.ambient.xyz * color.xyz
-        + totalColor.specular.xyz;
+    //color.xyz = (totalColor.diffuse.xyz * color.xyz)
+    //    + totalColor.ambient.xyz * color.xyz
+    //    + totalColor.specular.xyz;
 
     return color;
 }
