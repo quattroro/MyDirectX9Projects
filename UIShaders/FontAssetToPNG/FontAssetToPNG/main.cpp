@@ -365,7 +365,7 @@ void main()
     cout << root["Texture2D"]["image data"].asInt() << endl;
 
 
-    //ConvertTexture(root);
+    ConvertTexture(root);
     ConvertMetrixData(root);
 
 
