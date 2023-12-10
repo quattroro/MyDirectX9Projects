@@ -834,8 +834,8 @@ VOID Render()
         g_pd3dDevice->SetIndices(g_pIB);
 
         //g_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
-
-        DrawFont(L"asd 다라 마바사", D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 1, 1, 1), "SoftEdgeDraw");
+        //BorderDraw SoftEdgeDraw
+        DrawFont(L"asd 다라 마바사", D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 1, 1, 1), "BorderDraw");
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //g_pd3dDevice->SetTexture( 0, g_SDFTexture);
         //g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);

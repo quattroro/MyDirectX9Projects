@@ -381,8 +381,6 @@
     <ClCompile Include="Textures.cpp" />
   </ItemGroup>
   <ItemGroup>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="glyph.h" />
     <ClInclude Include="MaterialParser.h" />
     <ClInclude Include="MetricsParser.h" />
