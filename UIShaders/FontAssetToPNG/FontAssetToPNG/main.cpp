@@ -255,7 +255,7 @@ void ConvertMetrixData(Json::Value& root)
         ++CharacterItr;
     }
 
-
+    std::streamsize pre = osMetrics.precision();
     map<int, CharacterData>::iterator itr = CharacterMap.begin();
     while (true)
     {
@@ -264,6 +264,9 @@ void ConvertMetrixData(Json::Value& root)
 
         if (GlyphMap.find(itr->first) != GlyphMap.end())
         {
+            osMetrics.unsetf(ios::fixed);
+            osMetrics.precision(pre);
+
             osMetrics /*<< "m_Unicode : " */ << itr->second.m_Unicode << "\t";
 
             osMetrics /*<< "m_Width : "*/ << GlyphMap[itr->first].m_Width << "\t";
@@ -275,6 +278,10 @@ void ConvertMetrixData(Json::Value& root)
             osMetrics /*<< "m_VerticalBearingX : "*/ << 0 << "\t";
             osMetrics /*<< "m_VerticalBearingY: "*/ << 0 << "\t";
             osMetrics /*<< "m_VerticalAdvance : "*/ << 0 << "\t";
+
+
+            osMetrics.setf(ios::fixed);
+            osMetrics.precision(10);
 
             osMetrics /*<< "m_X : "*/ << GlyphMap[itr->first].m_X / (float)Width << "\t";
             osMetrics /*<< "m_Y : "*/ << GlyphMap[itr->first].m_Y / (float)Height << "\t";
@@ -291,6 +298,9 @@ void ConvertMetrixData(Json::Value& root)
         osMetrics << endl;
         ++itr;
     }
+
+    osMetrics.unsetf(ios::fixed);
+    osMetrics.precision(pre);
 
     osMetrics << "#Kernings\tPred Code Point\tSucc Code Point 1"
         "\tKerning1\tSucc Code Point 2\tKerning 2...\n";

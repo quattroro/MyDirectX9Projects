@@ -388,26 +388,26 @@ void CreateFontGeometry(Glyph glyph, D3DXVECTOR2 pos/*왼쪽 위의 좌표*/)
     CUSTOMVERTEX Vertices[4];
     /*float tu = (glyph.mTextureCoordX - g_margin);
     float tv = 1 - (glyph.mTextureCoordY - g_margin) - (glyph.mTextureHeight + g_margin * 2);*/
-    float tu = glyph.mTextureCoordX;
-    float tv = glyph.mTextureCoordY;
+    float tu = glyph.mTextureCoordX/* - g_margin*/;
+    float tv = glyph.mTextureCoordY - g_margin;
     Vertices[0] = CUSTOMVERTEX(D3DXVECTOR3(pos.x, pos.y - glyph.mHeight, 0.0f), 0xffffffff, tu, tv);
 
     /*tu = (Vertices[0].tu + (glyph.mTextureWidth + g_margin * 2));
     tv = Vertices[0].tv;*/
-    tu = glyph.mTextureCoordX + glyph.mTextureWidth;
-    tv = glyph.mTextureCoordY;
+    tu = glyph.mTextureCoordX + glyph.mTextureWidth + g_margin;
+    tv = glyph.mTextureCoordY - g_margin;
     Vertices[1] = CUSTOMVERTEX(D3DXVECTOR3(pos.x + glyph.mWidth, pos.y - glyph.mHeight, 0.0f), 0xffffffff, tu, tv);
 
     /*tu = Vertices[1].tu;
     tv = 1 - (glyph.mTextureCoordY - g_margin);*/
-    tu = glyph.mTextureCoordX + glyph.mTextureWidth;
-    tv = glyph.mTextureCoordY + glyph.mTextureHeight;
+    tu = glyph.mTextureCoordX + glyph.mTextureWidth + g_margin;
+    tv = glyph.mTextureCoordY + glyph.mTextureHeight + g_margin;
     Vertices[2] = CUSTOMVERTEX(D3DXVECTOR3(pos.x + glyph.mWidth, pos.y, 0.0f), 0xffffffff, tu, tv);
 
     /*tu = Vertices[0].tu;
     tv = 1 - (glyph.mTextureCoordY - g_margin);*/
-    tu = glyph.mTextureCoordX;
-    tv = glyph.mTextureCoordY + glyph.mTextureHeight;
+    tu = glyph.mTextureCoordX/* - g_margin*/;
+    tv = glyph.mTextureCoordY + glyph.mTextureHeight + g_margin;
     Vertices[3] = CUSTOMVERTEX(D3DXVECTOR3(pos.x, pos.y, 0.0f), 0xffffffff, tu, tv);
 
     CUSTOMVERTEX* pVertices;
@@ -438,7 +438,7 @@ void DrawFont(Glyph glyph, D3DXVECTOR2& penPos, D3DXVECTOR2 baseLine, D3DXVECTOR
     //펜의 위치를 기준으로 글자를 그려줄 시작점을 구해준다.
     D3DXVECTOR2 pos = D3DXVECTOR2(penPos.x + glyph.mHorizontalBearingX, penPos.y + glyph.mHorizontalBearingY);
     CreateFontGeometry(glyph, pos);
-    SetupMatrices(0,30,-10, 0.02, 0.02,0.02);
+    
 
     //텍스쳐 설정
     g_pd3dDevice->SetTexture(0, g_SDFTexture);
@@ -554,7 +554,7 @@ void DrawFont(WCHAR* str, D3DXVECTOR2 startPos , D3DXVECTOR4 baseColor , char* t
     //글자 하나당 Vertex의 크기는 Metrics 파일에 있는 크기 정보로 만든다.
     int strsize = wcslen(str);
     //D3DXCreateFont(g_pd3dDevice, 25,12,500,0,false, DEFAULT_CHARSET,
-
+    SetupMatrices(startPos.x, startPos.y, -10, 0.02, 0.02, 0.02);
     Glyph curGlyph;
 
     //현재 글자가 그려질 위치
@@ -835,7 +835,8 @@ VOID Render()
 
         //g_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
         //BorderDraw SoftEdgeDraw
-        DrawFont(L"asd 다라 마바사", D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 1, 1, 1), "BorderDraw");
+        DrawFont(L"!ilililj1", D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 1, 1, 1), "SoftEdgeDraw");
+        DrawFont(L"!ilililj1", D3DXVECTOR2(0, -20), D3DXVECTOR4(1, 1, 1, 1), "SoftEdgeDraw");
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //g_pd3dDevice->SetTexture( 0, g_SDFTexture);
         //g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
