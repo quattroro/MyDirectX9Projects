@@ -388,7 +388,7 @@ void CreateFontGeometry(Glyph glyph, D3DXVECTOR2 pos/*¿ÞÂÊ À§ÀÇ ÁÂÇ¥*/)
     CUSTOMVERTEX Vertices[4];
     /*float tu = (glyph.mTextureCoordX - g_margin);
     float tv = 1 - (glyph.mTextureCoordY - g_margin) - (glyph.mTextureHeight + g_margin * 2);*/
-    float tu = glyph.mTextureCoordX/* - g_margin*/;
+    float tu = glyph.mTextureCoordX - g_margin;
     float tv = glyph.mTextureCoordY - g_margin;
     Vertices[0] = CUSTOMVERTEX(D3DXVECTOR3(pos.x, pos.y - glyph.mHeight, 0.0f), 0xffffffff, tu, tv);
 
@@ -406,7 +406,7 @@ void CreateFontGeometry(Glyph glyph, D3DXVECTOR2 pos/*¿ÞÂÊ À§ÀÇ ÁÂÇ¥*/)
 
     /*tu = Vertices[0].tu;
     tv = 1 - (glyph.mTextureCoordY - g_margin);*/
-    tu = glyph.mTextureCoordX/* - g_margin*/;
+    tu = glyph.mTextureCoordX - g_margin;
     tv = glyph.mTextureCoordY + glyph.mTextureHeight + g_margin;
     Vertices[3] = CUSTOMVERTEX(D3DXVECTOR3(pos.x, pos.y, 0.0f), 0xffffffff, tu, tv);
 
@@ -835,8 +835,8 @@ VOID Render()
 
         //g_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
         //BorderDraw SoftEdgeDraw
-        DrawFont(L"!ilililj1", D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 1, 1, 1), "SoftEdgeDraw");
-        DrawFont(L"!ilililj1", D3DXVECTOR2(0, -20), D3DXVECTOR4(1, 1, 1, 1), "SoftEdgeDraw");
+        DrawFont(L"!ilililj1", D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 1, 1, 1), "DebugDraw");
+        DrawFont(L"!ilililj1", D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 0, 0, 1), "SoftEdgeDraw");
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //g_pd3dDevice->SetTexture( 0, g_SDFTexture);
         //g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
