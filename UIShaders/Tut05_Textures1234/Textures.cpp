@@ -382,64 +382,55 @@ VOID SetupMatrices2(float x = 0, float y = 0, float z = 0, float sx = 0, float s
     g_pd3dDevice->SetTransform(D3DTS_PROJECTION, &matProj);
 }
 
-void CreateFontGeometry(Glyph glyph, D3DXVECTOR2 pos/*왼쪽 위의 좌표*/)
+//void CreateFontGeometry(Glyph glyph, D3DXVECTOR2 pos/*왼쪽 위의 좌표*/)
+//{
+//
+//    CUSTOMVERTEX Vertices[4];
+//    /*float tu = (glyph.mTextureCoordX - g_margin);
+//    float tv = 1 - (glyph.mTextureCoordY - g_margin) - (glyph.mTextureHeight + g_margin * 2);*/
+//    float tu = glyph.mTextureCoordX - g_margin;
+//    float tv = glyph.mTextureCoordY - g_margin;
+//    Vertices[0] = CUSTOMVERTEX(D3DXVECTOR3(pos.x, pos.y - glyph.mHeight, 0.0f), 0xffffffff, tu, tv);
+//
+//    /*tu = (Vertices[0].tu + (glyph.mTextureWidth + g_margin * 2));
+//    tv = Vertices[0].tv;*/
+//    tu = glyph.mTextureCoordX + glyph.mTextureWidth + g_margin;
+//    tv = glyph.mTextureCoordY - g_margin;
+//    Vertices[1] = CUSTOMVERTEX(D3DXVECTOR3(pos.x + glyph.mWidth, pos.y - glyph.mHeight, 0.0f), 0xffffffff, tu, tv);
+//
+//    /*tu = Vertices[1].tu;
+//    tv = 1 - (glyph.mTextureCoordY - g_margin);*/
+//    tu = glyph.mTextureCoordX + glyph.mTextureWidth + g_margin;
+//    tv = glyph.mTextureCoordY + glyph.mTextureHeight + g_margin;
+//    Vertices[2] = CUSTOMVERTEX(D3DXVECTOR3(pos.x + glyph.mWidth, pos.y, 0.0f), 0xffffffff, tu, tv);
+//
+//    /*tu = Vertices[0].tu;
+//    tv = 1 - (glyph.mTextureCoordY - g_margin);*/
+//    tu = glyph.mTextureCoordX - g_margin;
+//    tv = glyph.mTextureCoordY + glyph.mTextureHeight + g_margin;
+//    Vertices[3] = CUSTOMVERTEX(D3DXVECTOR3(pos.x, pos.y, 0.0f), 0xffffffff, tu, tv);
+//
+//    CUSTOMVERTEX* pVertices;
+//    if (FAILED(g_pVB->Lock(0, 0, (void**)&pVertices, 0)))
+//        return;
+//
+//    memcpy(pVertices, Vertices, sizeof(CUSTOMVERTEX) * 4);
+//
+//    g_pVB->Unlock();
+//
+//
+//    //인덱스 정보
+//    DWORD* pIndexes;
+//
+//    if (FAILED(g_pIB->Lock(0, 0, (void**)&pIndexes, 0)))
+//        return;
+//
+//    memcpy(pIndexes, g_Indexes, sizeof(DWORD) * 6);
+//
+//    g_pIB->Unlock();
+//}
+void SetShaderParameter(char* technique = "SoftEdgeDraw", D3DXVECTOR4 baseColor = D3DXVECTOR4(0,0,0,0))
 {
-
-    CUSTOMVERTEX Vertices[4];
-    /*float tu = (glyph.mTextureCoordX - g_margin);
-    float tv = 1 - (glyph.mTextureCoordY - g_margin) - (glyph.mTextureHeight + g_margin * 2);*/
-    float tu = glyph.mTextureCoordX - g_margin;
-    float tv = glyph.mTextureCoordY - g_margin;
-    Vertices[0] = CUSTOMVERTEX(D3DXVECTOR3(pos.x, pos.y - glyph.mHeight, 0.0f), 0xffffffff, tu, tv);
-
-    /*tu = (Vertices[0].tu + (glyph.mTextureWidth + g_margin * 2));
-    tv = Vertices[0].tv;*/
-    tu = glyph.mTextureCoordX + glyph.mTextureWidth + g_margin;
-    tv = glyph.mTextureCoordY - g_margin;
-    Vertices[1] = CUSTOMVERTEX(D3DXVECTOR3(pos.x + glyph.mWidth, pos.y - glyph.mHeight, 0.0f), 0xffffffff, tu, tv);
-
-    /*tu = Vertices[1].tu;
-    tv = 1 - (glyph.mTextureCoordY - g_margin);*/
-    tu = glyph.mTextureCoordX + glyph.mTextureWidth + g_margin;
-    tv = glyph.mTextureCoordY + glyph.mTextureHeight + g_margin;
-    Vertices[2] = CUSTOMVERTEX(D3DXVECTOR3(pos.x + glyph.mWidth, pos.y, 0.0f), 0xffffffff, tu, tv);
-
-    /*tu = Vertices[0].tu;
-    tv = 1 - (glyph.mTextureCoordY - g_margin);*/
-    tu = glyph.mTextureCoordX - g_margin;
-    tv = glyph.mTextureCoordY + glyph.mTextureHeight + g_margin;
-    Vertices[3] = CUSTOMVERTEX(D3DXVECTOR3(pos.x, pos.y, 0.0f), 0xffffffff, tu, tv);
-
-    CUSTOMVERTEX* pVertices;
-    if (FAILED(g_pVB->Lock(0, 0, (void**)&pVertices, 0)))
-        return;
-
-    memcpy(pVertices, Vertices, sizeof(CUSTOMVERTEX) * 4);
-
-    g_pVB->Unlock();
-
-
-    //인덱스 정보
-    DWORD* pIndexes;
-
-    if (FAILED(g_pIB->Lock(0, 0, (void**)&pIndexes, 0)))
-        return;
-
-    memcpy(pIndexes, g_Indexes, sizeof(DWORD) * 6);
-
-    g_pIB->Unlock();
-}
-
-
-
-//해당 위치에 글자를 그려주고 위치를 다음 위치로 옮겨준다.
-void DrawFont(Glyph glyph, D3DXVECTOR2& penPos, D3DXVECTOR2 baseLine, D3DXVECTOR4 baseColor , char* technique = "SoftEdgeDraw")
-{
-    //펜의 위치를 기준으로 글자를 그려줄 시작점을 구해준다.
-    D3DXVECTOR2 pos = D3DXVECTOR2(penPos.x + glyph.mHorizontalBearingX, penPos.y + glyph.mHorizontalBearingY);
-    CreateFontGeometry(glyph, pos);
-    
-
     //텍스쳐 설정
     g_pd3dDevice->SetTexture(0, g_SDFTexture);
     g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
@@ -506,27 +497,123 @@ void DrawFont(Glyph glyph, D3DXVECTOR2& penPos, D3DXVECTOR2 baseLine, D3DXVECTOR
         handle = g_lpEffect->GetParameterByName(0, "_smoothing");
         g_lpEffect->SetFloat(handle, 0.175);
     }
+}
 
-    
-    //g_lpEffect->SetFloat(handle, 0.495);
+void CreateFontGeometry(WCHAR* str, D3DXVECTOR2 pos/*시작 좌표*/)
+{
+    int strsize = wcslen(str);
+    //CUSTOMVERTEX* Vertices = (CUSTOMVERTEX*)malloc(sizeof(CUSTOMVERTEX) * 4 * strsize);
+    CUSTOMVERTEX Vertices[500];
+    ZeroMemory(Vertices, sizeof(CUSTOMVERTEX) * 4 * strsize);
+    //DWORD* Indexices = (DWORD*)malloc(sizeof(DWORD) * 6 * strsize);
+    DWORD Indexices[500] = { 0 };
 
-    //handle = g_lpEffect->GetParameterByName(0, "_highThreshold");
-    ////g_lpEffect->SetFloat(handle, 0.24);
-    //g_lpEffect->SetFloat(handle, 0.44);
-    //g_lpEffect->SetFloat(handle, 0.84);
+    Glyph curGlyph;
 
-    //handle = g_lpEffect->GetParameterByName(0, "_borderColor");
-    //g_lpEffect->SetVector(handle, &D3DXVECTOR4(1, 0, 1, 1));
+    for (int count = 0; count < strsize; count++)
+    {
+        long temp = str[count];
+        curGlyph = g_glyphs[temp];
+        CreateFontGeometry(curGlyph, &Vertices[count * 4], pos);
 
-    //handle = g_lpEffect->GetParameterByName(0, "_baseColor");
-    //g_lpEffect->SetVector(handle, &D3DXVECTOR4(1, 1, 1, 1));
+        for (int i = 0; i < 6; i++)
+        {
+            Indexices[(count * 6) + i] = g_Indexes[i] + count * 4;
+        }
+    }
 
-    //handle = g_lpEffect->GetParameterByName(0, "_smoothing");
-    //g_lpEffect->SetFloat(handle, 0.175);
-    ////g_lpEffect->SetFloat(handle, 0.035);
 
-    //handle = g_lpEffect->GetParameterByName(0, "_borderAlpha");
-    //g_lpEffect->SetFloat(handle, 1);
+    CUSTOMVERTEX* pVerticesTemp;
+    if (FAILED(g_pVB->Lock(0, 0, (void**)&pVerticesTemp, 0)))
+        return;
+
+    memcpy(pVerticesTemp, Vertices, sizeof(CUSTOMVERTEX) * 4 * strsize);
+
+    g_pVB->Unlock();
+
+
+    //인덱스 정보
+    DWORD* pIndexes;
+
+    if (FAILED(g_pIB->Lock(0, 0, (void**)&pIndexes, 0)))
+        return;
+
+    memcpy(pIndexes, Indexices, sizeof(DWORD) * 6 * strsize);
+
+    g_pIB->Unlock();
+}
+
+void CreateFontGeometry(Glyph glyph, CUSTOMVERTEX* Vertices, D3DXVECTOR2& penpos)
+{
+
+    //CUSTOMVERTEX Vertices[4];
+
+    //float tu = (glyph.mTextureCoordX - g_margin);
+    //float tv = 1 - (glyph.mTextureCoordY - g_margin) - (glyph.mTextureHeight + g_margin/* * 2*/);
+
+    D3DXVECTOR2 pos = D3DXVECTOR2(penpos.x + glyph.mHorizontalBearingX, penpos.y + glyph.mHorizontalBearingY);
+
+    float tu;
+    float tv;
+
+    float WidthRatio = glyph.mWidth / glyph.mTextureWidth;
+    float HeightRatio = glyph.mHeight / glyph.mTextureHeight;
+
+    float WidthMargin = g_margin * WidthRatio;
+    float HeightMargin = g_margin * HeightRatio;
+
+
+    /*if (testbool)
+    {
+        pos.x -= WidthMargin;
+        pos.y += HeightMargin;
+
+        glyph.mWidth += WidthMargin;
+        glyph.mHeight += HeightMargin;
+    }*/
+    pos.x -= WidthMargin;
+    pos.y += HeightMargin;
+
+    glyph.mWidth += WidthMargin;
+    glyph.mHeight += HeightMargin;
+
+
+    tu = glyph.mTextureCoordX - g_margin;
+    tv = glyph.mTextureCoordY - g_margin;
+    Vertices[0] = CUSTOMVERTEX(D3DXVECTOR3(pos.x, pos.y - glyph.mHeight, 0.0f), 0xffffffff, tu, tv);//왼쪽 위
+
+    tu = glyph.mTextureCoordX + glyph.mTextureWidth + g_margin;
+    tv = glyph.mTextureCoordY - g_margin;
+    Vertices[1] = CUSTOMVERTEX(D3DXVECTOR3(pos.x + glyph.mWidth, pos.y - glyph.mHeight, 0.0f), 0xffffffff, tu, tv);//오른쪽 위
+
+
+    tu = glyph.mTextureCoordX + glyph.mTextureWidth + g_margin;
+    tv = glyph.mTextureCoordY + glyph.mTextureHeight + g_margin;
+    Vertices[2] = CUSTOMVERTEX(D3DXVECTOR3(pos.x + glyph.mWidth, pos.y, 0.0f), 0xffffffff, tu, tv);//오른쪽 아래
+
+
+    tu = glyph.mTextureCoordX - g_margin;
+    tv = glyph.mTextureCoordY + glyph.mTextureHeight + g_margin;
+    Vertices[3] = CUSTOMVERTEX(D3DXVECTOR3(pos.x, pos.y, 0.0f), 0xffffffff, tu, tv);//왼쪽 아래
+
+
+    penpos.x += (glyph.mHorizontalAdvance /*+ m_FontPitch*/);
+}
+
+void DrawFont2(WCHAR* str, D3DXVECTOR2 startPos, D3DXVECTOR4 baseColor, char* technique = "SoftEdgeDraw")
+{
+
+    //글자 하나당 Vertex의 크기는 Metrics 파일에 있는 크기 정보로 만든다.
+    int strsize = wcslen(str);
+    //D3DXCreateFont(g_pd3dDevice, 25,12,500,0,false, DEFAULT_CHARSET,
+    //if (testbool)
+    //    SetupMatrices(startPos.x, startPos.y, 0, /*0.22*//*0.08*/0.22, /*0.22*//*0.08*/0.22, 1);
+    //else
+        SetupMatrices(startPos.x, startPos.y, 0, /*0.64*/0.22, /*0.64*/0.22, 1);
+
+    CreateFontGeometry(str, startPos);
+
+    SetShaderParameter(technique, baseColor);
 
     //출력
     UINT passCount;
@@ -534,47 +621,156 @@ void DrawFont(Glyph glyph, D3DXVECTOR2& penPos, D3DXVECTOR2 baseLine, D3DXVECTOR
     for (int pass = 0; pass < passCount; pass++)
     {
         g_lpEffect->BeginPass(pass);
-        g_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
+        g_pd3dDevice->DrawIndexedPrimitive(/*D3DPT_TRIANGLESTRIP*/D3DPT_TRIANGLELIST, 0, 0, 4 * strsize, 0, 2 * strsize);
         g_lpEffect->EndPass();
 
     }
     g_lpEffect->End();
 
-
-
-
-    //글자 하나의 출력이 끝나고 나면 펜의 위치를 다음 글자 시작 위치로 옮겨준다.
-    penPos.x += glyph.mHorizontalAdvance;
-    //penPos.y += glyph.mVerticalAdvance;
 }
-
-void DrawFont(WCHAR* str, D3DXVECTOR2 startPos , D3DXVECTOR4 baseColor , char* technique = "SoftEdgeDraw")
-{
-
-    //글자 하나당 Vertex의 크기는 Metrics 파일에 있는 크기 정보로 만든다.
-    int strsize = wcslen(str);
-    //D3DXCreateFont(g_pd3dDevice, 25,12,500,0,false, DEFAULT_CHARSET,
-    SetupMatrices(startPos.x, startPos.y, -10, 0.02, 0.02, 0.02);
-    Glyph curGlyph;
-
-    //현재 글자가 그려질 위치
-    //D3DXVECTOR2 curCharPos = startPos;
-    D3DXVECTOR2 curPenPos = startPos;
-    //char teststr[1024];
-    //strcpy(teststr, str);
-    //WCHAR strunicode[1024] = { 0 };
-    //MultiByteToWideChar(CP_ACP, 0, teststr, strsize, strunicode, strsize);
-    // 
-    // 
-    //WideCharToMultiByte(CP_ACP, 0, strunicode, -1, teststr, strsize, NULL, NULL);
-    for (int count = 0; count < strsize; count++)
-    {
-        long test = str[count];
-        curGlyph = g_glyphs[test];
-
-        DrawFont(curGlyph, curPenPos, startPos, baseColor, technique);
-    }
-}
+////해당 위치에 글자를 그려주고 위치를 다음 위치로 옮겨준다.
+//void DrawFont(Glyph glyph, D3DXVECTOR2& penPos, D3DXVECTOR2 baseLine, D3DXVECTOR4 baseColor , char* technique = "SoftEdgeDraw")
+//{
+//    //펜의 위치를 기준으로 글자를 그려줄 시작점을 구해준다.
+//    D3DXVECTOR2 pos = D3DXVECTOR2(penPos.x + glyph.mHorizontalBearingX, penPos.y + glyph.mHorizontalBearingY);
+//    CreateFontGeometry(glyph, pos);
+//    
+//
+//    //텍스쳐 설정
+//    g_pd3dDevice->SetTexture(0, g_SDFTexture);
+//    g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+//    g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+//    g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+//    g_pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+//    //RenderState 설정
+//    g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+//    g_pd3dDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+//    //Device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+//    g_pd3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+//    g_pd3dDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+//
+//    //파이프라인 설정
+//    g_pd3dDevice->SetStreamSource(0, g_pVB, 0, sizeof(CUSTOMVERTEX));
+//    g_pd3dDevice->SetFVF(D3DFVF_CUSTOMVERTEX);
+//    g_pd3dDevice->SetIndices(g_pIB);
+//
+//    //셰이더 설정
+//    g_lpEffect->SetTechnique(technique);
+//
+//    D3DXHANDLE handle;
+//    handle = g_lpEffect->GetParameterByName(0, "_baseColor");
+//    g_lpEffect->SetVector(handle, &baseColor);
+//
+//    if (!strcmp(technique, "SoftEdgeDraw"))
+//    {
+//        handle = g_lpEffect->GetParameterByName(0, "_smoothing");
+//        g_lpEffect->SetFloat(handle, 0.175);
+//    }
+//    else if (!strcmp(technique, "SharpEdgeDraw"))
+//    {
+//        handle = g_lpEffect->GetParameterByName(0, "_lowThreshold");
+//        g_lpEffect->SetFloat(handle, 0.5);
+//    }
+//    else if (!strcmp(technique, "SharpEdgeWithGlowDraw"))
+//    {
+//        handle = g_lpEffect->GetParameterByName(0, "_lowThreshold");
+//        g_lpEffect->SetFloat(handle, 0.495);
+//
+//        handle = g_lpEffect->GetParameterByName(0, "_borderColor");
+//        g_lpEffect->SetVector(handle, &D3DXVECTOR4(0.5, 0, 1, 1));
+//
+//        handle = g_lpEffect->GetParameterByName(0, "_borderAlpha");
+//        g_lpEffect->SetFloat(handle, 1);
+//    }
+//    else if (!strcmp(technique, "BorderDraw"))
+//    {
+//
+//        handle = g_lpEffect->GetParameterByName(0, "_smoothing");
+//        g_lpEffect->SetFloat(handle, 0.49);
+//
+//        handle = g_lpEffect->GetParameterByName(0, "_highThreshold");
+//        g_lpEffect->SetFloat(handle, 0.55);
+//
+//        handle = g_lpEffect->GetParameterByName(0, "_lowThreshold");
+//        g_lpEffect->SetFloat(handle, 0.001);
+//
+//        handle = g_lpEffect->GetParameterByName(0, "_borderColor");
+//        g_lpEffect->SetVector(handle, &D3DXVECTOR4(1, 0, 0, 1));
+//    }
+//    else if (!strcmp(technique, "SoftEdge2Draw"))
+//    {
+//        handle = g_lpEffect->GetParameterByName(0, "_smoothing");
+//        g_lpEffect->SetFloat(handle, 0.175);
+//    }
+//
+//    
+//    //g_lpEffect->SetFloat(handle, 0.495);
+//
+//    //handle = g_lpEffect->GetParameterByName(0, "_highThreshold");
+//    ////g_lpEffect->SetFloat(handle, 0.24);
+//    //g_lpEffect->SetFloat(handle, 0.44);
+//    //g_lpEffect->SetFloat(handle, 0.84);
+//
+//    //handle = g_lpEffect->GetParameterByName(0, "_borderColor");
+//    //g_lpEffect->SetVector(handle, &D3DXVECTOR4(1, 0, 1, 1));
+//
+//    //handle = g_lpEffect->GetParameterByName(0, "_baseColor");
+//    //g_lpEffect->SetVector(handle, &D3DXVECTOR4(1, 1, 1, 1));
+//
+//    //handle = g_lpEffect->GetParameterByName(0, "_smoothing");
+//    //g_lpEffect->SetFloat(handle, 0.175);
+//    ////g_lpEffect->SetFloat(handle, 0.035);
+//
+//    //handle = g_lpEffect->GetParameterByName(0, "_borderAlpha");
+//    //g_lpEffect->SetFloat(handle, 1);
+//
+//    //출력
+//    UINT passCount;
+//    g_lpEffect->Begin(&passCount, 0);
+//    for (int pass = 0; pass < passCount; pass++)
+//    {
+//        g_lpEffect->BeginPass(pass);
+//        g_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
+//        g_lpEffect->EndPass();
+//
+//    }
+//    g_lpEffect->End();
+//
+//
+//
+//
+//    //글자 하나의 출력이 끝나고 나면 펜의 위치를 다음 글자 시작 위치로 옮겨준다.
+//    penPos.x += glyph.mHorizontalAdvance;
+//    //penPos.y += glyph.mVerticalAdvance;
+//}
+//
+//void DrawFont(WCHAR* str, D3DXVECTOR2 startPos , D3DXVECTOR4 baseColor , char* technique = "SoftEdgeDraw")
+//{
+//
+//    //글자 하나당 Vertex의 크기는 Metrics 파일에 있는 크기 정보로 만든다.
+//    int strsize = wcslen(str);
+//    //D3DXCreateFont(g_pd3dDevice, 25,12,500,0,false, DEFAULT_CHARSET,
+//    SetupMatrices(startPos.x, startPos.y, -10, 0.02, 0.02, 0.02);
+//    Glyph curGlyph;
+//
+//    //현재 글자가 그려질 위치
+//    //D3DXVECTOR2 curCharPos = startPos;
+//    D3DXVECTOR2 curPenPos = startPos;
+//    //char teststr[1024];
+//    //strcpy(teststr, str);
+//    //WCHAR strunicode[1024] = { 0 };
+//    //MultiByteToWideChar(CP_ACP, 0, teststr, strsize, strunicode, strsize);
+//    // 
+//    // 
+//    //WideCharToMultiByte(CP_ACP, 0, strunicode, -1, teststr, strsize, NULL, NULL);
+//    for (int count = 0; count < strsize; count++)
+//    {
+//        long test = str[count];
+//        curGlyph = g_glyphs[test];
+//
+//        DrawFont(curGlyph, curPenPos, startPos, baseColor, technique);
+//    }
+//}
 
 D3DXVECTOR3 WorldToScreen(D3DXVECTOR3 vec)
 {
@@ -758,7 +954,7 @@ LPDIRECT3DTEXTURE9 CreateFontTexture(LPDIRECT3DTEXTURE9& tex,WCHAR* str, float& 
 
         //DrawFont(L"외곽선두번째", D3DXVECTOR2(0, -2), D3DXVECTOR4(1, 0, 1, 1), "SharpEdgeWithGlowDraw");
 
-        DrawFont(str, D3DXVECTOR2(0, 0), D3DXVECTOR4(0, 0, 0, 1), "SoftEdgeDraw");
+        //DrawFont(str, D3DXVECTOR2(0, 0), D3DXVECTOR4(0, 0, 0, 1), "SoftEdgeDraw");
 
         g_pd3dDevice->EndScene();
     }
@@ -835,8 +1031,8 @@ VOID Render()
 
         //g_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
         //BorderDraw SoftEdgeDraw
-        DrawFont(L"!ilililj1", D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 1, 1, 1), "DebugDraw");
-        DrawFont(L"!ilililj1", D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 0, 0, 1), "SoftEdgeDraw");
+        DrawFont2(L"!ilililj1", D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 1, 1, 1), "DebugDraw");
+        DrawFont2(L"!ilililj1", D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 0, 0, 1), "SoftEdgeDraw");
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //g_pd3dDevice->SetTexture( 0, g_SDFTexture);
         //g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
