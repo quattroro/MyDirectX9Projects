@@ -179,15 +179,13 @@ DWORD g_Indexes[] =
 HRESULT CreateBuffer()
 {   
     // Create the vertex buffer.
-    if (FAILED(g_pd3dDevice->CreateVertexBuffer(4 * sizeof(CUSTOMVERTEX),
-        0, D3DFVF_CUSTOMVERTEX,
-        D3DPOOL_DEFAULT, &g_pVB, NULL)))
+    if (FAILED(g_pd3dDevice->CreateVertexBuffer(4 * sizeof(CUSTOMVERTEX) * 2048, 0, D3DFVF_CUSTOMVERTEX, D3DPOOL_DEFAULT, &g_pVB, NULL)))
     {
         return E_FAIL;
     }
 
 
-    if (FAILED(g_pd3dDevice->CreateIndexBuffer(sizeof(DWORD) * 6, 0, D3DFMT_INDEX32, D3DPOOL_DEFAULT, &g_pIB, NULL)))
+    if (FAILED(g_pd3dDevice->CreateIndexBuffer(sizeof(DWORD) * 6 * 2048, 0, D3DFMT_INDEX32, D3DPOOL_DEFAULT, &g_pIB, NULL)))
     {
         return E_FAIL;
     }
@@ -326,8 +324,8 @@ VOID SetupMatrices(float x = 0, float y = 0, float z = 0, float sx = 0, float sy
 
     g_pd3dDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
-	D3DXVECTOR3 vEyePt(g_FontSize.x/ 2.0f, g_FontSize.y / 2.0f, -10.0f);
-	D3DXVECTOR3 vLookatPt(g_FontSize.x / 2.0f, g_FontSize.y / 2.0f, 0.0f);
+	D3DXVECTOR3 vEyePt(/*g_FontSize.x/ 2.0f*/0, /*g_FontSize.y / 2.0f*/0, -10.0f);
+	D3DXVECTOR3 vLookatPt(/*g_FontSize.x / 2.0f*/0, /*g_FontSize.y / 2.0f*/0, 0.0f);
     D3DXVECTOR3 vUpVec( 0.0f, 1.0f, 0.0f );
     
     D3DXMATRIXA16 matView;
@@ -335,8 +333,9 @@ VOID SetupMatrices(float x = 0, float y = 0, float z = 0, float sx = 0, float sy
     g_pd3dDevice->SetTransform( D3DTS_VIEW, &matView );
 
     D3DXMATRIXA16 matProj;
-    D3DXMatrixPerspectiveFovLH( &matProj, D3DX_PI / 4, 1.0f, 1.0f, 100.0f );
-    //D3DXMatrixOrthoLH(&matProj, /*108.0f*/g_FontSize.x, /*12.0f*/g_FontSize.y, 0, 30);
+    //D3DXMatrixPerspectiveFovLH( &matProj, D3DX_PI / 4, 1.0f, 1.0f, 100.0f );
+    //D3DXMatrixOrthoLH(&matProj, 10, /*12.0f*/g_FontSize.y, 0, 30);
+    D3DXMatrixOrthoOffCenterLH(&matProj, 0, 10, 0, 10, -500, 500);
     g_pd3dDevice->SetTransform( D3DTS_PROJECTION, &matProj );
 
     D3DXMATRIXA16 temp;
@@ -499,50 +498,6 @@ void SetShaderParameter(char* technique = "SoftEdgeDraw", D3DXVECTOR4 baseColor 
     }
 }
 
-void CreateFontGeometry(WCHAR* str, D3DXVECTOR2 pos/*시작 좌표*/)
-{
-    int strsize = wcslen(str);
-    //CUSTOMVERTEX* Vertices = (CUSTOMVERTEX*)malloc(sizeof(CUSTOMVERTEX) * 4 * strsize);
-    CUSTOMVERTEX Vertices[500];
-    ZeroMemory(Vertices, sizeof(CUSTOMVERTEX) * 4 * strsize);
-    //DWORD* Indexices = (DWORD*)malloc(sizeof(DWORD) * 6 * strsize);
-    DWORD Indexices[500] = { 0 };
-
-    Glyph curGlyph;
-
-    for (int count = 0; count < strsize; count++)
-    {
-        long temp = str[count];
-        curGlyph = g_glyphs[temp];
-        CreateFontGeometry(curGlyph, &Vertices[count * 4], pos);
-
-        for (int i = 0; i < 6; i++)
-        {
-            Indexices[(count * 6) + i] = g_Indexes[i] + count * 4;
-        }
-    }
-
-
-    CUSTOMVERTEX* pVerticesTemp;
-    if (FAILED(g_pVB->Lock(0, 0, (void**)&pVerticesTemp, 0)))
-        return;
-
-    memcpy(pVerticesTemp, Vertices, sizeof(CUSTOMVERTEX) * 4 * strsize);
-
-    g_pVB->Unlock();
-
-
-    //인덱스 정보
-    DWORD* pIndexes;
-
-    if (FAILED(g_pIB->Lock(0, 0, (void**)&pIndexes, 0)))
-        return;
-
-    memcpy(pIndexes, Indexices, sizeof(DWORD) * 6 * strsize);
-
-    g_pIB->Unlock();
-}
-
 void CreateFontGeometry(Glyph glyph, CUSTOMVERTEX* Vertices, D3DXVECTOR2& penpos)
 {
 
@@ -599,6 +554,52 @@ void CreateFontGeometry(Glyph glyph, CUSTOMVERTEX* Vertices, D3DXVECTOR2& penpos
 
     penpos.x += (glyph.mHorizontalAdvance /*+ m_FontPitch*/);
 }
+
+void CreateFontGeometry(WCHAR* str, D3DXVECTOR2 pos/*시작 좌표*/)
+{
+    int strsize = wcslen(str);
+    //CUSTOMVERTEX* Vertices = (CUSTOMVERTEX*)malloc(sizeof(CUSTOMVERTEX) * 4 * strsize);
+    CUSTOMVERTEX Vertices[500];
+    ZeroMemory(Vertices, sizeof(CUSTOMVERTEX) * 4 * strsize);
+    //DWORD* Indexices = (DWORD*)malloc(sizeof(DWORD) * 6 * strsize);
+    DWORD Indexices[500] = { 0 };
+
+    Glyph curGlyph;
+
+    for (int count = 0; count < strsize; count++)
+    {
+        long temp = str[count];
+        curGlyph = g_glyphs[temp];
+        CreateFontGeometry(curGlyph, &Vertices[count * 4], pos);
+
+        for (int i = 0; i < 6; i++)
+        {
+            Indexices[(count * 6) + i] = g_Indexes[i] + count * 4;
+        }
+    }
+
+
+    CUSTOMVERTEX* pVerticesTemp;
+    if (FAILED(g_pVB->Lock(0, 0, (void**)&pVerticesTemp, 0)))
+        return;
+
+    memcpy(pVerticesTemp, Vertices, sizeof(CUSTOMVERTEX) * 4 * strsize);
+
+    g_pVB->Unlock();
+
+
+    //인덱스 정보
+    DWORD* pIndexes;
+
+    if (FAILED(g_pIB->Lock(0, 0, (void**)&pIndexes, 0)))
+        return;
+
+    memcpy(pIndexes, Indexices, sizeof(DWORD) * 6 * strsize);
+
+    g_pIB->Unlock();
+}
+
+
 
 void DrawFont2(WCHAR* str, D3DXVECTOR2 startPos, D3DXVECTOR4 baseColor, char* technique = "SoftEdgeDraw")
 {
@@ -999,35 +1000,32 @@ VOID Render()
         //CreateFontTexture(tex, L"가나다", width, height, 512, 512);
         //SetGeometry(-7,0,-10, width, height);
         //SetupMatrices(-2, 0, 10);
-
-        //
-
         
-        SetGeometry(0, 0, 0, width / 3.0f, height / 3.0f);
-        SetupMatrices2(0, 0, 50);
+        //SetGeometry(0, 0, 0, width / 3.0f, height / 3.0f);
+        //SetupMatrices2(0, 0, 50);
 
-        g_pd3dDevice->SetTexture( 0, tex);
-        g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-        g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE); 
-        g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-        g_pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, /*D3DTOP_DISABLE*/D3DTOP_BLENDTEXTUREALPHA);
+        //g_pd3dDevice->SetTexture( 0, tex);
+        //g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+        //g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE); 
+        //g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+        //g_pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, /*D3DTOP_DISABLE*/D3DTOP_BLENDTEXTUREALPHA);
 
 
         //알파 블렌드 사용
-        g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-        g_pd3dDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-        //g_pd3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-        g_pd3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-        g_pd3dDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+        //g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+        //g_pd3dDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+        ////g_pd3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+        //g_pd3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+        //g_pd3dDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 
         ////알파 테스트 사용
         //g_pd3dDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
         //g_pd3dDevice->SetRenderState(D3DRS_ALPHAREF, /*0x00000001*//*0x80*//*0x1*/0x80);
         //g_pd3dDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL/*D3DCMP_LESSEQUAL*/); // D3DCMP_GREATEREQUAL => 픽셀의 알파 값이 ALPHAREF에 설정된 값보다 크거나 같으면 Alpha를 1로해서 출력 한다.
 
-        g_pd3dDevice->SetStreamSource( 0, g_pVB, 0, sizeof( CUSTOMVERTEX ) );
+        /*g_pd3dDevice->SetStreamSource( 0, g_pVB, 0, sizeof( CUSTOMVERTEX ) );
         g_pd3dDevice->SetFVF( D3DFVF_CUSTOMVERTEX );
-        g_pd3dDevice->SetIndices(g_pIB);
+        g_pd3dDevice->SetIndices(g_pIB);*/
 
         //g_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
         //BorderDraw SoftEdgeDraw
@@ -1219,7 +1217,7 @@ INT WINAPI wWinMain( HINSTANCE hInst, HINSTANCE, LPWSTR, INT )
 
     // Create the application's window
     HWND hWnd = CreateWindow( L"D3D Tutorial", L"D3D Tutorial 05: Textures",
-                              WS_OVERLAPPEDWINDOW, 100, 100, 1500, 1500,
+                              WS_OVERLAPPEDWINDOW, 100, 100, 1100, 1100,
                               NULL, NULL, wc.hInstance, NULL );
 
     // Initialize Direct3D
