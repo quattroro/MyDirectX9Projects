@@ -610,7 +610,7 @@ void DrawFont2(WCHAR* str, D3DXVECTOR2 startPos, D3DXVECTOR4 baseColor, char* te
     //if (testbool)
     //    SetupMatrices(startPos.x, startPos.y, 0, /*0.22*//*0.08*/0.22, /*0.22*//*0.08*/0.22, 1);
     //else
-        SetupMatrices(startPos.x, startPos.y, 0, /*0.64*/0.22, /*0.64*/0.22, 1);
+        SetupMatrices(startPos.x, startPos.y, 0, /*0.64*/0.04, /*0.64*/0.04, 1);
 
     CreateFontGeometry(str, startPos);
 
@@ -1029,8 +1029,8 @@ VOID Render()
 
         //g_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
         //BorderDraw SoftEdgeDraw
-        DrawFont2(L"!ilililj1", D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 1, 1, 1), "DebugDraw");
-        DrawFont2(L"!ilililj1", D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 0, 0, 1), "SoftEdgeDraw");
+        //DrawFont2(L"!ilililj1", D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 1, 1, 1), "DebugDraw");
+        DrawFont2(L"!가나다라마바사", D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 1, 1, 1), "SoftEdgeDraw");
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //g_pd3dDevice->SetTexture( 0, g_SDFTexture);
         //g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);

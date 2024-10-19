@@ -224,6 +224,47 @@ PS_OUTPUT SoftEdgeFrag2(VS_OUTPUT In)
     return Out;
 }
 
+PS_OUTPUT NeonFrag(VS_OUTPUT In)
+{
+    float d = tex2D(_FontSampler, In.TexCoord0).a;
+    color = float4(0, 0, 0, 0);
+
+    float Thickness = 1.0 - _FontThickness;
+    float BoarderWidth = _FontBorderWidth * 0.5;
+
+
+    if (d < Thickness && d > Thickness - _FontBorderWidth)
+    {
+        float t = d / (Thickness - BoarderWidth);// [1+a:1:0]
+        t = 1 - t;// [1:0:-1]
+        t = 1 - abs(t);// [0:1:0]
+
+        //lerp between background and border using t
+        color = lerp(float4(0, 0, 0, 0), _borderColor, t);
+
+        //raise t to a high power and add in as white
+        //to give bloom effect
+        color.rgb += pow(t, _NeonPower) * _NeonBrightness;
+    }
+
+
+    /*PS_OUTPUT Out;
+    float4 color = _baseColor;
+    float alpha = tex2D(_FontSampler, In.TexCoord0).a;
+    if (alpha < 0.5)
+    {
+        color.a = smoothstep(0.5 - _smoothing, 0.5 + _smoothing, alpha);
+    }
+    else
+    {
+        color.a = smoothstep(0.5 - _smoothing, 0.5 + _smoothing, alpha * 0.75);
+    }
+
+    Out.Color = color;
+    Out.EmissiveColor = float4(0, 0, 0, color.a);
+    return Out;*/
+}
+
 PS_OUTPUT DebugFrag(VS_OUTPUT In)
 {
     PS_OUTPUT Out;
