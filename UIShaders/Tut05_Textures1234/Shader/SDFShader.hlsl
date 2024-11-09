@@ -227,6 +227,7 @@ PS_OUTPUT SoftEdgeFrag2(VS_OUTPUT In)
 PS_OUTPUT NeonFrag(VS_OUTPUT In)
 {
     float d = tex2D(_FontSampler, In.TexCoord0).a;
+    float4 color = _baseColor;
     color = float4(0, 0, 0, 0);
 
     float Thickness = 1.0 - _FontThickness;
