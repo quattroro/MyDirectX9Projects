@@ -13,10 +13,15 @@ float _lowThreshold;
 float _highThreshold;
 float4 _borderColor;
 float _borderAlpha;
+float _FontThickness;
+float _FontBorderWidth;
+float _NeonPower;
+float _NeonBrightness;
 
 float       _OutlineWidth = 0.00001;
 float3      _MainTex_TexelSize = { 0.0014, 0.0014,0.00 };
 float4      _OutlineColor = { 1.0,1.0,1.0,1.0 };
+
 //--------------------------------------------------------------------------------------
 // 메인 텍스쳐 셈플러
 //--------------------------------------------------------------------------------------
