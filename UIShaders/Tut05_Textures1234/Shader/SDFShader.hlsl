@@ -141,23 +141,6 @@ PS_OUTPUT SharpEdgeWithGlowFrag(VS_OUTPUT In)
 PS_OUTPUT BorderFrag(VS_OUTPUT In)
 {
     PS_OUTPUT Out;
-    /*float4 color = float4(0, 0, 0, 0);
-
-    float alpha = tex2D(_FontSampler, In.TexCoord0).a;
-    if (alpha >= _lowThreshold && alpha <= _highThreshold)
-    {
-        color.rgb = _borderColor;
-        color.a = 1.0;
-    }
-    else if (alpha >= _highThreshold)
-    {
-        color.rgb = _baseColor;
-        color.a = 1.0;
-    }
-    else
-    {
-        color.a = 0.0;
-    }*/
 
     float4 color = float4(0, 0, 0, 0);
     float alpha = tex2D(_FontSampler, In.TexCoord0).a;
@@ -179,31 +162,6 @@ PS_OUTPUT BorderFrag(VS_OUTPUT In)
         color.a = 0.0;
     }
 
-
-
-
-    /*float4 color = _baseColor;
-
-    color.a = smoothstep(0.5 - _smoothing, 0.5 + _smoothing, tex2D(_FontSampler, In.TexCoord0).a);
-
-    float2 destUv = float2(_OutlineWidth * _MainTex_TexelSize.x * 200, _OutlineWidth * _MainTex_TexelSize.y * 200);
-    float spriteLeft = tex2D(_FontSampler, In.TexCoord0 + float2(destUv.x, 0)).a;
-    float spriteRight = tex2D(_FontSampler, In.TexCoord0 - float2(destUv.x, 0)).a;
-    float spriteBottom = tex2D(_FontSampler, In.TexCoord0 + float2(0, destUv.y)).a;
-    float spriteTop = tex2D(_FontSampler, In.TexCoord0 - float2(0, destUv.y)).a;
-    float result = spriteLeft + spriteRight + spriteBottom + spriteTop;
-
-    float spriteTopLeft = tex2D(_FontSampler, In.TexCoord0 + float2(destUv.x, destUv.y)).a;
-    float spriteTopRight = tex2D(_FontSampler, In.TexCoord0 + float2(-destUv.x, destUv.y)).a;
-    float spriteBotLeft = tex2D(_FontSampler, In.TexCoord0 + float2(destUv.x, -destUv.y)).a;
-    float spriteBotRight = tex2D(_FontSampler, In.TexCoord0 + float2(-destUv.x, -destUv.y)).a;
-    result = result + spriteTopLeft + spriteTopRight + spriteBotLeft + spriteBotRight;
-    result = step(0.05, saturate(result));
-    float4 outline = float4(1.0f, 1.0f, 1.0f, 1.0f);
-    result *= (1 - color.a) * 1;
-    outline *= _OutlineColor;
-    outline.a = result;
-    color = lerp(color, outline, result);*/
 
     Out.Color = color;
     Out.EmissiveColor = float4(0, 0, 0, color.a);
