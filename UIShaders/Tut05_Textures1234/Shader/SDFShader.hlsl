@@ -18,6 +18,9 @@ float _FontBorderWidth;
 float _NeonPower;
 float _NeonBrightness;
 
+float _TestFontWidth;
+float _TestOutlineWidth;
+
 float       _OutlineWidth = 0.00001;
 float3      _MainTex_TexelSize = { 0.0014, 0.0014,0.00 };
 float4      _OutlineColor = { 1.0,1.0,1.0,1.0 };
@@ -168,6 +171,43 @@ PS_OUTPUT BorderFrag(VS_OUTPUT In)
     return Out;
 }
 
+PS_OUTPUT SoftBorderFrag(VS_OUTPUT In)
+{
+    PS_OUTPUT Out;
+
+    //SoftBorder
+    float4 color = float4(0, 0, 0, 0);
+    float alpha = tex2D(_FontSampler, In.TexCoord0).a;
+    float d = alpha;
+    color = float4(0, 0, 0, 0);
+
+    float fontWidth = clamp(1 - _TestFontWidth, 0, 1);
+    float outlineWidth = clamp(1 - _TestOutlineWidth, 0, 1);
+    float totalWidth = clamp(1 - (_TestFontWidth + _TestOutlineWidth), 0, 1);
+
+    if (d > fontWidth)//Total Font Inside
+    {
+        color = smoothstep(fontWidth, 1, d);
+        color = color * _baseColor;
+    }
+    else if (d > totalWidth)//Font Outline
+    {
+        color = smoothstep(totalWidth, fontWidth, d);
+        color = color * _borderColor;
+    }
+    else//Outline
+    {
+        float t = d / totalWidth;
+        t = t * t;
+        color = lerp(float4(0, 0, 0, 0), _borderColor, t);
+        color = float4(0, 0, 0, 0);
+    }
+
+    Out.Color = color;
+    Out.EmissiveColor = float4(0, 0, 0, color.a);
+    return Out;
+}
+
 PS_OUTPUT SoftEdgeFrag2(VS_OUTPUT In)
 {
     PS_OUTPUT Out;
@@ -282,6 +322,15 @@ technique BorderDraw
     {          
         VertexShader = compile vs_2_a Vert();
         PixelShader  = compile ps_2_a BorderFrag();
+    }
+}
+
+technique SoftBorderDraw
+{
+    pass P0
+    {
+        VertexShader = compile vs_2_a Vert();
+        PixelShader = compile ps_2_a SoftBorderFrag();
     }
 }
 

@@ -436,10 +436,10 @@ void SetShaderParameter(char* technique = "SoftEdgeDraw", D3DXVECTOR4 baseColor 
         g_lpEffect->SetFloat(handle, 0.49);
 
         handle = g_lpEffect->GetParameterByName(0, "_highThreshold");
-        g_lpEffect->SetFloat(handle, 0.55);
+        g_lpEffect->SetFloat(handle, 0.55 + testPoint.x);
 
         handle = g_lpEffect->GetParameterByName(0, "_lowThreshold");
-        g_lpEffect->SetFloat(handle, 0.001);
+        g_lpEffect->SetFloat(handle, 0.001 + testPoint.y);
 
         handle = g_lpEffect->GetParameterByName(0, "_borderColor");
         g_lpEffect->SetVector(handle, &D3DXVECTOR4(1, 0, 0, 1));
@@ -560,7 +560,7 @@ void DrawFont2(WCHAR* str, D3DXVECTOR2 startPos, D3DXVECTOR4 baseColor, char* te
     //글자 하나당 Vertex의 크기는 Metrics 파일에 있는 크기 정보로 만든다.
     int strsize = wcslen(str);
     
-    SetupMatrices(startPos.x, startPos.y, 0, /*0.64*/0.04, /*0.64*/0.04, 1);
+    SetupMatrices(startPos.x, startPos.y, 0, /*0.64*/0.03, /*0.64*/0.03, 1);
 
     CreateFontGeometry(str, startPos);
 
@@ -837,7 +837,7 @@ VOID Render()
         //g_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
         //BorderDraw SoftEdgeDraw
         //DrawFont2(L"!ilililj1", D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 1, 1, 1), "DebugDraw");
-        DrawFont2(L"!가나다라마바사", D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 1, 1, 1), "SoftEdgeDraw");
+        DrawFont2(L"!가나다라마바사", D3DXVECTOR2(0, 100), D3DXVECTOR4(1, 1, 1, 1), "BorderDraw");
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //g_pd3dDevice->SetTexture( 0, g_SDFTexture);
         //g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
@@ -956,14 +956,14 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
                 {
                 case VK_LEFT:
                 {
-                    testPoint.x += .1f;
+                    testPoint.x += 0.01f;
                     int a = 0;
                 }
                     break;
 
                 case VK_RIGHT:
                 {
-                    testPoint.x -= .1f;
+                    testPoint.x -= 0.01f;
                     int a = 0;
                 }
                     
@@ -972,14 +972,14 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 
                 case VK_UP:
                 {
-                    testPoint.y -= .1f;
+                    testPoint.y -= 0.01f;
                     int a = 0;
                 }
                     break;
 
                 case VK_DOWN:
                 {
-                    testPoint.y += .1f;
+                    testPoint.y += 0.01f;
                     int a = 0;
                 }
                     break;
