@@ -33,7 +33,7 @@ struct FPOINT
 
 FPOINT g_FontSize;
 FPOINT testPoint = {0,0};
-FPOINT testScale = { 8,8 };
+FPOINT testScale = {0,0};
 
 // A structure for our custom vertex type. We added texture coordinates
 struct CUSTOMVERTEX
@@ -449,6 +449,50 @@ void SetShaderParameter(char* technique = "SoftEdgeDraw", D3DXVECTOR4 baseColor 
         handle = g_lpEffect->GetParameterByName(0, "_smoothing");
         g_lpEffect->SetFloat(handle, 0.175);
     }
+    else if (!strcmp(technique, "NewBorderDraw"))
+    {
+        handle = g_lpEffect->GetParameterByName(0, "_TestFontWidth");
+        g_lpEffect->SetFloat(handle, 0.359 + testPoint.x);
+
+        handle = g_lpEffect->GetParameterByName(0, "_TestOutlineWidth");
+        g_lpEffect->SetFloat(handle, 0.079 + testPoint.y);
+
+        handle = g_lpEffect->GetParameterByName(0, "_borderColor");
+        g_lpEffect->SetVector(handle, &D3DXVECTOR4(1, 0, 0, 1));
+    } 
+    else if (!strcmp(technique, "NewSoftDraw"))
+    {
+        handle = g_lpEffect->GetParameterByName(0, "_TestFontWidth");
+        g_lpEffect->SetFloat(handle, 0.14 + testPoint.x);
+    }
+    else if (!strcmp(technique, "NewNeonDraw"))
+    {
+        handle = g_lpEffect->GetParameterByName(0, "_TestFontWidth");
+        g_lpEffect->SetFloat(handle, 0.359 + testPoint.y);
+
+        handle = g_lpEffect->GetParameterByName(0, "_BorderWidth");
+        g_lpEffect->SetFloat(handle, 0.14 + testPoint.x);
+
+        handle = g_lpEffect->GetParameterByName(0, "_NeonPower");
+        g_lpEffect->SetFloat(handle, 2.48 + testPoint.y);
+
+        handle = g_lpEffect->GetParameterByName(0, "_NeonBrightness");
+        g_lpEffect->SetFloat(handle, 0.71  + testScale.x);
+
+        handle = g_lpEffect->GetParameterByName(0, "_borderColor");
+        g_lpEffect->SetVector(handle, &D3DXVECTOR4(0.92, 0.156, 0.901, 1));
+    }
+    else if (!strcmp(technique, "NewDropShadow"))
+    {
+        handle = g_lpEffect->GetParameterByName(0, "_TestFontWidth");
+        g_lpEffect->SetFloat(handle, 0.359 + testPoint.x);
+
+        handle = g_lpEffect->GetParameterByName(0, "_ShadowDist");
+        g_lpEffect->SetFloat(handle, 0.14 + testPoint.y);
+
+        handle = g_lpEffect->GetParameterByName(0, "_borderColor");
+        g_lpEffect->SetVector(handle, &D3DXVECTOR4(1, 0.32, 0.32, 0.32));
+    }
 }
 
 void CreateFontGeometry(Glyph glyph, CUSTOMVERTEX* Vertices, D3DXVECTOR2& penpos)
@@ -721,9 +765,6 @@ void CalculateFontSize(WCHAR* str, float& width, float& height)
     height *= 700 / 512;
 }
 
-
-
-
 LPDIRECT3DTEXTURE9 CreateFontTexture(LPDIRECT3DTEXTURE9& tex,WCHAR* str, float& width, float& height, float texWidth, float texHeight)
 {
     LPDIRECT3DSURFACE9 pSurface;
@@ -750,74 +791,30 @@ LPDIRECT3DTEXTURE9 CreateFontTexture(LPDIRECT3DTEXTURE9& tex,WCHAR* str, float& 
     g_pd3dDevice->SetRenderTarget(0, pSurface);
 
 
-    g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DXCOLOR(255,255,255,0)/*D3DCOLOR_XRGB(255, 255, 255)*/, 1.0f, 0);
+    g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DXCOLOR(255,255,255,0), 1.0f, 0);
     if (SUCCEEDED(g_pd3dDevice->BeginScene()))
     {
-
         //DrawFont(L"부드럽게", D3DXVECTOR2(0, 1), D3DXVECTOR4(1, 1, 1, 1), /*"DebugDraw"*/"SoftEdgeDraw");
-
-        //DrawFont(L"날카롭게", D3DXVECTOR2(0, 0), D3DXVECTOR4(0, 1, 1, 1), "SharpEdgeDraw");
-
-        //DrawFont(L"외곽선", D3DXVECTOR2(0, -1), D3DXVECTOR4(0, 0, 1, 1), "BorderDraw");
-
-        //DrawFont(L"외곽선두번째", D3DXVECTOR2(0, -2), D3DXVECTOR4(1, 0, 1, 1), "SharpEdgeWithGlowDraw");
-
-        //DrawFont(str, D3DXVECTOR2(0, 0), D3DXVECTOR4(0, 0, 0, 1), "SoftEdgeDraw");
-
         g_pd3dDevice->EndScene();
     }
 
-
     g_pd3dDevice->SetRenderTarget(0, pOriSurface);
-    //DrawFont(str, D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 1, 1, 1), "SoftEdgeDraw");
-    //tex = pTexture;
     return pTexture;
 }
 
 LPDIRECT3DTEXTURE9 tex = NULL;
 
+
+
 VOID Render()
 {
-    
-    
     float width = 0;
     float height = 0;
-    //if(g_FontTextureMap.find("Sharp Boarder") == g_FontTextureMap.end())
-    //CreateFontTexture(tex, L"오디션오디션", width, height, 512, 512);
 
     g_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
     // Begin the scene
     if( SUCCEEDED( g_pd3dDevice->BeginScene() ) )
     {
-       
-        //DrawFont(L"가나다라마바사", D3DXVECTOR2(0, -1), D3DXVECTOR4(0, 1, 1, 1), "SoftEdgeDraw");
-        //DrawFont(L"가나다라마바사", D3DXVECTOR2(0, 1), D3DXVECTOR4(0, 1, 1, 1), "SharpEdgeDraw");
-
-        //DrawFont(L"외곽선두번째", D3DXVECTOR2(0, -2), D3DXVECTOR4(1, 0, 1, 1), "SharpEdgeWithGlowDraw");
-        /*DrawFont(L"가나다라마바사", D3DXVECTOR2(0, 1), D3DXVECTOR4(1,1,1,1));
-
-        DrawFont(L"가나다라마바사", D3DXVECTOR2(0, 0), D3DXVECTOR4(0, 1, 1, 1), "SharpEdgeDraw");
-
-        DrawFont(L"가나다라마바사", D3DXVECTOR2(0, -1), D3DXVECTOR4(0, 0, 1, 1), "BorderDraw");
-
-        DrawFont(L"가나다라마바사", D3DXVECTOR2(0, -2), D3DXVECTOR4(0, 0, 1, 1), "SharpEdgeWithGlowDraw");*/
-
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //CreateFontTexture(tex, L"가나다", width, height, 512, 512);
-        //SetGeometry(-7,0,-10, width, height);
-        //SetupMatrices(-2, 0, 10);
-        
-        //SetGeometry(0, 0, 0, width / 3.0f, height / 3.0f);
-        //SetupMatrices2(0, 0, 50);
-
-        //g_pd3dDevice->SetTexture( 0, tex);
-        //g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-        //g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE); 
-        //g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-        //g_pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, /*D3DTOP_DISABLE*/D3DTOP_BLENDTEXTUREALPHA);
-
-
         //알파 블렌드 사용
         //g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
         //g_pd3dDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
@@ -830,104 +827,16 @@ VOID Render()
         //g_pd3dDevice->SetRenderState(D3DRS_ALPHAREF, /*0x00000001*//*0x80*//*0x1*/0x80);
         //g_pd3dDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL/*D3DCMP_LESSEQUAL*/); // D3DCMP_GREATEREQUAL => 픽셀의 알파 값이 ALPHAREF에 설정된 값보다 크거나 같으면 Alpha를 1로해서 출력 한다.
 
-        /*g_pd3dDevice->SetStreamSource( 0, g_pVB, 0, sizeof( CUSTOMVERTEX ) );
-        g_pd3dDevice->SetFVF( D3DFVF_CUSTOMVERTEX );
-        g_pd3dDevice->SetIndices(g_pIB);*/
-
-        //g_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
-        //BorderDraw SoftEdgeDraw
-        //DrawFont2(L"!ilililj1", D3DXVECTOR2(0, 0), D3DXVECTOR4(1, 1, 1, 1), "DebugDraw");
-        DrawFont2(L"!가나다라마바사", D3DXVECTOR2(0, 100), D3DXVECTOR4(1, 1, 1, 1), "BorderDraw");
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //g_pd3dDevice->SetTexture( 0, g_SDFTexture);
-        //g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-        //g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE); 
-        //g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-        ////g_pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
-
-        ///*g_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE );
-        //g_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
-        //g_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
-        //g_pd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_BLENDDIFFUSEALPHA );*/
-
-
-        ////알파 테스트 사용
-        ////g_pd3dDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
-        ////g_pd3dDevice->SetRenderState(D3DRS_ALPHAREF, /*0x00000001*/0x80/*0x1*/);
-        ////g_pd3dDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL/*D3DCMP_LESSEQUAL*/); // D3DCMP_GREATEREQUAL => 픽셀의 알파 값이 ALPHAREF에 설정된 값보다 크거나 같으면 Alpha를 1로해서 출력 한다.
-
-        ////알파 블렌드 사용
-        //g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-        //g_pd3dDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-        //g_pd3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-        //g_pd3dDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-        //
-
-        //// Render the vertex buffer contents
-        //g_pd3dDevice->SetStreamSource( 0, g_pVB, 0, sizeof( CUSTOMVERTEX ) );
-        //g_pd3dDevice->SetFVF( D3DFVF_CUSTOMVERTEX );
-        //g_pd3dDevice->SetIndices(g_pIB);
-        ////g_pd3dDevice->DrawPrimitive( D3DPT_TRIANGLESTRIP, 0, 2 * 50 - 2 );
-
-
-        ////BasicDraw
-        ////SoftEdgeDraw
-        ////SharpEdgeDraw
-        ////SharpEdgeWithGlowDraw
-        ////BorderDraw
-        ////SoftEdge2Draw
-        //g_lpEffect->SetTechnique("BorderDraw");
-
-        //D3DXHANDLE handle;
-        //handle = g_lpEffect->GetParameterByName(0, "_lowThreshold");
-        //g_lpEffect->SetFloat(handle, 0.011);
-        ////g_lpEffect->SetFloat(handle, 0.495);
-
-        //handle = g_lpEffect->GetParameterByName(0, "_highThreshold");
-        ////g_lpEffect->SetFloat(handle, 0.24);
-        //g_lpEffect->SetFloat(handle, 0.44);
-        //g_lpEffect->SetFloat(handle, 0.84);
-
-        //handle = g_lpEffect->GetParameterByName(0, "_borderColor");
-        //g_lpEffect->SetVector(handle, &D3DXVECTOR4(1, 0, 1, 1));
-
-        //handle = g_lpEffect->GetParameterByName(0, "_baseColor");
-        //g_lpEffect->SetVector(handle, &D3DXVECTOR4(1, 1, 1, 1));
-
-        //handle = g_lpEffect->GetParameterByName(0, "_smoothing");
-        //g_lpEffect->SetFloat(handle, 0.175);
-        ////g_lpEffect->SetFloat(handle, 0.035);
-
-        //handle = g_lpEffect->GetParameterByName(0, "_borderAlpha");
-        //g_lpEffect->SetFloat(handle, 1);
-
-        //UINT passCount;
-        //g_lpEffect->Begin(&passCount, 0);
-        //for (int pass = 0; pass < passCount; pass++)
-        //{
-        //    g_lpEffect->BeginPass(pass);
-        //    g_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
-        //    g_lpEffect->EndPass();
-
-        //}
-        //g_lpEffect->End();
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        // End the scene
+        DrawFont2(L"가나다라마바사", D3DXVECTOR2(0, 100), D3DXVECTOR4(1, 1, 1, 1), "NewDropShadow");
+        DrawFont2(L"안녕하세요", D3DXVECTOR2(0, 120), D3DXVECTOR4(1, 1, 1, 1), "NewDropShadow");
+        DrawFont2(L"Draw SoftEdge", D3DXVECTOR2(0, 140), D3DXVECTOR4(1, 1, 1, 1), "NewDropShadow");
+       
         g_pd3dDevice->EndScene();
     }
 
-    // Present the backbuffer contents to the display
     g_pd3dDevice->Present( NULL, NULL, NULL, NULL );
 }
 
-
-
-
-//-----------------------------------------------------------------------------
-// Name: MsgProc()
-// Desc: The window's message handler
-//-----------------------------------------------------------------------------
 LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
     switch( msg )
@@ -985,13 +894,13 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
                     break;
 
                 case 'Z':
-                    testScale.x += 1;
-                    testScale.y += 1;
+                    testScale.x += 0.01f;
+                    testScale.y += 0.01f;
                     break;
 
                 case 'X':
-                    testScale.x -= 1;
-                    testScale.y -= 1;
+                    testScale.x -= 0.01f;
+                    testScale.y -= 0.01f;
                     break;
                 
                 }

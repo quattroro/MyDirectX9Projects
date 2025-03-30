@@ -20,6 +20,8 @@ float _NeonBrightness;
 
 float _TestFontWidth;
 float _TestOutlineWidth;
+float _BorderWidth;
+float _ShadowDist;
 
 float       _OutlineWidth = 0.00001;
 float3      _MainTex_TexelSize = { 0.0014, 0.0014,0.00 };
@@ -97,6 +99,8 @@ PS_OUTPUT SoftEdgeFrag(VS_OUTPUT In)
 }
 
 
+
+
 PS_OUTPUT SharpEdgeFrag(VS_OUTPUT In)
 {
     PS_OUTPUT Out;
@@ -171,88 +175,11 @@ PS_OUTPUT BorderFrag(VS_OUTPUT In)
     return Out;
 }
 
-PS_OUTPUT SoftBorderFrag(VS_OUTPUT In)
-{
-    PS_OUTPUT Out;
 
-    //SoftBorder
-    float4 color = float4(0, 0, 0, 0);
-    float alpha = tex2D(_FontSampler, In.TexCoord0).a;
-    float d = alpha;
-    color = float4(0, 0, 0, 0);
-
-    float fontWidth = clamp(1 - _TestFontWidth, 0, 1);
-    float outlineWidth = clamp(1 - _TestOutlineWidth, 0, 1);
-    float totalWidth = clamp(1 - (_TestFontWidth + _TestOutlineWidth), 0, 1);
-
-    if (d > fontWidth)//Total Font Inside
-    {
-        color = smoothstep(fontWidth, 1, d);
-        color = color * _baseColor;
-    }
-    else if (d > totalWidth)//Font Outline
-    {
-        color = smoothstep(totalWidth, fontWidth, d);
-        color = color * _borderColor;
-    }
-    else//Outline
-    {
-        float t = d / totalWidth;
-        t = t * t;
-        color = lerp(float4(0, 0, 0, 0), _borderColor, t);
-        color = float4(0, 0, 0, 0);
-    }
-
-    Out.Color = color;
-    Out.EmissiveColor = float4(0, 0, 0, color.a);
-    return Out;
-}
 
 PS_OUTPUT SoftEdgeFrag2(VS_OUTPUT In)
 {
     PS_OUTPUT Out;
-   float4 color = _baseColor;
-   float alpha = tex2D(_FontSampler, In.TexCoord0).a;
-   if(alpha < 0.5)
-   {
-      color.a = smoothstep(0.5 - _smoothing, 0.5 + _smoothing, alpha);
-   }
-   else
-   {
-      color.a = smoothstep(0.5 - _smoothing, 0.5 + _smoothing, alpha * 0.75);
-   }
-
-   Out.Color = color;
-   Out.EmissiveColor = float4(0, 0, 0, color.a);
-    return Out;
-}
-
-PS_OUTPUT NeonFrag(VS_OUTPUT In)
-{
-    float d = tex2D(_FontSampler, In.TexCoord0).a;
-    float4 color = _baseColor;
-    color = float4(0, 0, 0, 0);
-
-    float Thickness = 1.0 - _FontThickness;
-    float BoarderWidth = _FontBorderWidth * 0.5;
-
-
-    if (d < Thickness && d > Thickness - _FontBorderWidth)
-    {
-        float t = d / (Thickness - BoarderWidth);// [1+a:1:0]
-        t = 1 - t;// [1:0:-1]
-        t = 1 - abs(t);// [0:1:0]
-
-        //lerp between background and border using t
-        color = lerp(float4(0, 0, 0, 0), _borderColor, t);
-
-        //raise t to a high power and add in as white
-        //to give bloom effect
-        color.rgb += pow(t, _NeonPower) * _NeonBrightness;
-    }
-
-
-    /*PS_OUTPUT Out;
     float4 color = _baseColor;
     float alpha = tex2D(_FontSampler, In.TexCoord0).a;
     if (alpha < 0.5)
@@ -266,8 +193,175 @@ PS_OUTPUT NeonFrag(VS_OUTPUT In)
 
     Out.Color = color;
     Out.EmissiveColor = float4(0, 0, 0, color.a);
-    return Out;*/
+    return Out;
 }
+
+
+PS_OUTPUT NewSoftEdgeFrag(VS_OUTPUT In)
+{
+    PS_OUTPUT Out;
+    float4 color = _baseColor;
+
+    float alpha = tex2D(_FontSampler, In.TexCoord0).a;
+    color = float4(0, 0, 0, 0);
+      
+    float Thickness = clamp(1 - _TestFontWidth, 0, 1);
+    float t = alpha / Thickness;
+    t = t * t * t;
+    t = clamp(t, 0.0, 1.0);
+    color = lerp(float4(0, 0, 0, 0), _baseColor, t);
+    
+    Out.Color = color;
+    Out.EmissiveColor = float4(0, 0, 0, color.a);
+    return Out;
+}
+
+PS_OUTPUT NewBorderFrag(VS_OUTPUT In)
+{
+    PS_OUTPUT Out;
+
+    //SoftBorder
+    float4 color = float4(0, 0, 0, 0);
+    float alpha = tex2D(_FontSampler, In.TexCoord0).a;
+    float d = alpha;
+    color = float4(0, 0, 0, 0);
+      
+    float fontWidth = clamp(1 - _TestFontWidth, 0, 1);
+    float outlineWidth = clamp(1 - _TestOutlineWidth, 0, 1);
+    float totalWidth = clamp(1 - (_TestFontWidth + _TestOutlineWidth), 0, 1);
+      
+      //color = float4(d,d,d,d);
+      
+    if (d < totalWidth)//Total Font Inside
+    {
+        float t = d / (totalWidth);
+        t = t * t * t * t;
+        color = lerp(float4(0, 0, 0, 0), _borderColor, t);
+    }
+    else if (d < fontWidth)//Font Outline
+    {
+        float t = d / (fontWidth);
+        t = t * t * t * t;
+        color = lerp(_borderColor, _baseColor, t);
+    }
+    else //Outline
+    {
+        color = _baseColor;
+    }
+
+    Out.Color = color;
+    Out.EmissiveColor = float4(0, 0, 0, color.a);
+    return Out;
+}
+
+
+PS_OUTPUT NewNeonFrag(VS_OUTPUT In)
+{
+    PS_OUTPUT Out;
+    float4 color = _baseColor;
+    float d = tex2D(_FontSampler, In.TexCoord0).a - clamp(1 - (_TestFontWidth + 0.2), 0, 1);
+    color = float4(0, 0, 0, 0);
+
+
+      //only do something if within range of border
+    if (d > -_BorderWidth && d < _BorderWidth)
+    {
+         //calculate a value of 't' that goes from 0->1->0
+         //around the edge of the geometry
+        float t = d / _BorderWidth; //[-1:0:1]
+        t = 1 - abs(t); //[0:1:0]
+
+
+         //lerp between background and border using t
+        color = lerp(float4(0, 0, 0, 0), _borderColor, t);
+
+
+         //raise t to a high power and add in as white
+         //to give bloom effect
+        color.rgb += pow(t, _NeonPower) * _NeonBrightness;
+    }
+
+
+    color.a = color.a * _baseColor.a;
+
+    Out.Color = color;
+    Out.EmissiveColor = float4(0, 0, 0, color.a);
+    return Out;
+}
+
+PS_OUTPUT NewDropShadowFrag(VS_OUTPUT In)
+{
+    PS_OUTPUT Out;
+    
+    float4 color = _baseColor;
+    color = float4(0, 0, 0, 0);
+    float d = tex2D(_FontSampler, In.TexCoord0).a;
+    float d2 = tex2D(_FontSampler, In.TexCoord0 + _ShadowDist * _MainTex_TexelSize.xy).a;
+
+
+    float Thickness = clamp(1 - _TestFontWidth, 0, 1);
+      
+    float fill_t = saturate((d) / Thickness);
+    fill_t = fill_t * fill_t * fill_t;
+    float shadow_t = saturate((d2) / Thickness);
+    shadow_t = shadow_t * shadow_t * shadow_t;
+      
+    color = lerp(color, _borderColor, shadow_t);
+    color = lerp(color, _baseColor, fill_t);
+      
+    color.a = color.a * _baseColor.a;
+
+    Out.Color = color;
+    Out.EmissiveColor = float4(0, 0, 0, color.a);
+    return Out;
+}
+
+//PS_OUTPUT NeonFrag(VS_OUTPUT In)
+//{
+//    PS_OUTPUT Out;
+//    float d = tex2D(_FontSampler, In.TexCoord0).a;
+//    float4 color = _baseColor;
+//    color = float4(0, 0, 0, 0);
+
+//    float Thickness = 1.0 - _FontThickness;
+//    float BoarderWidth = _FontBorderWidth * 0.5;
+
+
+//    if (d < Thickness && d > Thickness - _FontBorderWidth)
+//    {
+//        float t = d / (Thickness - BoarderWidth);// [1+a:1:0]
+//        t = 1 - t;// [1:0:-1]
+//        t = 1 - abs(t);// [0:1:0]
+
+//        //lerp between background and border using t
+//        color = lerp(float4(0, 0, 0, 0), _borderColor, t);
+
+//        //raise t to a high power and add in as white
+//        //to give bloom effect
+//        color.rgb += pow(t, _NeonPower) * _NeonBrightness;
+//    }
+
+//    Out.Color = color;
+//    Out.EmissiveColor = float4(0, 0, 0, color.a);
+//    return Out;
+    
+    
+//    /*PS_OUTPUT Out;
+//    float4 color = _baseColor;
+//    float alpha = tex2D(_FontSampler, In.TexCoord0).a;
+//    if (alpha < 0.5)
+//    {
+//        color.a = smoothstep(0.5 - _smoothing, 0.5 + _smoothing, alpha);
+//    }
+//    else
+//    {
+//        color.a = smoothstep(0.5 - _smoothing, 0.5 + _smoothing, alpha * 0.75);
+//    }
+
+//    Out.Color = color;
+//    Out.EmissiveColor = float4(0, 0, 0, color.a);
+//    return Out;*/
+//}
 
 PS_OUTPUT DebugFrag(VS_OUTPUT In)
 {
@@ -325,14 +419,7 @@ technique BorderDraw
     }
 }
 
-technique SoftBorderDraw
-{
-    pass P0
-    {
-        VertexShader = compile vs_2_a Vert();
-        PixelShader = compile ps_2_a SoftBorderFrag();
-    }
-}
+
 
 technique SoftEdge2Draw
 {
@@ -348,5 +435,41 @@ technique DebugDraw
     {
         VertexShader = compile vs_2_a Vert();
         PixelShader = compile ps_2_a DebugFrag();
+    }
+}
+
+technique NewSoftDraw
+{
+    pass P0
+    {
+        VertexShader = compile vs_2_a Vert();
+        PixelShader = compile ps_2_a NewSoftEdgeFrag();
+    }
+}
+
+technique NewBorderDraw
+{
+    pass P0
+    {
+        VertexShader = compile vs_2_a Vert();
+        PixelShader = compile ps_2_a NewBorderFrag();
+    }
+}
+
+technique NewNeonDraw
+{
+    pass P0
+    {
+        VertexShader = compile vs_2_a Vert();
+        PixelShader = compile ps_2_a NewNeonFrag();
+    }
+}
+
+technique NewDropShadow
+{
+    pass P0
+    {
+        VertexShader = compile vs_2_a Vert();
+        PixelShader = compile ps_2_a NewDropShadowFrag();
     }
 }
