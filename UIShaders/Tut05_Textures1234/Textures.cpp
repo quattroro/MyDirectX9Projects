@@ -829,7 +829,7 @@ VOID Render()
 
         DrawFont2(L"가나다라마바사", D3DXVECTOR2(0, 100), D3DXVECTOR4(1, 1, 1, 1), "NewDropShadow");
         DrawFont2(L"안녕하세요", D3DXVECTOR2(0, 120), D3DXVECTOR4(1, 1, 1, 1), "NewDropShadow");
-        DrawFont2(L"Draw SoftEdge", D3DXVECTOR2(0, 140), D3DXVECTOR4(1, 1, 1, 1), "NewDropShadow");
+        DrawFont2(L"Draw DropShadow", D3DXVECTOR2(0, 140), D3DXVECTOR4(1, 1, 1, 1), "NewDropShadow");
        
         g_pd3dDevice->EndScene();
     }
