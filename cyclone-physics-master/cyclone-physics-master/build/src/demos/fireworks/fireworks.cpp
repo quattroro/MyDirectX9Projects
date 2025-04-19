@@ -20,19 +20,17 @@
 static cyclone::Random crandom;
 
 /**
- * Fireworks are particles, with additional data for rendering and
- * evolution.
+ * 불꽃놀이는 입자 시스템에, 계산과 렌더링에 필요한 몇 가지 데이터를 추가하여 구성한다.
  */
 class Firework : public cyclone::Particle
 {
 public:
-    /** Fireworks have an integer type, used for firework rules. */
+    /** 불꽃 입자의 계산 규칙을 정하는 정수 값 */
     unsigned type;
 
     /**
-     * The age of a firework determines when it detonates. Age gradually
-     * decreases, when it passes zero the firework delivers its payload.
-     * Think of age as fuse-left.
+     * 입자의 수명을 계산해 언제 폭발할지를 정한다. 수명은 조금씩 감소시킨다.
+     * 수명이 0이되면 화약을 터뜨린다. 수명을 심지의 남은 시간으로 생각해본다.
      */
     cyclone::real age;
 

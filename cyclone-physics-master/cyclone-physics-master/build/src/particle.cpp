@@ -18,31 +18,34 @@ using namespace cyclone;
 
 /*
  * --------------------------------------------------------------------------
- * FUNCTIONS DECLARED IN HEADER:
+ * 입자에 대하여, 주어진 시간 간격만큼 적분을 수행한다.
+ * 이 함수는 뉴튼-오일러 적분법을 사용하는데, 적분오차를 보정하기 위해 선형근사(linear approximation)
+ * 를 사용한다. 그래서 때로는 부정확할 수 있다.
  * --------------------------------------------------------------------------
  */
 
 void Particle::integrate(real duration)
 {
-    // We don't integrate things with zero mass.
+    // 무한대 질량인 입자는 적분을 하지 않는다.
     if (inverseMass <= 0.0f) return;
 
     assert(duration > 0.0);
 
-    // Update linear position.
+    // 위치를 업데이트 한다.
     position.addScaledVector(velocity, duration);
 
-    // Work out the acceleration from the force
+    // 힘으로부터 가속도를 계산한다.
+    // 힘이 여러 종류가 있으면 이 벡터에 가속도를 더해준다.
     Vector3 resultingAcc = acceleration;
     resultingAcc.addScaledVector(forceAccum, inverseMass);
 
-    // Update linear velocity from the acceleration.
+    // 가속도로부터 속도를 업데이트한다.
     velocity.addScaledVector(resultingAcc, duration);
 
-    // Impose drag.
+    // 드래그를 적용한다.
     velocity *= real_pow(damping, duration);
 
-    // Clear the forces.
+    // 힘 항목을 지운다.
     clearAccumulator();
 }
 
