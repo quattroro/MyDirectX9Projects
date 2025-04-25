@@ -35,58 +35,57 @@ public:
     cyclone::real age;
 
     /**
-     * Updates the firework by the given duration of time. Returns true
-     * if the firework has reached the end of its life and needs to be
-     * removed.
+     * 주어진 시간 간격에 대하여 불꽃놀이를 업데이트 한다. 
+     * 불꽃이 그 수명을 다해서 소멸시켜야 한다면 true를 반환한다.
      */
     bool update(cyclone::real duration)
     {
         // Update our physical state
+        // 물리적 상태를 업데이트 한다.
         integrate(duration);
 
         // We work backwards from our age to zero.
+        // age를 0이 될 때까지 감소시킨다.
         age -= duration;
         return (age < 0) || (position.y < 0);
     }
 };
 
 /**
- * Firework rules control the length of a firework's fuse and the
- * particles it should evolve into.
+ * 불꽃놀이 규칙에 의해 심지의 지속 시간과 어떤 입자로 바뀌는지를 제어한다.
  */
 struct FireworkRule
 {
-    /** The type of firework that is managed by this rule. */
+    /** 이 규칙이 적용되는 불꽃의 종류 */
     unsigned type;
 
-    /** The minimum length of the fuse. */
+    /** 심지의 최소 지속 시간 */
     cyclone::real minAge;
 
-    /** The maximum legnth of the fuse. */
+    /** 심지의 최대 지속 시간 */
     cyclone::real maxAge;
 
-    /** The minimum relative velocity of this firework. */
+    /** 불꽃 입자의 최소 상대 속도 */
     cyclone::Vector3 minVelocity;
 
-    /** The maximum relative velocity of this firework. */
+    /** 불꽃 입자의 최대 상대 속도 */
     cyclone::Vector3 maxVelocity;
 
-    /** The damping of this firework type. */
+    /** 불꽃의 댐필 계수 */
     cyclone::real damping;
 
     /**
-     * The payload is the new firework type to create when this
-     * firework's fuse is over.
+     * 페이로드는 심지가 다 타서 화약이 폭발하면 발생할 새로운 불꽃이다.
      */
     struct Payload
     {
-        /** The type of the new particle to create. */
+        /** 생성할 새로운 입자의 종류 */
         unsigned type;
 
-        /** The number of particles in this payload. */
+        /** 이 페이로드의 입자의 개수 */
         unsigned count;
 
-        /** Sets the payload properties in one go. */
+        /** 페이로드의 속성 설정 */
         void set(unsigned type, unsigned count)
         {
             Payload::type = type;
@@ -94,10 +93,10 @@ struct FireworkRule
         }
     };
 
-    /** The number of payloads for this firework type. */
+    /** 이 불꽃 종류에 대한 페이로드의 수 */
     unsigned payloadCount;
 
-    /** The set of payloads. */
+    /** 페이로드의 집합 */
     Payload *payloads;
 
     FireworkRule()
@@ -134,9 +133,8 @@ struct FireworkRule
     }
 
     /**
-     * Creates a new firework of this type and writes it into the given
-     * instance. The optional parent firework is used to base position
-     * and velocity on.
+     * 새로운 불꽃을 생성하여 주어진 인스턴스에 이를 기록한다. 새로운 불꽃의
+     * 위치와 초속도는 부모 불꽃의 것을 가져다 쓴다.
      */
     void create(Firework *firework, const Firework *parent = NULL) const
     {
@@ -145,7 +143,7 @@ struct FireworkRule
 
         cyclone::Vector3 vel;
         if (parent) {
-            // The position and velocity are based on the parent.
+            // 위치와 속도는 부모의 것을 가져다 쓴다.
             firework->setPosition(parent->getPosition());
             vel += parent->getVelocity();
         }
@@ -163,6 +161,9 @@ struct FireworkRule
         // We use a mass of one in all cases (no point having fireworks
         // with different masses, since they are only under the influence
         // of gravity).
+
+        // 입자의 질량은 모두 1로 설정한다.
+        // 입자가 받는 힘은 중력뿐이다.
         firework->setMass(1);
 
         firework->setDamping(damping);
@@ -190,7 +191,7 @@ class FireworksDemo : public Application
     unsigned nextFirework;
 
     /** And the number of rules. */
-    const static unsigned ruleCount = 9;
+    const static unsigned ruleCount = 30;
 
     /** Holds the set of rules. */
     FireworkRule rules[ruleCount];
@@ -223,6 +224,11 @@ public:
 
     /** Handle a keypress. */
     virtual void key(unsigned char key);
+    virtual void specialkey(unsigned char key);
+
+    cyclone::Vector3 CameraPos;
+    cyclone::Quaternion CameraRot;
+    
 };
 
 // Method definitions
@@ -334,6 +340,21 @@ void FireworksDemo::initFireworkRules()
         cyclone::Vector3(15, 15, 5), // max velocity
         0.95 // damping
         );
+
+
+    rules[9].init(3);
+    rules[9].setParameters(
+        10, // type
+        3, 5, // age range
+        cyclone::Vector3(-15, 10, -5), // min velocity
+        cyclone::Vector3(15, 15, 5), // max velocity
+        0.95 // damping
+        );
+
+    rules[9].payloads[0].set(3, 5);
+    rules[9].payloads[1].set(5, 5);
+    rules[9].payloads[2].set(1, 5);
+
     // ... and so on for other firework types ...
 }
 
@@ -354,12 +375,15 @@ const char* FireworksDemo::getTitle()
 void FireworksDemo::create(unsigned type, const Firework *parent)
 {
     // Get the rule needed to create this firework
+    // 불꽃을 생성하는 규칙을 받아온다.
     FireworkRule *rule = rules + (type - 1);
 
     // Create the firework
+    // 불꽃을 생성한다.
     rule->create(fireworks+nextFirework, parent);
 
     // Increment the index for the next firework
+    // 다음 불꽃을 위해 인덱스를 하나 증가시킨다.
     nextFirework = (nextFirework + 1) % maxFireworks;
 }
 
@@ -377,26 +401,31 @@ void FireworksDemo::update()
     float duration = (float)TimingData::get().lastFrameDuration * 0.001f;
     if (duration <= 0.0f) return;
 
-    for (Firework *firework = fireworks;
-         firework < fireworks+maxFireworks;
-         firework++)
+    for (Firework *firework = fireworks; firework < fireworks+maxFireworks; firework++)
     {
         // Check if we need to process this firework.
+        // 이 불꽃을 처리해야 하는지를 검사한다
         if (firework->type > 0)
         {
             // Does it need removing?
+            // 제거해야 하는가?
             if (firework->update(duration))
             {
                 // Find the appropriate rule
+                // 적절한 규칙을 찾는다.
                 FireworkRule *rule = rules + (firework->type-1);
 
                 // Delete the current firework (this doesn't affect its
                 // position and velocity for passing to the create function,
                 // just whether or not it is processed for rendering or
                 // physics.
+                // 현재 불꽃을 제거한다.
+                // (생성 함수에 정달하기 위한 속도와 위치에는 영향이 없으며,
+                // 단지 렌더링이나 물리 계산을 처리할지 여부를 표시할 뿐이다.)
                 firework->type = 0;
 
                 // Add the payload
+                // 페이로드(화약)을 추가한다.
                 for (unsigned i = 0; i < rule->payloadCount; i++)
                 {
                     FireworkRule::Payload * payload = rule->payloads + i;
@@ -416,7 +445,7 @@ void FireworksDemo::display()
     // Clear the viewport and set the camera direction
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    gluLookAt(0.0, 4.0, 10.0,  0.0, 4.0, 0.0,  0.0, 1.0, 0.0);
+    gluLookAt(0.0 + CameraPos.x, 4.0 + CameraPos.y, 10.0 + CameraPos.z,  0.0 + CameraPos.x, 4.0 + CameraPos.y, 0.0 + CameraPos.z,  0.0, 1.0, 0.0);
 
     // Render each firework in turn
     glBegin(GL_QUADS);
@@ -468,7 +497,37 @@ void FireworksDemo::key(unsigned char key)
     case '6': create(6, 1, NULL); break;
     case '7': create(7, 1, NULL); break;
     case '8': create(8, 1, NULL); break;
-    case '9': create(9, 1, NULL); break;
+    case '9': create(10, 3, NULL); break;
+
+
+    case 'w': 
+        CameraPos.z -= 0.1;
+        break;
+    case 'a': 
+        CameraPos.x -= 0.1;
+        break;
+    case 's': 
+        CameraPos.z += 0.1;
+        break;
+    case 'd': 
+        CameraPos.x += 0.1;
+        break;
+
+    }
+}
+
+void FireworksDemo::specialkey(unsigned char key)
+{
+    switch (key)
+    {
+    case GLUT_KEY_LEFT:  
+        break;
+    case GLUT_KEY_RIGHT:
+        break;
+    case GLUT_KEY_UP:
+        break;
+    case GLUT_KEY_DOWN:
+        break;
     }
 }
 

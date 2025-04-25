@@ -59,6 +59,10 @@ void Application::key(unsigned char key)
 {
 }
 
+void Application::specialkey(unsigned char key)
+{
+
+}
 
 void Application::resize(int width, int height)
 {

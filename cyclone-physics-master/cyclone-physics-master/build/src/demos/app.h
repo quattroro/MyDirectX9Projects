@@ -109,7 +109,7 @@ public:
      * @param key The ascii code of the key that has been pressed.
      */
     virtual void key(unsigned char key);
-
+    virtual void specialkey(unsigned char key);
 
     /**
      * Notifies the application that the window has changed size.
@@ -244,4 +244,6 @@ public:
 
     /** Handles a key press. */
     virtual void key(unsigned char key);
+
+    
  };

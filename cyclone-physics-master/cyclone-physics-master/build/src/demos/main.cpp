@@ -90,6 +90,11 @@ void keyboard(unsigned char key, int x, int y)
     app->key(key);
 }
 
+void specialkeyboard(unsigned char key, int x, int y)
+{
+    app->specialkey(key);
+}
+
 /**
  * Called when the mouse is dragged.
  */
@@ -114,6 +119,7 @@ int main(int argc, char** argv)
     // Set up the appropriate handler functions
     glutReshapeFunc(reshape);
     glutKeyboardFunc(keyboard);
+    glutSpecialFunc(NULL);
     glutDisplayFunc(display);
     glutIdleFunc(update);
     glutMouseFunc(mouse);
