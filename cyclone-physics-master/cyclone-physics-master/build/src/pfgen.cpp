@@ -40,9 +40,11 @@ ParticleGravity::ParticleGravity(const Vector3& gravity)
 void ParticleGravity::updateForce(Particle* particle, real duration)
 {
     // Check that we do not have infinite mass
+    // 무한대 질량을 갖지 않는지 검사
     if (!particle->hasFiniteMass()) return;
 
     // Apply the mass-scaled force to the particle
+    // 입자에 질량 크기에 따른 힘을 적용
     particle->addForce(gravity * particle->getMass());
 }
 

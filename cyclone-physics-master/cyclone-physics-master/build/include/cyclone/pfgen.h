@@ -42,18 +42,23 @@ namespace cyclone {
     /**
      * A force generator that applies a gravitational force. One instance
      * can be used for multiple particles.
+     * 중력을 적용하는 힘 발생기
+     * 인스턴스 하나로 여러 개의 입자에 두루 사용할 수 있다.
      */
     class ParticleGravity : public ParticleForceGenerator
     {
         /** Holds the acceleration due to gravity. */
+        // 중력에 의한 가속도 저장
         Vector3 gravity;
 
     public:
 
         /** Creates the generator with the given acceleration. */
+        // 주어진 가속도로 힘 발생기 개체를 생성
         ParticleGravity(const Vector3 &gravity);
 
         /** Applies the gravitational force to the given particle. */
+        // 주어진 입자에 중력 적용
         virtual void updateForce(Particle *particle, real duration);
     };
 
@@ -243,6 +248,7 @@ namespace cyclone {
 
     /**
      * Holds all the force generators and the particles they apply to.
+     * 힘 발생기와 적용하는 대상 입자의 모든 목록을 기록해둔다.
      */
     class ParticleForceRegistry
     {
@@ -251,6 +257,7 @@ namespace cyclone {
         /**
          * Keeps track of one force generator and the particle it
          * applies to.
+         * 하나의 힘 발생기와 힘을 적용할 입자를 추적
          */
         struct ParticleForceRegistration
         {
@@ -260,6 +267,7 @@ namespace cyclone {
 
         /**
          * Holds the list of registrations.
+         * registrations라는 목록으로 유지
          */
         typedef std::vector<ParticleForceRegistration> Registry;
         Registry registrations;
@@ -268,6 +276,7 @@ namespace cyclone {
         /**
          * Registers the given force generator to apply to the
          * given particle.
+         * 주어진 힘 발생기를 주어진 입자에 등록
          */
         void add(Particle* particle, ParticleForceGenerator *fg);
 
@@ -275,6 +284,9 @@ namespace cyclone {
          * Removes the given registered pair from the registry.
          * If the pair is not registered, this method will have
          * no effect.
+         * 주어진 등록된 쌍을 목록에서 제거한다.
+         * 해당 쌍이 등록되지 않았다면, 
+         * 이 메서드는 아무런 영향도 끼치지 않는다.
          */
         void remove(Particle* particle, ParticleForceGenerator *fg);
 
@@ -282,12 +294,16 @@ namespace cyclone {
          * Clears all registrations from the registry. This will
          * not delete the particles or the force generators
          * themselves, just the records of their connection.
+         * 모든 등록 항목을 제거한다.
+         * 입자나 힘 발생기 자체는 제거하지 않고,
+         * 그 연결성만 제거한다.
          */
         void clear();
 
         /**
          * Calls all the force generators to update the forces of
          * their corresponding particles.
+         * 해당하는 입자의 힘을 업데이트하도록 모든 힘 발생기 호출
          */
         void updateForces(real duration);
     };
