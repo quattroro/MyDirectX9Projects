@@ -147,25 +147,32 @@ namespace cyclone {
     /**
      * A force generator that fakes a stiff spring force, and where
      * one end is attached to a fixed point in space.
+     * 뻣뻣한 스프링 힘을 흉내 내는 힘 발생기로서,
+     * 한쪽 끝은 고정점에 연결되어 있다.
      */
     class ParticleFakeSpring : public ParticleForceGenerator
     {
         /** The location of the anchored end of the spring. */
+        // 스프링의 고정된 끝점 위치
         Vector3 *anchor;
 
         /** Holds the sprint constant. */
+        // 스프링 상수
         real springConstant;
 
         /** Holds the damping on the oscillation of the spring. */
+        // 스프링 진동의 댐핑
         real damping;
 
     public:
 
         /** Creates a new spring with the given parameters. */
+        // 주어진 인자를 바탕으로 새로운 스프링 개체 생성
         ParticleFakeSpring(Vector3 *anchor, real springConstant,
             real damping);
 
         /** Applies the spring force to the given particle. */
+        // 주어진 입자에 스프링 힘을 가한다.
         virtual void updateForce(Particle *particle, real duration);
     };
 

@@ -171,25 +171,30 @@ ParticleFakeSpring::ParticleFakeSpring(Vector3 *anchor, real sc, real d)
 void ParticleFakeSpring::updateForce(Particle* particle, real duration)
 {
     // Check that we do not have infinite mass
+    // 질량이 무한대인지 검사
     if (!particle->hasFiniteMass()) return;
 
     // Calculate the relative position of the particle to the anchor
+    // 고정점을 기준으로 물체의 상대 좌표 계산
     Vector3 position;
     particle->getPosition(&position);
     position -= *anchor;
 
     // Calculate the constants and check they are in bounds.
+    // 상수 값을 계산하고 범위 내에 있는지를 검사
     real gamma = 0.5f * real_sqrt(4 * springConstant - damping*damping);
     if (gamma == 0.0f) return;
     Vector3 c = position * (damping / (2.0f * gamma)) +
         particle->getVelocity() * (1.0f / gamma);
 
     // Calculate the target position
+    // 옮겨 가기 원하는 지점의 좌표 계산
     Vector3 target = position * real_cos(gamma * duration) +
         c * real_sin(gamma * duration);
     target *= real_exp(-0.5f * duration * damping);
 
     // Calculate the resulting acceleration and therefore the force
+    // 필요한 가속도와 힘 계산
     Vector3 accel = (target - position) * ((real)1.0 / (duration*duration)) -
         particle->getVelocity() * ((real)1.0/duration);
     particle->addForce(accel * particle->getMass());
