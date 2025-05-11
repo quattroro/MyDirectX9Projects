@@ -59,10 +59,12 @@ void ParticleDrag::updateForce(Particle* particle, real duration)
     particle->getVelocity(&force);
 
     // Calculate the total drag coefficient
+    // 토탈 드래그 계수를 게산한다.
     real dragCoeff = force.magnitude();
     dragCoeff = k1 * dragCoeff + k2 * dragCoeff * dragCoeff;
 
     // Calculate the final force and apply it
+    // 최종 힘을 계산하여 적용시킨다.
     force.normalise();
     force *= -dragCoeff;
     particle->addForce(force);
@@ -76,16 +78,19 @@ ParticleSpring::ParticleSpring(Particle *other, real sc, real rl)
 void ParticleSpring::updateForce(Particle* particle, real duration)
 {
     // Calculate the vector of the spring
+    // 스프링 벡터 계산
     Vector3 force;
     particle->getPosition(&force);
     force -= other->getPosition();
 
     // Calculate the magnitude of the force
+    // 힘의 크기 계산
     real magnitude = force.magnitude();
     magnitude = real_abs(magnitude - restLength);
     magnitude *= springConstant;
 
     // Calculate the final force and apply it
+    // 최종 힘을 계산하여 입자에 적용
     force.normalise();
     force *= -magnitude;
     particle->addForce(force);
@@ -104,13 +109,16 @@ waterHeight(waterHeight), liquidDensity(liquidDensity)
 void ParticleBuoyancy::updateForce(Particle* particle, real duration)
 {
     // Calculate the submersion depth
+    // 물속에 잠긴 깊이를 계산한다.
     real depth = particle->getPosition().y;
 
     // Check if we're out of the water
+    // 물속인지 밖인지 검사한다.
     if (depth >= waterHeight + maxDepth) return;
     Vector3 force(0,0,0);
 
     // Check if we're at maximum depth
+    // 최대 깊이인지 확인
     if (depth <= waterHeight - maxDepth)
     {
         force.y = liquidDensity * volume;
@@ -119,6 +127,8 @@ void ParticleBuoyancy::updateForce(Particle* particle, real duration)
     }
 
     // Otherwise we are partly submerged
+    // 아니면, 부분적으로 잠겨 있음
+    // 물 안에 완전히 잠기면 1, 물 밖으로 나오면 0이 된다.
     force.y = liquidDensity * volume *
         (depth - maxDepth - waterHeight) / (2 * maxDepth);
     particle->addForce(force);
@@ -132,18 +142,22 @@ ParticleBungee::ParticleBungee(Particle *other, real sc, real rl)
 void ParticleBungee::updateForce(Particle* particle, real duration)
 {
     // Calculate the vector of the spring
+    // 스프링 벡터 계산
     Vector3 force;
     particle->getPosition(&force);
     force -= other->getPosition();
 
     // Check if the bungee is compressed
+    // 고무줄이 압축되었는지 검사
     real magnitude = force.magnitude();
     if (magnitude <= restLength) return;
 
     // Calculate the magnitude of the force
+    // 힘의 크기 계산
     magnitude = springConstant * (restLength - magnitude);
 
     // Calculate the final force and apply it
+    // 최종 힘을 계산하고 적용
     force.normalise();
     force *= -magnitude;
     particle->addForce(force);
@@ -222,15 +236,18 @@ void ParticleAnchoredBungee::updateForce(Particle* particle, real duration)
 void ParticleAnchoredSpring::updateForce(Particle* particle, real duration)
 {
     // Calculate the vector of the spring
+    // 스프링 의 벡터 계산
     Vector3 force;
     particle->getPosition(&force);
     force -= *anchor;
 
     // Calculate the magnitude of the force
+    // 힘의 크기 계산
     real magnitude = force.magnitude();
     magnitude = (restLength - magnitude) * springConstant;
 
     // Calculate the final force and apply it
+    // 최종 힘을 계산하여 적용
     force.normalise();
     force *= magnitude;
     particle->addForce(force);

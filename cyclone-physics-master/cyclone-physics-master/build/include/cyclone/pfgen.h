@@ -65,49 +65,61 @@ namespace cyclone {
     /**
      * A force generator that applies a drag force. One instance
      * can be used for multiple particles.
+     * 드래그 힘을 적용하는 힘 발생기
+     * 스턴스 하나로 여러개의 입자에 두루 사용
      */
     class ParticleDrag : public ParticleForceGenerator
     {
         /** Holds the velocity drag coeffificent. */
+        // 속도에 곱해지는 드래그 비례상수 저장
         real k1;
 
         /** Holds the velocity squared drag coeffificent. */
+        // 속도의 제곱에 곱해지는 드래그 비례상수 저장
         real k2;
 
     public:
 
         /** Creates the generator with the given coefficients. */
+        // 주어진 비례상수로 힘 발생기 개체 생성
         ParticleDrag(real k1, real k2);
 
         /** Applies the drag force to the given particle. */
+        // 주어진 입자에 드래그 힘 적용
         virtual void updateForce(Particle *particle, real duration);
     };
 
     /**
      * A force generator that applies a Spring force, where
      * one end is attached to a fixed point in space.
+     * 한쪽 끝니 고정점에 연결된 스프링의 힘을 적용하는 힘 발생기
      */
     class ParticleAnchoredSpring : public ParticleForceGenerator
     {
     protected:
         /** The location of the anchored end of the spring. */
+        // 스프링의 고정단 위치
         Vector3 *anchor;
 
         /** Holds the sprint constant. */
+        // 스프링 상수
         real springConstant;
 
         /** Holds the rest length of the spring. */
+        // 스프링 의 휴지 길이
         real restLength;
 
     public:
         ParticleAnchoredSpring();
 
         /** Creates a new spring with the given parameters. */
+        // 주어진 인자를 바탕으로 새로운 스프링 인스턴스를 생성하는 생성자.
         ParticleAnchoredSpring(Vector3 *anchor,
                                real springConstant,
                                real restLength);
 
         /** Retrieve the anchor point. */
+        // 
         const Vector3* getAnchor() const { return anchor; }
 
         /** Set the spring's properties. */
@@ -116,12 +128,14 @@ namespace cyclone {
                   real restLength);
 
         /** Applies the spring force to the given particle. */
+        // 주어진 입자에 스프링 힘을 적용한다.
         virtual void updateForce(Particle *particle, real duration);
     };
 
     /**
     * A force generator that applies a bungee force, where
     * one end is attached to a fixed point in space.
+    * 
     */
     class ParticleAnchoredBungee : public ParticleAnchoredSpring
     {
@@ -157,92 +171,113 @@ namespace cyclone {
 
     /**
      * A force generator that applies a Spring force.
+     * 스프링 힘을 적용하는 힘 발생기
      */
     class ParticleSpring : public ParticleForceGenerator
     {
         /** The particle at the other end of the spring. */
+        // 스프링의 반대쪽 끝의 입자.
         Particle *other;
 
         /** Holds the sprint constant. */
+        // 스프링 상수
         real springConstant;
 
         /** Holds the rest length of the spring. */
+        // 스프링의 휴지 길이
         real restLength;
 
     public:
 
         /** Creates a new spring with the given parameters. */
+        // 주어진 인자들을 토대로 새로운 스프링 개체를 생성하는 생성자
         ParticleSpring(Particle *other,
             real springConstant, real restLength);
 
         /** Applies the spring force to the given particle. */
+        // 주어진 입자에 힘을 적용한다.
         virtual void updateForce(Particle *particle, real duration);
     };
 
     /**
      * A force generator that applies a spring force only
      * when extended.
+     * 잡아 늘였을 때에만 스프링 힘을 적용하는 힘 발생기
      */
     class ParticleBungee : public ParticleForceGenerator
     {
         /** The particle at the other end of the spring. */
+        // 스프링의 반대편에 끝에 있는 입다.
         Particle *other;
 
         /** Holds the sprint constant. */
+        // 스프링 상수
         real springConstant;
 
         /**
          * Holds the length of the bungee at the point it begins to
          * generator a force.
+         * 힘을 발생하기 시작하는 시점에서의 고무줄의 길이
          */
         real restLength;
 
     public:
 
         /** Creates a new bungee with the given parameters. */
+        // 주어진 인자를 바탕으로 새로운 고무줄을 생성한다.
         ParticleBungee(Particle *other,
             real springConstant, real restLength);
 
         /** Applies the spring force to the given particle. */
+        // 주어진 입자에 스프링 힘을 적용한다.
         virtual void updateForce(Particle *particle, real duration);
     };
 
     /**
      * A force generator that applies a buoyancy force for a plane of
      * liquid parrallel to XZ plane.
+     * xz 편면에 평행한 수면에 대해 부력을 적용하는 힘 발생기
+     * 
      */
     class ParticleBuoyancy : public ParticleForceGenerator
     {
         /**
          * The maximum submersion depth of the object before
          * it generates its maximum boyancy force.
+         * 최대 부력을 발생하기 전 개체의 최대 침수 깊이
          */
         real maxDepth;
 
         /**
          * The volume of the object.
+         * 물체의 부피
          */
         real volume;
 
         /**
          * The height of the water plane above y=0. The plane will be
          * parrallel to the XZ plane.
+         * 수면이 y = 0 평면으로부터 이동한 높이
+         * 수면은 xz 평면에 평행
          */
         real waterHeight;
 
         /**
          * The density of the liquid. Pure water has a density of
          * 1000kg per cubic meter.
+         * 액체의 밀도 순수한 물의 밀도는 1000kg 이다.
          */
         real liquidDensity;
 
     public:
 
         /** Creates a new buoyancy force with the given parameters. */
+        // 주어진 인자를 바탕으로 새로운 부력 개체 생성
         ParticleBuoyancy(real maxDepth, real volume, real waterHeight,
             real liquidDensity = 1000.0f);
 
         /** Applies the buoyancy force to the given particle. */
+        // 주어진 입자에 부력 적용
         virtual void updateForce(Particle *particle, real duration);
     };
 
