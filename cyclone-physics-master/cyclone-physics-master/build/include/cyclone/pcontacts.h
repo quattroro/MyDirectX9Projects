@@ -20,6 +20,7 @@
  * through each contact and tries to resolve it. This is a very fast
  * algorithm but can be unstable when the contacts are highly
  * inter-related.
+ 
  */
 #ifndef CYCLONE_PCONTACTS_H
 #define CYCLONE_PCONTACTS_H
@@ -43,6 +44,14 @@ namespace cyclone {
      * The contact has no callable functions, it just holds the
      * contact details. To resolve a set of contacts, use the particle
      * contact resolver class.
+     * * 두 물체의 접촉을 처리한다.
+     * 접촉을 처리하기 위해서는 물체 간 간섭을 제거하고,
+     * 적절한 반발력을 적용하여 물체를 떼어놓아야 한다.
+     * 접촉하는 물체가 다시 뛸 때도 있다.
+     * 
+     * 접촉에는 호출할 수 있는 함수가 없고,
+     * 접촉의 세부내용을 갖고 있을 뿐이다.
+     * 접촉을 처리하려면 입자 접촉 해소 클래스를 사용한다.
      */
     class ParticleContact
     {
@@ -60,21 +69,27 @@ namespace cyclone {
         /**
          * Holds the particles that are involved in the contact. The
          * second of these can be NULL, for contacts with the scenery.
+         * 접촉에 포함되는 입자들을 저장한다.
+         * 배경과 접촉하는 경우는 NULL이 될 수 있다.
          */
         Particle* particle[2];
 
         /**
          * Holds the normal restitution coefficient at the contact.
+         * 접촉점에서의 반발 계수
          */
         real restitution;
 
         /**
          * Holds the direction of the contact in world coordinates.
+         * 월드 좌표계 기준 접촉 방향 벡터
          */
         Vector3 contactNormal;
 
         /**
          * Holds the depth of penetration at the contact.
+         * 접촉의 결과 얼마나 겹쳐져 있는지를 저장한다.
+         * 이 값이 음수면 겹쳐진 부분이 없다는 뜻이고, 0이면 살짝 닿기만 했다는 뜻이다.
          */
         real penetration;
 
@@ -87,22 +102,26 @@ namespace cyclone {
     protected:
         /**
          * Resolves this contact, for both velocity and interpenetration.
+         * 속도와 겹치는 부분을 업데이트하여 접촉을 해소한다.
          */
         void resolve(real duration);
 
         /**
          * Calculates the separating velocity at this contact.
+         * 접촉으로 인한 분리 속도를 계산한다.
          */
         real calculateSeparatingVelocity() const;
 
     private:
         /**
          * Handles the impulse calculations for this collision.
+         * 접촉에 대한 충격량 계한을 처리한다.
          */
         void resolveVelocity(real duration);
 
         /**
          * Handles the interpenetration resolution for this contact.
+         * 접촉에 의해 겹치는 부분을 처리한다.
          */
         void resolveInterpenetration(real duration);
 
