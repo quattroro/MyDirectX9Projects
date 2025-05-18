@@ -23,3 +23,5 @@ bin/osx64/*
 !default.xcworkspace
 xcuserdata
 *.moved-aside
+lib
+*.vcxproj
