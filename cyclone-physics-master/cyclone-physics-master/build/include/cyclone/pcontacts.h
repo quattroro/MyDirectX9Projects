@@ -130,29 +130,36 @@ namespace cyclone {
     /**
      * The contact resolution routine for particle contacts. One
      * resolver instance can be shared for the whole simulation.
+     * 입자 접촉에 대한 접촉 처리기
+     * 인스턴스는 하나만 만들어서 돌려쓴다.
      */
     class ParticleContactResolver
     {
     protected:
         /**
          * Holds the number of iterations allowed.
+         * 반복 횟수.
          */
         unsigned iterations;
 
         /**
          * This is a performance tracking value - we keep a record
          * of the actual number of iterations used.
+         * 실제 동작한 반복 횟수를 기록한다.
+         * 성능 측정이 목적.
          */
         unsigned iterationsUsed;
 
     public:
         /**
          * Creates a new contact resolver.
+         * 새로운 접촉 처리기 개체를 생성한다.
          */
         ParticleContactResolver(unsigned iterations);
 
         /**
          * Sets the number of iterations that can be used.
+         * 최대 반복 횟수를 지정한다.
          */
         void setIterations(unsigned iterations);
 
@@ -185,6 +192,7 @@ namespace cyclone {
          * @param duration The duration of the previous integration step.
          * This is used to compensate for forces applied.
         */
+        // 겹쳐진 부분과 속도에 대해 입자들의 접촉을 처리한다.
         void resolveContacts(ParticleContact *contactArray,
             unsigned numContacts,
             real duration);

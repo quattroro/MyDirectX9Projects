@@ -51,19 +51,22 @@ void ParticleContact::resolveVelocity(real duration)
     real newSepVelocity = -separatingVelocity * restitution;
 
     // Check the velocity build-up due to acceleration only
-
+    // 속도가 가속도만에 의한 것인지를 검사한다.
     Vector3 accCausedVelocity = particle[0]->getAcceleration();
     if (particle[1]) accCausedVelocity -= particle[1]->getAcceleration();
     real accCausedSepVelocity = accCausedVelocity * contactNormal * duration;
 
     // If we've got a closing velocity due to acceleration build-up,
     // remove it from the new separating velocity
+    // 가속도에 의해 속도가 생겼으면,
+    // 이를 새로운 분리 속도에서 제거한다.
     if (accCausedSepVelocity < 0)
     {
         newSepVelocity += restitution * accCausedSepVelocity;
 
         // Make sure we haven't removed more than was
         // there to remove.
+        // 실제 필요한 것보다 더 많이 빼내지는 않았는지 확인한다.
         if (newSepVelocity < 0) newSepVelocity = 0;
     }
 
@@ -106,6 +109,7 @@ void ParticleContact::resolveVelocity(real duration)
     }
 }
 
+// 물체의 겹쳐짐 처리
 void ParticleContact::resolveInterpenetration(real duration)
 {
     // If we don't have any penetration, skip this step.
@@ -165,6 +169,7 @@ void ParticleContactResolver::resolveContacts(ParticleContact *contactArray,
     while(iterationsUsed < iterations)
     {
         // Find the contact with the largest closing velocity;
+        // 접근 속도가 가장 큰 접촉을 찾는다.
         real max = REAL_MAX;
         unsigned maxIndex = numContacts;
         for (i = 0; i < numContacts; i++)
@@ -179,9 +184,11 @@ void ParticleContactResolver::resolveContacts(ParticleContact *contactArray,
         }
 
         // Do we have anything worth resolving?
+        // 오류 검사
         if (maxIndex == numContacts) break;
 
         // Resolve this contact
+        // 이 접촉을 처리한다.
         contactArray[maxIndex].resolve(duration);
 
         // Update the interpenetrations for all particles
