@@ -176,6 +176,7 @@ void BlobForceGenerator::updateForce(cyclone::Particle *particle,
     for (unsigned i = 0; i < BLOB_COUNT; i++)
     {
         // Don't attract yourself
+        // 자기 자신에게 끌려가지 않도록
         if (particles + i == particle) continue;
 
         // Work out the separation distance
