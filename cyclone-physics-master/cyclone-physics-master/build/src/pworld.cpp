@@ -50,6 +50,9 @@ unsigned ParticleWorld::generateContacts()
         g != contactGenerators.end();
         g++)
     {
+        //현재 존재하는 모든 플랫폼들과 모든 파티들들 각각 충돌했는지 확인하고 충돌했으면
+        // contexts 배열에 값을 추가해준다.
+        // 리턴값은 추가된 충돌처리의 개수
         unsigned used =(*g)->addContact(nextContact, limit);
         limit -= used;
         nextContact += used;
@@ -74,21 +77,27 @@ void ParticleWorld::integrate(real duration)
     }
 }
 
+// 여기서 물리를 업데이트 한다.
 void ParticleWorld::runPhysics(real duration)
 {
     // First apply the force generators
+    // 각각의 입자들에 등록해준 힘 발생기를 이용해서 힘을 가해준다.
     registry.updateForces(duration);
 
     // Then integrate the objects
+    // 적분을 수행
     integrate(duration);
 
     // Generate contacts
+    //현재 존재하는 모든 플랫폼들과 모든 파티들들 각각 충돌했는지 확인하고 충돌했으면
+    // contexts 배열에 값을 추가해준다.
+    // 리턴값은 추가된 충돌처리의 개수
     unsigned usedContacts = generateContacts();
 
     // And process them
     if (usedContacts)
     {
-        if (calculateIterations) resolver.setIterations(usedContacts * 2);
+        if (calculateIterations) resolver.setIterations(usedContacts * 2); // 그냥 임의의값으로 2배수 해준것
         resolver.resolveContacts(contacts, usedContacts, duration);
     }
 }

@@ -44,6 +44,9 @@ public:
         ) const;
 };
 
+// 모든 파티클들이 플랫폼과 충돌했는지 파티클들이 플랫폼의 위에있는지 앞에 있는지, 뒤에 있는지
+// 각각에 따라 충돌했는지 확인한 다음에 충돌 했으면
+// 매개변수로 받아온 contact배열에 값을 세팅해준다.
 unsigned Platform::addContact(cyclone::ParticleContact *contact,
                               unsigned limit) const
 {
@@ -57,11 +60,12 @@ unsigned Platform::addContact(cyclone::ParticleContact *contact,
         // Check for penetration
         cyclone::Vector3 toParticle = particles[i].getPosition() - start;
         cyclone::Vector3 lineDirection = end - start;
-        cyclone::real projected = toParticle * lineDirection;
+        cyclone::real projected = toParticle * lineDirection;//시작점에서 입자로 가는 벡터를 플랫폼 벡터 위로 투영한다.
         cyclone::real platformSqLength = lineDirection.squareMagnitude();
-        if (projected <= 0)
+        if (projected <= 0) // 물체가 플랫폼 위에 있을때
         {
             // The blob is nearest to the start point
+            // 파티클이 플랫폼에 닿았는지 확인한다.
             if (toParticle.squareMagnitude() < BLOB_RADIUS*BLOB_RADIUS)
             {
                 // We have a collision

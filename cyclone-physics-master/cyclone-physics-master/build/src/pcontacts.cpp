@@ -159,6 +159,7 @@ void ParticleContactResolver::setIterations(unsigned iterations)
     ParticleContactResolver::iterations = iterations;
 }
 
+// 技泼等 立盟阑 贸府茄促.
 void ParticleContactResolver::resolveContacts(ParticleContact *contactArray,
                                               unsigned numContacts,
                                               real duration)
