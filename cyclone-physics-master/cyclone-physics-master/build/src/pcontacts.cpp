@@ -22,6 +22,9 @@ void ParticleContact::resolve(real duration)
     resolveInterpenetration(duration);
 }
 
+// 접촉 방향에 대한 속도를 계산한다.
+// 접촉 방향으로 움직여야하는지 아니면 반대로 움직여야하는지는 어디서 구분하지?...
+// contactNormal을 계산할때 움직여야하는 방향으로 세팅이 되어지는거 같다.
 real ParticleContact::calculateSeparatingVelocity() const
 {
     Vector3 relativeVelocity = particle[0]->getVelocity();
@@ -50,6 +53,7 @@ void ParticleContact::resolveVelocity(real duration)
     // 새롭게 계산된 분리 속도.
     real newSepVelocity = -separatingVelocity * restitution;
 
+    ///////////////////////////////////////////////////////////////////////////////////////////// 정지 접촉 처리 시작
     // Check the velocity build-up due to acceleration only
     // 속도가 가속도만에 의한 것인지를 검사한다.
     Vector3 accCausedVelocity = particle[0]->getAcceleration();
@@ -69,6 +73,7 @@ void ParticleContact::resolveVelocity(real duration)
         // 실제 필요한 것보다 더 많이 빼내지는 않았는지 확인한다.
         if (newSepVelocity < 0) newSepVelocity = 0;
     }
+    ///////////////////////////////////////////////////////////////////////////////////////////// 정지 접촉 처리 끝
 
     real deltaVelocity = newSepVelocity - separatingVelocity;
 
