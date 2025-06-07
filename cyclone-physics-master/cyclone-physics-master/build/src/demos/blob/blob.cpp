@@ -62,7 +62,7 @@ unsigned Platform::addContact(cyclone::ParticleContact *contact,
         cyclone::Vector3 lineDirection = end - start;
         cyclone::real projected = toParticle * lineDirection;//시작점에서 입자로 가는 벡터를 플랫폼 벡터 위로 투영한다.
         cyclone::real platformSqLength = lineDirection.squareMagnitude();
-        if (projected <= 0) // 물체가 플랫폼 위에 있을때
+        if (projected <= 0) // 물체가 플랫폼의 왼쪽 바깥에 있을때
         {
             // The blob is nearest to the start point
             // 파티클이 플랫폼에 닿았는지 확인한다.
@@ -80,7 +80,7 @@ unsigned Platform::addContact(cyclone::ParticleContact *contact,
             }
 
         }
-        else if (projected >= platformSqLength)
+        else if (projected >= platformSqLength) // 물체가 플랫폼의 오른쪽 바깥에 있을때
         {
             // The blob is nearest to the end point
             toParticle = particles[i].getPosition() - end;
@@ -97,7 +97,7 @@ unsigned Platform::addContact(cyclone::ParticleContact *contact,
                 contact ++;
             }
         }
-        else
+        else // 물체가 플랫폼의 위에 있을때
         {
             // the blob is nearest to the middle.
             cyclone::real distanceToPlatform =

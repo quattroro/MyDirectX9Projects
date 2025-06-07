@@ -25,6 +25,8 @@ void ParticleContact::resolve(real duration)
 // 접촉 방향에 대한 속도를 계산한다.
 // 접촉 방향으로 움직여야하는지 아니면 반대로 움직여야하는지는 어디서 구분하지?...
 // contactNormal을 계산할때 움직여야하는 방향으로 세팅이 되어지는거 같다.
+// contactNormal값은 addContact() 함수를 이용해서 충돌을 추가해줄때 함께 세팅해준다. 
+
 real ParticleContact::calculateSeparatingVelocity() const
 {
     Vector3 relativeVelocity = particle[0]->getVelocity();
@@ -36,6 +38,7 @@ void ParticleContact::resolveVelocity(real duration)
 {
     // Find the velocity in the direction of the contact
     // 접촉 방향에 대한 속도를 계산한다.
+    // 서로의 속도를 더해서 만들어지는 속도
     real separatingVelocity = calculateSeparatingVelocity();
 
     // Check if it needs to be resolved
