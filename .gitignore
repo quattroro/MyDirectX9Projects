@@ -35,4 +35,4 @@ x64
 lib
 *.vcxproj
 bin
-cyclone-physics-master/cyclone-physics-master/build/bin
+/cyclone-physics-master/cyclone-physics-master/build/bin
