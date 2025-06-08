@@ -189,6 +189,7 @@ void BlobForceGenerator::updateForce(cyclone::Particle *particle,
         separation.z = 0.0f;
         cyclone::real distance = separation.magnitude();
 
+        // 겹쳤을때 (minNaturalDistance = BLOB_RADIUS*0.75f;)
         if (distance < minNaturalDistance)
         {
             // Use a repulsion force.
@@ -198,6 +199,8 @@ void BlobForceGenerator::updateForce(cyclone::Particle *particle,
                 );
             joinCount++;
         }
+        // maxNaturalDistance = BLOB_RADIUS*1.5f;
+        // maxDistance = BLOB_RADIUS * 2.5f;
         else if (distance > maxNaturalDistance && distance < maxDistance)
         {
             // Use an attraction force.
@@ -212,6 +215,9 @@ void BlobForceGenerator::updateForce(cyclone::Particle *particle,
     }
 
     // If the particle is the head, and we've got a join count, then float it.
+    // floatHead = 8.0f;
+    // maxFloat = 2;
+    // 연결된게 많을수록 천천히 떨어진다.
     if (particle == particles && joinCount > 0 && maxFloat > 0)
     {
         cyclone::real force = cyclone::real(joinCount / maxFloat) * floatHead;
@@ -405,6 +411,7 @@ void BlobDemo::display()
 void BlobDemo::update()
 {
     // Clear accumulators
+    // 모든 입자들의 힘을 초기화 시켜준다.
     world.startFrame();
 
     // Find the duration of the last frame in seconds
@@ -416,9 +423,11 @@ void BlobDemo::update()
     yAxis *= pow(0.1f, duration);
 
     // Move the controlled blob
+    // 
     blobs[0].addForce(cyclone::Vector3(xAxis, yAxis, 0)*10.0f);
 
     // Run the simulation
+    // 물리 업데이트
     world.runPhysics(duration);
 
     // Bring all the particles back to 2d

@@ -201,6 +201,7 @@ namespace cyclone {
     /**
      * This is the basic polymorphic interface for contact generators
      * applying to particles.
+     * 입자에 적용되는 접촉 감지기를 위한 기본 다형성 인터페이스
      */
     class ParticleContactGenerator
     {
@@ -212,6 +213,10 @@ namespace cyclone {
          * maximum number of contacts in the array that can be written
          * to. The method returns the number of contacts that have
          * been written.
+         * 생성된 접촉의 내용을 채워준다.
+         * 포인터 contact에는 접촉 구조체 배열의 시작 주소가 들어 있고,
+         * limit은 배열의 사용 가능한 최대 크기가 들어 있다.
+         * 실제 기록된 접촉 구조체의 개수를 반환한다.
          */
         virtual unsigned addContact(ParticleContact *contact,
                                     unsigned limit) const = 0;

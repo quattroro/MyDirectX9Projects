@@ -131,7 +131,7 @@ void ParticleContact::resolveInterpenetration(real duration)
     if (particle[1]) totalInverseMass += particle[1]->getInverseMass();
 
     // If all particles have infinite mass, then we do nothing
-    // 모든 물체의 잘량리 무한대이면 아무런 처리도 하지 않는다.
+    // 모든 물체의 잘량이 무한대이면 아무런 처리도 하지 않는다.
     if (totalInverseMass <= 0) return;
 
     // Find the amount of penetration resolution per unit of inverse mass

@@ -43,6 +43,7 @@ void ParticleWorld::startFrame()
 
 unsigned ParticleWorld::generateContacts()
 {
+    // 여기서 사용되는 contacts는 ParticleWorld 객체가 생성될때 같이 생성된다.
     unsigned limit = maxContacts;
     ParticleContact *nextContact = contacts;
 
@@ -51,7 +52,7 @@ unsigned ParticleWorld::generateContacts()
         g++)
     {
         //현재 존재하는 모든 플랫폼들과 모든 파티들들 각각 충돌했는지 확인하고 충돌했으면
-        // contexts 배열에 값을 추가해준다.
+        // 제네레이터의 contexts 배열에 값을 추가해준다.
         // 리턴값은 추가된 충돌처리의 개수
         unsigned used =(*g)->addContact(nextContact, limit);
         limit -= used;
@@ -59,10 +60,13 @@ unsigned ParticleWorld::generateContacts()
 
         // We've run out of contacts to fill. This means we're missing
         // contacts.
+        // 더 이상 접촉을 기록한 공간이 없다.
+        // 이제부터 생성되는 접촉은 기록되지 못하고 없어진다.
         if (limit <= 0) break;
     }
 
     // Return the number of contacts used.
+    // 실제 사용된 접촉의 개수를 반환한다.
     return maxContacts - limit;
 }
 
@@ -73,6 +77,7 @@ void ParticleWorld::integrate(real duration)
         p++)
     {
         // Remove all forces from the accumulator
+        // 주어진 시간 간격에 대하여 적분
         (*p)->integrate(duration);
     }
 }
@@ -82,6 +87,8 @@ void ParticleWorld::runPhysics(real duration)
 {
     // First apply the force generators
     // 각각의 입자들에 등록해준 힘 발생기를 이용해서 힘을 가해준다.
+    // registry 는 ParticleForceRegistry 이고 여기에 추가되는 forcegenerator는 
+    // blob용으로 정의되어 있다.
     registry.updateForces(duration);
 
     // Then integrate the objects
@@ -89,12 +96,13 @@ void ParticleWorld::runPhysics(real duration)
     integrate(duration);
 
     // Generate contacts
-    //현재 존재하는 모든 플랫폼들과 모든 파티들들 각각 충돌했는지 확인하고 충돌했으면
+    // 현재 존재하는 모든 플랫폼들과 모든 파티들들 각각 충돌했는지 확인하고 충돌했으면
     // contexts 배열에 값을 추가해준다.
     // 리턴값은 추가된 충돌처리의 개수
     unsigned usedContacts = generateContacts();
 
     // And process them
+    // 접촉을 처리한다.
     if (usedContacts)
     {
         if (calculateIterations) resolver.setIterations(usedContacts * 2); // 그냥 임의의값으로 2배수 해준것
