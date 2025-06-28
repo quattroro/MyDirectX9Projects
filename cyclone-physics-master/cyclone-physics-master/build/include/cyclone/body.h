@@ -87,6 +87,10 @@ namespace cyclone {
          * simulation it is more useful to have bodies with
          * infinite mass (immovable) than zero mass
          * (completely unstable in numerical simulation).
+         * 강체의 질량의 역수를 저장한다.
+         * 질량의 역수를 저장하는 것이 더 쓸모가 있는데,
+         * 적분할 때 더 간단하며, 질량이 0인 물체보다는
+         * 무한대(움직이지 않는)인 물체를 사용할 일이 더 많기 때문이다.
          */
         real inverseMass;
 
@@ -110,6 +114,9 @@ namespace cyclone {
          * Holds the amount of damping applied to linear
          * motion.  Damping is required to remove energy added
          * through numerical instability in the integrator.
+         * 직선운동에서의 댐핑의 정도를 저장한다.
+         * 댐핑을 적용하면 적분 과정에서 수치 연산 오차로 인해
+         * 증가되는 에너지를 줄여주는 효과가 있다.
          */
         real linearDamping;
 
@@ -123,24 +130,28 @@ namespace cyclone {
         /**
          * Holds the linear position of the rigid body in
          * world space.
+         * 공간 좌표계에서 강체의 위치
          */
         Vector3 position;
 
         /**
          * Holds the angular orientation of the rigid body in
          * world space.
+         * 공간 좌표에서 강체가 놓여있는 방향
          */
         Quaternion orientation;
 
         /**
          * Holds the linear velocity of the rigid body in
          * world space.
+         * 공간 좌표계에서 강체의 직선운동 속도
          */
         Vector3 velocity;
 
         /**
          * Holds the angular velocity, or rotation, or the
          * rigid body in world space.
+         * 공간 좌표에서 강체의 회전 속도
          */
         Vector3 rotation;
 
@@ -161,6 +172,14 @@ namespace cyclone {
          * the body's local space.
          *
          * @see inverseInertiaTensor
+         * 물체의 관성 텐서읭 역텐서를 저장한다.
+         * 관성 텐서의 원소 중 관성 모멘트 성분은 0이 된면 안 된다.
+         * 관성 모멘트 성분이 0이면, 해당 축 둘레의 회전에는
+         * 저항하는 능력이 전혀 없게 된다.
+         * 텐서가 유한한 값을 갖는 한 역텐서는 반드시 존재한다.
+         * 질량의 역수를 사용하는 것과 같은 이유로 역텐서를 사용한다.
+         * 강체를 정의하는 다른 변수들과는 달리,
+         * 관성 텐서는 물체의 로컬 좌표계를 기준으로 한다.
          */
         Matrix3 inverseInertiaTensorWorld;
 
@@ -192,6 +211,8 @@ namespace cyclone {
          * @see getPointInLocalSpace
          * @see getPointInWorldSpace
          * @see getTransform
+         * 물체의 로컬 좌표를 공간 좌표로 또 그 반대로 변환하는 행렬,
+         * getPointIn*Space함수를 호출해 이 행렬을 얻는다.
          */
         Matrix4 transformMatrix;
 
@@ -270,6 +291,12 @@ namespace cyclone {
          * automatically during integration). If you change the body's state
          * and then intend to integrate before querying any data (such as
          * the transform matrix), then you can ommit this step.
+         * 상태 데이터로부터 내부 데이터를 계산한다.
+         * 이 함수는 물체의 상태가 직접 번경된 다음에 호출해야 한다.
+         * 이 함수는 적분 과정 중에 자동으로 호출되므로,
+         * 물체의 상태를 변경하고 적분을 한 다음에 데이터를 가져오는
+         * 식으로 로직을 전개한다면,
+         * 이 함수를 호출할 필요는 없다.
          */
         void calculateDerivedData();
 

@@ -101,6 +101,7 @@ static inline void _transformInertiaTensor(Matrix3 &iitWorld,
 /**
  * Inline function that creates a transform matrix from a
  * position and orientation.
+ * 물체의 위치와 방향으로부터 변환 행렬을 만드는 인라인 함수
  */
 static inline void _calculateTransformMatrix(Matrix4 &transformMatrix,
                                              const Vector3 &position,
@@ -141,6 +142,7 @@ void RigidBody::calculateDerivedData()
     orientation.normalise();
 
     // Calculate the transform matrix for the body.
+    // 물체의 변환 행렬을 계산한다.
     _calculateTransformMatrix(transformMatrix, position, orientation);
 
     // Calculate the inertiaTensor in world space.
