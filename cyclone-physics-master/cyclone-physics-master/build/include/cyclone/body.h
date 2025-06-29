@@ -107,6 +107,16 @@ namespace cyclone {
          * define a rigid body, is given in body space.
          *
          * @see inverseMass
+         * 
+         * 물체의 관성 텐서의 역텐서를 저장한다.
+         * 관성 텐서의 원소 중 관성 모멘트 성분은 0이 되면 안 된다.
+         * 관성 모멘트 성분이 0이면, 해당 축 둘레의 회전에는
+         * 저항하는 능력이 전혀 없게 된다.
+         * 텐서가 유한한 값을 갖는 한 역텐서는 반드시 존재한다.
+         * 질량의 역수를 사용하는 것과 같은 이유로 역텐서를 사용한다..
+         * 
+         * 강체를 정의하는 다른 변수들과는 달리
+         * 관성텐서는 물체의 로컬 좌표계를 기준으로 한다.
          */
         Matrix3 inverseInertiaTensor;
 
@@ -124,6 +134,10 @@ namespace cyclone {
          * Holds the amount of damping applied to angular
          * motion.  Damping is required to remove energy added
          * through numerical instability in the integrator.
+         * 
+         * 가속도에 대한 댐핑값을 저장한다.
+         * 적분 과전에서의 수치 연산 오차로 생긴
+         * 에너지 항목을 제거하기 위해서는 댐핑이 필요하다.
          */
         real angularDamping;
 
@@ -912,6 +926,9 @@ namespace cyclone {
         /**
          * Clears the forces and torques in the accumulators. This will
          * be called automatically after each intergration step.
+         * 
+         * 누적기의 힘과 토크를 0으로 만든다.
+         * 매 프레임마다 적분을 시작할 때 이 함수가 자동으로 호출된다.
          */
         void clearAccumulators();
 
@@ -920,6 +937,9 @@ namespace cyclone {
          * The force is expressed in world-coordinates.
          *
          * @param force The force to apply.
+         * 
+         * 주어진 힘을 강체의 무게중심에 더해준다.
+         * 힘은 월드 좌표계로 표시된다.
          */
         void addForce(const Vector3 &force);
 
@@ -934,6 +954,10 @@ namespace cyclone {
          *
          * @param point The location at which to apply the force, in
          * world-coordinates.
+         * 
+         * 물체의 특정 지점에 힘을 가한다.
+         * 힘의 방향과 작용점의 위치는 월드 좌표계로 표시된다.
+         * 힘이 물체 중심에 작용하는 것이 아니므로 힘과 토크로 분리될 수도 있다.
          */
         void addForceAtPoint(const Vector3 &force, const Vector3 &point);
 
@@ -948,6 +972,11 @@ namespace cyclone {
          *
          * @param point The location at which to apply the force, in
          * body-coordinates.
+         * 
+         * 물체의 특점 지점에 힘을 가한다.
+         * 힘의 방향은 월드 좌표계로 표시되지만
+         * 힘의 작용점은 물체의 로컬 좌표계로 표시된다.
+         * 스프링이나 그 밖에 물체에 고정된 힘인 경우 편리하다.
          */
         void addForceAtBodyPoint(const Vector3 &force, const Vector3 &point);
 

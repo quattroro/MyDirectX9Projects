@@ -27,6 +27,8 @@ namespace cyclone {
     /**
      * A force generator can be asked to add a force to one or more
      * bodies.
+     * 
+     * 힘 발생기는 물체에 힘을 가하는 역할을 한다.
      */
     class ForceGenerator
     {
@@ -35,6 +37,9 @@ namespace cyclone {
         /**
          * Overload this in implementations of the interface to calculate
          * and update the force applied to the given rigid body.
+         * 
+         * 이 함수를 재정의하여 주어진 강체에 가해지는 힘을 계산하고
+         * 업데이트하는 인터페이스를 구현한다.
          */
         virtual void updateForce(RigidBody *body, real duration) = 0;
     };
@@ -42,50 +47,64 @@ namespace cyclone {
     /**
      * A force generator that applies a gravitational force. One instance
      * can be used for multiple rigid bodies.
+     * 
+     * 중력을 적용하는 힘 발생기
+     * 인스턴스 하나로 여러 개의 물체에 두루 사용 가능하다.
      */
     class Gravity : public ForceGenerator
     {
         /** Holds the acceleration due to gravity. */
+        // 중력에 의한 가속도
         Vector3 gravity;
 
     public:
 
         /** Creates the generator with the given acceleration. */
+        // 주어진 가속도로 힘 발생기 개체를 생성하는 생성자.
         Gravity(const Vector3 &gravity);
 
         /** Applies the gravitational force to the given rigid body. */
+        // 주어진 강체에 중력을 적용한다.
         virtual void updateForce(RigidBody *body, real duration);
     };
 
     /**
      * A force generator that applies a Spring force.
+     * 스프링 힘을 적용하는 힘 발생기
      */
     class Spring : public ForceGenerator
     {
         /**
          * The point of connection of the spring, in local
          * coordinates.
+         * 스프링이 붙어 있는 위치를 로컬 좌표계로 저장해둔다.
          */
         Vector3 connectionPoint;
 
         /**
          * The point of connection of the spring to the other object,
          * in that object's local coordinates.
+         * 스프링이 반대쪽에 붙어 있는 물체에 대하여
+         * 붙어 있는 위치를 해당 물체의 로컬 좌표계로 저장해둔다.
          */
         Vector3 otherConnectionPoint;
 
         /** The particle at the other end of the spring. */
+        // 스프링의 반대쪽에 분어 있는 물체
         RigidBody *other;
 
         /** Holds the sprint constant. */
+        // 스프링 상수
         real springConstant;
 
         /** Holds the rest length of the spring. */
+        // 스프링의 휴지 길이
         real restLength;
 
     public:
 
         /** Creates a new spring with the given parameters. */
+        // 주어진 인자들로부터 스프링 힘 발생기 개체를 만든다.
         Spring(const Vector3 &localConnectionPt,
                RigidBody *other,
                const Vector3 &otherConnectionPt,
@@ -93,6 +112,7 @@ namespace cyclone {
                real restLength);
 
         /** Applies the spring force to the given rigid body. */
+        // 주어진 강체에 스프링 힘을 적용한다.
         virtual void updateForce(RigidBody *body, real duration);
     };
 

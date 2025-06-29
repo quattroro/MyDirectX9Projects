@@ -73,9 +73,11 @@ Gravity::Gravity(const Vector3& gravity)
 void Gravity::updateForce(RigidBody* body, real duration)
 {
     // Check that we do not have infinite mass
+    // 질량이 무한대인지 검사한다.
     if (!body->hasFiniteMass()) return;
 
     // Apply the mass-scaled force to the body
+    // 중력 가속도에 질량을 곱한 만큼의 힘을 적용시킨다.
     body->addForce(gravity * body->getMass());
 }
 
@@ -95,18 +97,22 @@ Spring::Spring(const Vector3 &localConnectionPt,
 void Spring::updateForce(RigidBody* body, real duration)
 {
     // Calculate the two ends in world space
+    // 양쪽 끝점을 월드 좌표계로 계산한다.
     Vector3 lws = body->getPointInWorldSpace(connectionPoint);
     Vector3 ows = other->getPointInWorldSpace(otherConnectionPoint);
 
     // Calculate the vector of the spring
+    // 스프링 벡터를 계산한다.
     Vector3 force = lws - ows;
 
     // Calculate the magnitude of the force
+    // 힘의 크기를 계산한다.
     real magnitude = force.magnitude();
     magnitude = real_abs(magnitude - restLength);
     magnitude *= springConstant;
 
     // Calculate the final force and apply it
+    // 최종 힘을 계산하여 적용한다.
     force.normalise();
     force *= -magnitude;
     body->addForceAtPoint(force, lws);

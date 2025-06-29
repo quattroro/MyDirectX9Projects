@@ -35,6 +35,9 @@ static inline void _checkInverseInertiaTensor(const Matrix3 &iitWorld)
  * Internal function to do an intertia tensor transform by a quaternion.
  * Note that the implementation of this function was created by an
  * automated code-generator and optimizer.
+ * 
+ * 사원수에 의해 관성 텐서의 변환을 수행하는 내부 함수.
+ * 이 함수의 구현은 자동화된 코드 생성기와 최적화 도구에 의해 생성한다.
  */
 static inline void _transformInertiaTensor(Matrix3 &iitWorld,
                                            const Quaternion &q,
@@ -146,6 +149,7 @@ void RigidBody::calculateDerivedData()
     _calculateTransformMatrix(transformMatrix, position, orientation);
 
     // Calculate the inertiaTensor in world space.
+    // 월드 좌표계를 기준으로 inertiaTensor를 계산한다.
     _transformInertiaTensor(inverseInertiaTensorWorld,
         orientation,
         inverseInertiaTensor,
@@ -158,6 +162,7 @@ void RigidBody::integrate(real duration)
     if (!isAwake) return;
 
     // Calculate linear acceleration from force inputs.
+    // 입력된 힘에 의해 신형 가속
     lastFrameAcceleration = acceleration;
     lastFrameAcceleration.addScaledVector(forceAccum, inverseMass);
 
@@ -188,6 +193,7 @@ void RigidBody::integrate(real duration)
     calculateDerivedData();
 
     // Clear accumulators.
+    // 적분기를 초기화 한다.
     clearAccumulators();
 
     // Update the kinetic energy store, and possibly put the body to
@@ -549,6 +555,7 @@ void RigidBody::addForceAtBodyPoint(const Vector3 &force,
                                     const Vector3 &point)
 {
     // Convert to coordinates relative to center of mass.
+    // 물체의 무게중심에 대한 상대 좌표로 변환한다.
     Vector3 pt = getPointInWorldSpace(point);
     addForceAtPoint(force, pt);
 
