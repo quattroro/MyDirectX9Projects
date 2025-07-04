@@ -134,17 +134,21 @@ void Aero::updateForceFromTensor(RigidBody *body, real duration,
                                  const Matrix3 &tensor)
 {
     // Calculate total velocity (windspeed and body's velocity).
+    // 속도를 계산한다.(공기의 속도와 물체의 속도)
     Vector3 velocity = body->getVelocity();
     velocity += *windspeed;
 
     // Calculate the velocity in body coordinates
+    // 속도 벡터를 물체의 로컬 좌표로 변환한다.
     Vector3 bodyVel = body->getTransform().transformInverseDirection(velocity);
 
     // Calculate the force in body coordinates
+    // 힘을 물체의 로컬 좌표로 변환한다.
     Vector3 bodyForce = tensor.transform(bodyVel);
     Vector3 force = body->getTransform().transformDirection(bodyForce);
 
     // Apply the force
+    // 힘을 적용한다.
     body->addForceAtBodyPoint(force, position);
 }
 

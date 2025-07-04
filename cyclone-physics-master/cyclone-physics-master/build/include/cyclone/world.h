@@ -27,6 +27,9 @@ namespace cyclone {
      * The world represents an independent simulation of physics.  It
      * keeps track of a set of rigid bodies, and provides the means to
      * update them all.
+     * 
+     * world는 물리 시뮬레이션을 표현한다.
+     * 시뮬레이션 대상 물체들을 관리하고, 이들을 업데이트할 수단을 제공한다.
      */
     class World
     {
@@ -101,6 +104,8 @@ namespace cyclone {
 
         /**
          * Processes all the physics for the world.
+         * 
+         * world의 모든 물리 연산을 처리한다.
          */
         void runPhysics(real duration);
 
@@ -109,6 +114,11 @@ namespace cyclone {
          * the force and torque accumulators for bodies in the
          * world. After calling this, the bodies can have their forces
          * and torques for this frame added.
+         * 
+         * 시뮬레이션 프레임이 시작될 때마다 World를 초기화한다.
+         * 이 메서드는 각 물체에 대한 힘 누적기와 토크 누적기를 초기화한다.
+         * 이 함수를 호출한 다음 현재 프레임에 대하여 각 물체를 적용하는 힘과
+         * 토크를 계산한다.
          */
         void startFrame();
 

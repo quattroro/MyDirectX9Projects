@@ -249,6 +249,7 @@ namespace cyclone {
 
     /**
      * A force generator that applies an aerodynamic force.
+     * 공기역학적 힘을 적용하는 힘 발생기
      */
     class Aero : public ForceGenerator
     {
@@ -256,12 +257,15 @@ namespace cyclone {
         /**
          * Holds the aerodynamic tensor for the surface in body
          * space.
+         * 물체의 로컬 좌표를 기준으로 공기역학 텐서를 저장해준다.
          */
         Matrix3 tensor;
 
         /**
          * Holds the relative position of the aerodynamic surface in
          * body coordinates.
+         * 물체의 로컬 좌표를 기준으로
+         * 힘이 작용할 공기역학적 표면의 상대 위치를 저장한다.
          */
         Vector3 position;
 
@@ -270,6 +274,10 @@ namespace cyclone {
          * environment. This is easier than managing a separate
          * windspeed vector per generator and having to update it
          * manually as the wind changes.
+         * 외부 환경에서의 공기의 속도 벡터를 가리키는 포인터
+         * 포인터 형태로 두면 힘 발생기가 여러 개 있을 경우
+         * 바람이 바뀌었을 때 공기의 속도 벡터를 
+         * 일일이 업데이트해 주지 않아도 되므로 편리하다.
          */
         const Vector3* windspeed;
 
@@ -277,12 +285,14 @@ namespace cyclone {
         /**
          * Creates a new aerodynamic force generator with the
          * given properties.
+         * 주어진 속성으로 새로운 공기역학 힘 발생기 개체를 만드는 생성자.
          */
         Aero(const Matrix3 &tensor, const Vector3 &position,
              const Vector3 *windspeed);
 
         /**
          * Applies the force to the given rigid body.
+         * 주어진 강체에 힘을 작용시킨다.
          */
         virtual void updateForce(RigidBody *body, real duration);
 
@@ -291,6 +301,8 @@ namespace cyclone {
          * Uses an explicit tensor matrix to update the force on
          * the given rigid body. This is exactly the same as for updateForce
          * only it takes an explicit tensor.
+         * 주어진 강체에 주어진 텐서를 이용해 힘을 적용시킨다.
+         * 텐서가 주어진다는 점만 빼면 updateForce 함수와 완전히 같다.
          */
         void updateForceFromTensor(RigidBody *body, real duration,
                                    const Matrix3 &tensor);
@@ -302,6 +314,12 @@ namespace cyclone {
     * 'resting' position of the control surface.  The latter tensor is
     * the one inherited from the base class, the two extremes are
     * defined in this class.
+    * 공기역학적 표면에 대한 힘 발생기
+    * 여기에는 관성 텐서 세개가 필요한데,
+    * 두 개는 조종면이 양쪽 끝까지 움직였을 때의 것이고,
+    * 하나는 조종면이 중립(resting)위치일 떄의 것이다.
+    * 중립 위치에서의 텐서는 부모 클래스의 것을 사용하고
+    * 조종면이 끝까지 움직였을 때의 두 텐서는 여기서 정의한다.
     */
     class AeroControl : public Aero
     {
@@ -309,12 +327,14 @@ namespace cyclone {
         /**
          * The aerodynamic tensor for the surface, when the control is at
          * its maximum value.
+         * 조종면이 최대 위치로 움직였을 때의 공기역학 텐서
          */
         Matrix3 maxTensor;
 
         /**
          * The aerodynamic tensor for the surface, when the control is at
          * its minimum value.
+         * 조종면이 최소 위치로 움직였을 때의 공기역학 텐서
          */
         Matrix3 minTensor;
 
@@ -323,6 +343,10 @@ namespace cyclone {
         * should range between -1 (in which case the minTensor value
         * is used), through 0 (where the base-class tensor value is
         * used) to +1 (where the maxTensor value is used).
+        * 조종면의 현재 위치.
+        * 이 값은 -1(minTensor가 사용됨)에서
+        * 0(부모 클래스의 텐서가 사용됨)을 거쳐
+        * +1(maxTensor가 사용됨)까지 변할 수 있다.
         */
         real controlSetting;
 
@@ -330,6 +354,7 @@ namespace cyclone {
         /**
          * Calculates the final aerodynamic tensor for the current
          * control setting.
+         * 조종면의 현재 위치에 따른 공기역학 텐서를 계산한다.
          */
         Matrix3 getTensor();
 
@@ -337,6 +362,7 @@ namespace cyclone {
         /**
          * Creates a new aerodynamic control surface with the given
          * properties.
+         * 주어진 속성을 바탕으로 새로운 조종면 개체를 만드는 생성자.
          */
         AeroControl(const Matrix3 &base,
                     const Matrix3 &min, const Matrix3 &max,
@@ -348,11 +374,17 @@ namespace cyclone {
         used), through 0 (where the base-class tensor value is used) *
         to +1 (where the maxTensor value is used). Values outside that
         * range give undefined results.
+        * 조종면의 위치를 설정한다.
+        * 이 값은 -1(minTensor가 사용됨)에서
+        * 0(부모 클래스의 텐서가 사용됨)을 거쳐
+        * +1(maxTensor가 사용됨)까지 값을 가질 수 있다.
+        * 이 범위를 벗어나는 값을 사용했을 때의 결과는 정의되지 않는다.
         */
         void setControl(real value);
 
         /**
          * Applies the force to the given rigid body.
+         * 주어진 강체에 힘을 적용한다.
          */
         virtual void updateForce(RigidBody *body, real duration);
     };
