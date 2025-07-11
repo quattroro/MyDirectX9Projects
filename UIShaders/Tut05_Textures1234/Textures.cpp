@@ -1,14 +1,14 @@
+#include "stdafx.h"
 
-#include <Windows.h>
-#include <mmsystem.h>
-#include <d3dx9.h>
-#pragma warning( disable : 4996 ) // disable deprecated warning 
-#include <strsafe.h>
-#pragma warning( default : 4996 )
+//#include <Windows.h>
+//#include <mmsystem.h>
+//#include <d3dx9.h>
+//#include <strsafe.h>
+//#pragma warning( default : 4996 )
 
 #include "glyph.h"
 #include "metrics_parser.h"
-
+#include "SDFGenerator.h"
 
 //-----------------------------------------------------------------------------
 // Global variables
@@ -23,6 +23,8 @@ LPDIRECT3DTEXTURE9      g_SDFTexture = NULL; // Our texture
 LPD3DXEFFECTCOMPILER    g_lpEffectCompiler = NULL;
 LPD3DXEFFECT            g_lpEffect = NULL;
 map<string, LPDIRECT3DTEXTURE9> g_FontTextureMap;
+
+SDFGenerator* g_SDFGenerator;
 
 
 struct FPOINT
@@ -202,39 +204,6 @@ HRESULT SetGeometry(float x, float y, float z, float width, float height)
     if( FAILED( g_pVB->Lock( 0, 0, ( void** )&pVertices, 0 ) ) )
         return E_FAIL;
 
-    //왼쪽 아래
-    //g_Vertices[0].position = D3DXVECTOR3(x, y - height, 0);
-    //오른쪽 아래
-   // g_Vertices[1].position = D3DXVECTOR3(x + width, y - height, 0);
-
-    //오른쪽 위
-    //g_Vertices[2].position = D3DXVECTOR3(x + width, y, 0);
-
-    //왼쪽 위
-    //g_Vertices[3].position = D3DXVECTOR3(x,y,0);
-
-
-    //float uvY = 1 - (g_glyphs[StartGlyphsCode + Curindex].mTextureCoordY - g_margin);
-
-
-    //g_Vertices[0].tu = (g_glyphs[StartGlyphsCode + Curindex].mTextureCoordX - g_margin);
-    ////g_Vertices[0].tv = 1- (g_glyphs[StartGlyphsCode + Curindex].mTextureCoordY - g_margin);
-    //g_Vertices[0].tv = uvY - (g_glyphs[StartGlyphsCode + Curindex].mTextureHeight + g_margin * 2);
-
-    //g_Vertices[1].tu = (g_Vertices[0].tu + (g_glyphs[StartGlyphsCode + Curindex].mTextureWidth + g_margin*2));
-    //g_Vertices[1].tv = uvY - (g_glyphs[StartGlyphsCode + Curindex].mTextureHeight + g_margin * 2);
-
-    //g_Vertices[2].tu = (g_Vertices[0].tu + (g_glyphs[StartGlyphsCode + Curindex].mTextureWidth + g_margin*2));
-    //g_Vertices[2].tv = uvY;
-
-    //g_Vertices[3].tu = (g_Vertices[0].tu);
-    //g_Vertices[3].tv = uvY;
-
-    //{ D3DXVECTOR3(-5.0f, -5.0f, 0.0f), 0xffffffff, 0, 1 }, // 왼쪽 아래
-    //{ D3DXVECTOR3(5.0f,-5.0f, 0.0f), 0xffffffff,1,1 },// 오른쪽 아래
-    //{ D3DXVECTOR3(5.0f, 5.0f, 0.0f), 0xffffffff,1,0 },//오른쪽 위
-    //{ D3DXVECTOR3(-5.0f, 5.0f, 0.0f), 0xffffffff,0,0 },//왼쪽 위
-
     float myx = width / 2.0f;
     float myy = height / 2.0f;
     g_Vertices[0].position = D3DXVECTOR3(-myx, -myy, 0.0f);
@@ -243,7 +212,6 @@ HRESULT SetGeometry(float x, float y, float z, float width, float height)
     g_Vertices[3].position = D3DXVECTOR3(-myx, myy, 0.0f);
 
     memcpy(pVertices, g_Vertices, sizeof(CUSTOMVERTEX)*4);
-
 
     g_pVB->Unlock();
 
@@ -831,6 +799,10 @@ VOID Render()
         DrawFont2(L"안녕하세요", D3DXVECTOR2(0, 120), D3DXVECTOR4(1, 1, 1, 1), "NewDropShadow");
         DrawFont2(L"Draw DropShadow", D3DXVECTOR2(0, 140), D3DXVECTOR4(1, 1, 1, 1), "NewDropShadow");
        
+        //SetGeometry
+        //SetupMatrices
+
+
         g_pd3dDevice->EndScene();
     }
 
@@ -939,6 +911,9 @@ INT WINAPI wWinMain( HINSTANCE hInst, HINSTANCE, LPWSTR, INT )
     // Initialize Direct3D
     if( SUCCEEDED( InitD3D( hWnd ) ) )
     {
+        g_SDFGenerator = new SDFGenerator(g_pd3dDevice);
+        g_SDFGenerator->Init();
+
         if (SUCCEEDED(InitTexTure()))
         {
             // Create the scene geometry

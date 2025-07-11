@@ -1,3 +1,4 @@
+#include "stdafx.h"
 //#include "MetricsParser.h"
 //#include <fstream>
 //#include <sstream>
