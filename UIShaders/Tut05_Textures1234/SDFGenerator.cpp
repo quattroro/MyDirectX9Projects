@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "SDFGenerator.h"
 
+#include <msdfgen/msdfgen.h>
+#include <msdfgen/msdfgen-ext.h>
+
 SDFGenerator::SDFGenerator(LPDIRECT3DDEVICE9 device)
 {
 	m_Device = device;
@@ -72,18 +75,43 @@ void SDFGenerator::LoadGlyph(long unicode)
 
 	//CasheSDFTexture(sdf8.data(), width, height);
 
-	msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype();
-	msdfgen::FontHandle* font = msdfgen::loadFont(ft, "C:\\Windows\\Fonts\\malgun.ttf");
-	msdfgen::Shape shape;
-	msdfgen::loadGlyph(shape, font, 'A', msdfgen::FONT_SCALING_EM_NORMALIZED);
-	shape.normalize();
-	msdfgen::edgeColoringSimple(shape, 3.0);
-	msdfgen::Bitmap<float, 3> msdf(32, 32);
-	msdfgen::SDFTransformation t(msdfgen::Projection(32.0, msdfgen::Vector2(0.125, 0.125)), msdfgen::Range(0.125));
-	msdfgen::generateMSDF(msdf, shape, t);
-	msdfgen::savePng(msdf, "output.png");
+	/*if (msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype()) {
+		if (msdfgen::FontHandle* font = msdfgen::loadFont(ft, "C:\\Windows\\Fonts\\malgun.ttf")) {
+			msdfgen::Shape shape;
+			if (msdfgen::loadGlyph(shape, font, 'A', msdfgen::FONT_SCALING_EM_NORMALIZED)) {
+				shape.normalize();
+				msdfgen::edgeColoringSimple(shape, 3.0);
+				msdfgen::Bitmap<float, 3> msdf(32, 32);
+				msdfgen::SDFTransformation t(msdfgen::Projection(32.0, msdfgen::Vector2(0.125, 0.125)), msdfgen::Range(0.125));
+				msdfgen::generateMSDF(msdf, shape, t);
+				
+				msdfgen::savePng(msdf, "output.png");
+			}
+			msdfgen::destroyFont(font);
+		}
+		msdfgen::deinitializeFreetype(ft);
+	}*/
 
 
+
+	if (msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype()) {
+		if (msdfgen::FontHandle* font = msdfgen::loadFont(ft, "C:\\Windows\\Fonts\\malgun.ttf")) {
+			msdfgen::Shape shape;
+			if (msdfgen::loadGlyph(shape, font, 'A', msdfgen::FONT_SCALING_EM_NORMALIZED)) {
+				shape.normalize();
+				// SDF는 엣지 컬러링이 필요 없음
+				msdfgen::Bitmap<float, 1> sdf(32, 32);
+				// 변환: 스케일 및 위치 조정
+				msdfgen::SDFTransformation t(msdfgen::Projection(32.0, msdfgen::Vector2(0.125, 0.125)), msdfgen::Range(0.125));
+				msdfgen::generateSDF(sdf, shape, t);
+				// 파일 저장 없이 sdf.data()로 접근 가능
+				// DirectX9 텍스처 변환은 아래 참고
+				msdfgen::savePng(sdf, "output.png");
+			}
+			msdfgen::destroyFont(font);
+		}
+		msdfgen::deinitializeFreetype(ft);
+	}
 }
 
 void SDFGenerator::CasheSDFTexture(const unsigned char* texdata, int width, int height)

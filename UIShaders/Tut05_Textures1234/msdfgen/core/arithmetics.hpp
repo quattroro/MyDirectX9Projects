@@ -8,13 +8,13 @@ namespace msdfgen {
 
 /// Returns the smaller of the arguments.
 template <typename T>
-inline T min(T a, T b) {
+inline T (min)(T a, T b) {
     return b < a ? b : a;
 }
 
 /// Returns the larger of the arguments.
 template <typename T>
-inline T max(T a, T b) {
+inline T (max)(T a, T b) {
     return a < b ? b : a;
 }
 

@@ -15,5 +15,4 @@
 
 #pragma comment(lib, "msdfgen-core.lib")
 #pragma comment(lib, "msdfgen-ext.lib")
-#include "msdfgen/msdfgen.h"
-#include "msdfgen/msdfgen-ext.h"
+

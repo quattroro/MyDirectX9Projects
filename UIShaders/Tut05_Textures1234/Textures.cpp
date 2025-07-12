@@ -913,6 +913,7 @@ INT WINAPI wWinMain( HINSTANCE hInst, HINSTANCE, LPWSTR, INT )
     {
         g_SDFGenerator = new SDFGenerator(g_pd3dDevice);
         g_SDFGenerator->Init();
+        g_SDFGenerator->LoadGlyph('A');
 
         if (SUCCEEDED(InitTexTure()))
         {
