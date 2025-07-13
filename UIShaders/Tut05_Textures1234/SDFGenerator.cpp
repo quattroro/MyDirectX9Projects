@@ -1,8 +1,9 @@
 #include "stdafx.h"
 #include "SDFGenerator.h"
 
-#include <msdfgen/msdfgen.h>
-#include <msdfgen/msdfgen-ext.h>
+#include <msdfgen.h>
+#include <msdfgen-ext.h>
+
 
 SDFGenerator::SDFGenerator(LPDIRECT3DDEVICE9 device)
 {
