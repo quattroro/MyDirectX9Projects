@@ -37,44 +37,44 @@ Glyph SDFGenerator::GetCashedGlyph(long unicode)
 
 void SDFGenerator::LoadGlyph(long unicode)
 {
-	//FT_Library ft;
-	//FT_Face face;
-	//FT_Init_FreeType(&ft);
-	//FT_New_Face(ft, "C:\\Windows\\Fonts\\malgun.ttf", 0, &face);
-	//FT_Set_Pixel_Sizes(face, 0, 50);
-	//FT_Load_Char(face, unicode, FT_LOAD_RENDER);
+	FT_Library ft;
+	FT_Face face;
+	FT_Init_FreeType(&ft);
+	FT_New_Face(ft, "C:\\Windows\\Fonts\\malgun.ttf", 0, &face);
+	FT_Set_Pixel_Sizes(face, 0, 50);
+	FT_Load_Char(face, unicode, FT_LOAD_RENDER);
 
-	//FT_Bitmap& bitmap = face->glyph->bitmap;
-	//int width = bitmap.width;
-	//int height = bitmap.rows;
+	FT_Bitmap& bitmap = face->glyph->bitmap;
+	int width = bitmap.width;
+	int height = bitmap.rows;
 
-	//int Padding = 16;
-	//int newWidth = width + Padding * 2;
-	//int newHeight = height + Padding * 2;
-	//unsigned char* buffer2 = new unsigned char[newWidth * newHeight];
-	//memset(buffer2, 0, newWidth * newHeight);
+	int Padding = 16;
+	int newWidth = width + Padding * 2;
+	int newHeight = height + Padding * 2;
+	unsigned char* buffer2 = new unsigned char[newWidth * newHeight];
+	memset(buffer2, 0, newWidth * newHeight);
 
-	//for (int y = 0; y < height; ++y) {
-	//	for (int x = 0; x < width; ++x) {
-	//		buffer2[(y + Padding) * newWidth + (x + Padding)] = bitmap.buffer[y * width + x];
-	//	}
-	//}
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			buffer2[(y + Padding) * newWidth + (x + Padding)] = bitmap.buffer[y * width + x];
+		}
+	}
 
-	//width = newWidth;
-	//height = newHeight;
-	//
-	//float* sdf = new float[width * height];
-	//GenerateSDF(/*bitmap.buffer*/buffer2, width, height, sdf);
+	width = newWidth;
+	height = newHeight;
+	
+	float* sdf = new float[width * height];
+	GenerateSDF(/*bitmap.buffer*/buffer2, width, height, sdf);
+	//GenerateSDFAA(bitmap.buffer, width, height, sdf);
 
-	//NormalizeAndQuantizeWithSpread(sdf, width * height, sdf, /*16*/7);
-	////GenerateSDFAA(bitmap.buffer, width, height, sdf);
+	NormalizeAndQuantizeWithSpread(sdf, width * height, sdf, /*16*/7);
+	
+	NormalizeSDF(sdf, width * height);
 
-	//NormalizeSDF(sdf, width * height);
+	std::vector<unsigned char> sdf8(width * height);
+	QuantizeSDF(sdf, width * height, sdf8.data());
 
-	//std::vector<unsigned char> sdf8(width * height);
-	//QuantizeSDF(sdf, width * height, sdf8.data());
-
-	//CasheSDFTexture(sdf8.data(), width, height);
+	CasheSDFTexture(sdf8.data(), width, height);
 
 	/*if (msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype()) {
 		if (msdfgen::FontHandle* font = msdfgen::loadFont(ft, "C:\\Windows\\Fonts\\malgun.ttf")) {
@@ -95,24 +95,24 @@ void SDFGenerator::LoadGlyph(long unicode)
 
 
 
-	if (msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype()) {
-		if (msdfgen::FontHandle* font = msdfgen::loadFont(ft, "C:\\Windows\\Fonts\\malgun.ttf")) {
-			msdfgen::Shape shape;
-			if (msdfgen::loadGlyph(shape, font, 'A', msdfgen::FONT_SCALING_EM_NORMALIZED)) {
-				shape.normalize();
-				// SDF는 엣지 컬러링이 필요 없음
-				msdfgen::Bitmap<float, 1> sdf(32, 32);
-				// 변환: 스케일 및 위치 조정
-				msdfgen::SDFTransformation t(msdfgen::Projection(32.0, msdfgen::Vector2(0.125, 0.125)), msdfgen::Range(0.125));
-				msdfgen::generateSDF(sdf, shape, t);
-				// 파일 저장 없이 sdf.data()로 접근 가능
-				// DirectX9 텍스처 변환은 아래 참고
-				msdfgen::savePng(sdf, "output.png");
-			}
-			msdfgen::destroyFont(font);
-		}
-		msdfgen::deinitializeFreetype(ft);
-	}
+	//if (msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype()) {
+	//	if (msdfgen::FontHandle* font = msdfgen::loadFont(ft, "C:\\Windows\\Fonts\\malgun.ttf")) {
+	//		msdfgen::Shape shape;
+	//		if (msdfgen::loadGlyph(shape, font, 'A', msdfgen::FONT_SCALING_EM_NORMALIZED)) {
+	//			shape.normalize();
+	//			// SDF는 엣지 컬러링이 필요 없음
+	//			msdfgen::Bitmap<float, 1> sdf(32, 32);
+	//			// 변환: 스케일 및 위치 조정
+	//			msdfgen::SDFTransformation t(msdfgen::Projection(32.0, msdfgen::Vector2(0.125, 0.125)), msdfgen::Range(0.125));
+	//			msdfgen::generateSDF(sdf, shape, t);
+	//			// 파일 저장 없이 sdf.data()로 접근 가능
+	//			// DirectX9 텍스처 변환은 아래 참고
+	//			//msdfgen::savePng(sdf, "output.png");
+	//		}
+	//		msdfgen::destroyFont(font);
+	//	}
+	//	msdfgen::deinitializeFreetype(ft);
+	//}
 }
 
 void SDFGenerator::CasheSDFTexture(const unsigned char* texdata, int width, int height)
