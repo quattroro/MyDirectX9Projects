@@ -130,6 +130,9 @@ void Aero::updateForce(RigidBody *body, real duration)
     Aero::updateForceFromTensor(body, duration, tensor);
 }
 
+
+/*공기역학 텐서는 기체 표면에서 발생하는 힘을 기체 표면을 지나가는 공기의 속도만으로 계산하게 해준다.
+    공기의 속도 벡터를 이 텐서로 변환하면 힘 벡터를 얻을 수 있다.*/
 void Aero::updateForceFromTensor(RigidBody *body, real duration,
                                  const Matrix3 &tensor)
 {
