@@ -520,6 +520,13 @@ void CreateFontGeometry(Glyph glyph, CUSTOMVERTEX* Vertices, D3DXVECTOR2& penpos
     penpos.x += (glyph.mHorizontalAdvance /*+ m_FontPitch*/);
 }
 
+Glyph GetGlyph(int fontindex, long unicode)
+{
+    Glyph glyph;
+    memcpy(&glyph, g_SDFGenerator->GetCashedGlyph(fontindex, 'A'), sizeof(Glyph));
+    return glyph;
+}
+
 void CreateFontGeometry(WCHAR* str, D3DXVECTOR2 pos/*Ω√¿€ ¡¬«•*/)
 {
     int strsize = wcslen(str);
@@ -533,8 +540,9 @@ void CreateFontGeometry(WCHAR* str, D3DXVECTOR2 pos/*Ω√¿€ ¡¬«•*/)
 
     for (int count = 0; count < strsize; count++)
     {
-        long temp = str[count];
-        curGlyph = g_glyphs[temp];
+        /*long temp = str[count];
+        curGlyph = g_glyphs[temp];*/
+        curGlyph = GetGlyph(0, str[count]);
         CreateFontGeometry(curGlyph, &Vertices[count * 4], pos);
 
         for (int i = 0; i < 6; i++)
@@ -912,8 +920,8 @@ INT WINAPI wWinMain( HINSTANCE hInst, HINSTANCE, LPWSTR, INT )
     if( SUCCEEDED( InitD3D( hWnd ) ) )
     {
         g_SDFGenerator = new SDFGenerator(g_pd3dDevice);
-        g_SDFGenerator->Init();
-        g_SDFGenerator->LoadGlyph('A');
+        g_SDFGenerator->Init(7);
+        //g_SDFGenerator->GetCashedGlyph(0, 'A');
 
         if (SUCCEEDED(InitTexTure()))
         {

@@ -392,18 +392,21 @@ namespace cyclone {
     /**
      * A force generator with an aerodynamic surface that can be
      * re-oriented relative to its rigid body. This derives the
+     * 공기역학적 표면이 물체를 기준으로 회전하는 기능을 추가한 힘 발생기
      */
     class AngledAero : public Aero
     {
         /**
          * Holds the orientation of the aerodynamic surface relative
          * to the rigid body to which it is attached.
+         * 강체를 기준으로 공기역학적 표면의 회전을 저장한다.
          */
         Quaternion orientation;
 
     public:
         /**
          * Creates a new aerodynamic surface with the given properties.
+         * 주어진 속성을 바탕으로 공기역학적 표면 개체를 초기화하는 생성자.
          */
         AngledAero(const Matrix3 &tensor, const Vector3 &position,
              const Vector3 *windspeed);
@@ -413,57 +416,72 @@ namespace cyclone {
          * relative to the rigid body it is attached to. Note that
          * this doesn't affect the point of connection of the surface
          * to the body.
+         * 물체의 로컬 좌표계를 기준으로 하여,
+         * 공기역학적 표면의 회전을 설정한다.
+         * 이 회전은 표면이 물체에 붙어 있는 위치에는 영향을 주지 않는다.
          */
         void setOrientation(const Quaternion &quat);
 
         /**
          * Applies the force to the given rigid body.
+         * 주어진 강체에 힘을 적용한다.
          */
         virtual void updateForce(RigidBody *body, real duration);
     };
 
     /**
      * A force generator to apply a buoyant force to a rigid body.
+     * 질량에 부력을 작용하는 힘 발생기
      */
     class Buoyancy : public ForceGenerator
     {
         /**
          * The maximum submersion depth of the object before
          * it generates its maximum buoyancy force.
+         * 부력이 최대가 되는 물체의 최대 깊이
          */
         real maxDepth;
 
         /**
          * The volume of the object.
+         * 물체의 부피
          */
         real volume;
 
         /**
          * The height of the water plane above y=0. The plane will be
          * parallel to the XZ plane.
+         * XY 평면 (y = 0)을 기준으로 수면의 높이.
+         * 수면은 XY 평면과 평행하다.
          */
         real waterHeight;
 
         /**
          * The density of the liquid. Pure water has a density of
          * 1000kg per cubic meter.
+         * 액체의 밀도. 순수한 물의 밀도는
+         * 1000kg 세제곱미터 이다.
          */
         real liquidDensity;
 
         /**
          * The centre of buoyancy of the rigid body, in body coordinates.
+         * 물체의 로컬 좌표계로 나타낸 부력의 중심의 위치
          */
         Vector3 centreOfBuoyancy;
 
     public:
 
-        /** Creates a new buoyancy force with the given parameters. */
+        /** Creates a new buoyancy force with the given parameters. 
+            주어진 인자로 힘 발생기 개체를 초기화하는 생성자.
+        */
         Buoyancy(const Vector3 &cOfB,
             real maxDepth, real volume, real waterHeight,
             real liquidDensity = 1000.0f);
 
         /**
          * Applies the force to the given rigid body.
+         * 주어진 강체에 힘을 적용한다.
          */
         virtual void updateForce(RigidBody *body, real duration);
     };
