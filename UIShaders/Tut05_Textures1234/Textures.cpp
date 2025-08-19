@@ -174,8 +174,10 @@ CUSTOMVERTEX g_Vertices[] =
 
 DWORD g_Indexes[] =
 {
-    3,2,0,
-    0,2,1,
+    /*3,2,0,
+    0,2,1,*/
+    0,1,2,
+    0,3,2
 };
 
 HRESULT CreateBuffer()
@@ -352,7 +354,14 @@ VOID SetupMatrices2(float x = 0, float y = 0, float z = 0, float sx = 0, float s
 void SetShaderParameter(char* technique = "SoftEdgeDraw", D3DXVECTOR4 baseColor = D3DXVECTOR4(0,0,0,0))
 {
     //텍스쳐 설정
-    g_pd3dDevice->SetTexture(0, g_SDFTexture);
+    //g_pd3dDevice->SetTexture(0, g_SDFTexture);
+    /*if(!strcmp(technique, "RectDraw"))
+    {
+        g_pd3dDevice->SetTexture(0, g_SDFTexture);
+    }
+    else*/
+        g_pd3dDevice->SetTexture(0, g_SDFGenerator->GetCashedTexture(0));
+
     g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
     g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
     g_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
@@ -517,13 +526,14 @@ void CreateFontGeometry(Glyph glyph, CUSTOMVERTEX* Vertices, D3DXVECTOR2& penpos
     Vertices[3] = CUSTOMVERTEX(D3DXVECTOR3(pos.x, pos.y, 0.0f), 0xffffffff, tu, tv);//왼쪽 아래
 
 
-    penpos.x += (glyph.mHorizontalAdvance /*+ m_FontPitch*/);
+    penpos.x += (glyph.mHorizontalAdvance /*+ m_FontPitch*/ - 5.0);
 }
 
 Glyph GetGlyph(int fontindex, long unicode)
 {
-    Glyph glyph;
-    memcpy(&glyph, g_SDFGenerator->GetCashedGlyph(fontindex, 'A'), sizeof(Glyph));
+    Glyph* ptemp = g_SDFGenerator->GetCashedGlyph(fontindex, unicode);
+    Glyph glyph = Glyph(ptemp);
+    //memcpy(&glyph, g_SDFGenerator->GetCashedGlyph(fontindex, 'A'), sizeof(Glyph));
     return glyph;
 }
 
@@ -572,7 +582,152 @@ void CreateFontGeometry(WCHAR* str, D3DXVECTOR2 pos/*시작 좌표*/)
     g_pIB->Unlock();
 }
 
+void CreateFontGeometry2(Glyph glyph, CUSTOMVERTEX* Vertices, D3DXVECTOR2& penpos)
+{
 
+    //CUSTOMVERTEX Vertices[4];
+
+    //float tu = (glyph.mTextureCoordX - g_margin);
+    //float tv = 1 - (glyph.mTextureCoordY - g_margin) - (glyph.mTextureHeight + g_margin/* * 2*/);
+
+    D3DXVECTOR2 pos = D3DXVECTOR2(penpos.x + glyph.mHorizontalBearingX, penpos.y + glyph.mHorizontalBearingY);
+
+    float tu;
+    float tv;
+
+    float WidthRatio = glyph.mWidth / glyph.mTextureWidth;
+    float HeightRatio = glyph.mHeight / glyph.mTextureHeight;
+
+    float WidthMargin = g_margin * WidthRatio;
+    float HeightMargin = g_margin * HeightRatio;
+
+
+    /*if (testbool)
+    {
+        pos.x -= WidthMargin;
+        pos.y += HeightMargin;
+
+        glyph.mWidth += WidthMargin;
+        glyph.mHeight += HeightMargin;
+    }*/
+    pos.x -= WidthMargin;
+    pos.y += HeightMargin;
+
+    glyph.mWidth += WidthMargin;
+    glyph.mHeight += HeightMargin;
+
+
+    tu = glyph.mTextureCoordX - g_margin;
+    tv = glyph.mTextureCoordY - g_margin;
+    Vertices[0] = CUSTOMVERTEX(D3DXVECTOR3(pos.x, pos.y - glyph.mHeight, 0.0f), 0xffffffff, 0.0, 0.0);//왼쪽 위
+
+    tu = glyph.mTextureCoordX + glyph.mTextureWidth + g_margin;
+    tv = glyph.mTextureCoordY - g_margin;
+    Vertices[1] = CUSTOMVERTEX(D3DXVECTOR3(pos.x + glyph.mWidth, pos.y - glyph.mHeight, 0.0f), 0xffffffff, 1.0, 0.0);//오른쪽 위
+
+
+    tu = glyph.mTextureCoordX + glyph.mTextureWidth + g_margin;
+    tv = glyph.mTextureCoordY + glyph.mTextureHeight + g_margin;
+    Vertices[2] = CUSTOMVERTEX(D3DXVECTOR3(pos.x + glyph.mWidth, pos.y, 0.0f), 0xffffffff, 1.0, 1.0);//오른쪽 아래
+
+
+    tu = glyph.mTextureCoordX - g_margin;
+    tv = glyph.mTextureCoordY + glyph.mTextureHeight + g_margin;
+    Vertices[3] = CUSTOMVERTEX(D3DXVECTOR3(pos.x, pos.y, 0.0f), 0xffffffff, 0.0, 1.0);//왼쪽 아래
+
+
+    penpos.x += (glyph.mHorizontalAdvance /*+ m_FontPitch*/ - 10);
+}
+
+
+void CreateFontGeometry2(WCHAR* str, D3DXVECTOR2 pos/*시작 좌표*/)
+{
+    int strsize = wcslen(str);
+    //CUSTOMVERTEX* Vertices = (CUSTOMVERTEX*)malloc(sizeof(CUSTOMVERTEX) * 4 * strsize);
+    CUSTOMVERTEX Vertices[500];
+    ZeroMemory(Vertices, sizeof(CUSTOMVERTEX) * 4 * strsize);
+    //DWORD* Indexices = (DWORD*)malloc(sizeof(DWORD) * 6 * strsize);
+    DWORD Indexices[500] = { 0 };
+
+    Glyph curGlyph;
+
+    for (int count = 0; count < strsize; count++)
+    {
+        /*long temp = str[count];
+        curGlyph = g_glyphs[temp];*/
+        curGlyph = GetGlyph(0, str[count]);
+        CreateFontGeometry2(curGlyph, &Vertices[count * 4], pos);
+
+        for (int i = 0; i < 6; i++)
+        {
+            Indexices[(count * 6) + i] = g_Indexes[i] + count * 4;
+        }
+    }
+
+
+    CUSTOMVERTEX* pVerticesTemp;
+    if (FAILED(g_pVB->Lock(0, 0, (void**)&pVerticesTemp, 0)))
+        return;
+
+    memcpy(pVerticesTemp, Vertices, sizeof(CUSTOMVERTEX) * 4 * strsize);
+
+    g_pVB->Unlock();
+
+
+    //인덱스 정보
+    DWORD* pIndexes;
+
+    if (FAILED(g_pIB->Lock(0, 0, (void**)&pIndexes, 0)))
+        return;
+
+    memcpy(pIndexes, Indexices, sizeof(DWORD) * 6 * strsize);
+
+    g_pIB->Unlock();
+}
+
+void CreateRectGeometry()
+{
+    CUSTOMVERTEX Vertices[500];
+    ZeroMemory(Vertices, sizeof(CUSTOMVERTEX) * 4);
+    DWORD Indexices[500] = { 0 };
+
+    Vertices[0] = CUSTOMVERTEX(D3DXVECTOR3(-0.5f, 0.5, 0.0f), 0xffffffff, 0.0f, 0.0f);//왼쪽 위
+    Vertices[1] = CUSTOMVERTEX(D3DXVECTOR3(0.5f, 0.5f, 0.0f), 0xffffffff, 1.0f, 0.0f);//오른쪽 위
+    Vertices[2] = CUSTOMVERTEX(D3DXVECTOR3(0.5f, -0.5, 0.0f), 0xffffffff, 1.0f, 1.0f);//오른쪽 아래
+    Vertices[3] = CUSTOMVERTEX(D3DXVECTOR3(-0.5f, -0.5, 0.0f), 0xffffffff, 0.0f, 1.0f);//왼쪽 아래
+
+    CUSTOMVERTEX* pVerticesTemp;
+    if (FAILED(g_pVB->Lock(0, 0, (void**)&pVerticesTemp, 0)))
+        return;
+    memcpy(pVerticesTemp, Vertices, sizeof(CUSTOMVERTEX) * 4);
+    g_pVB->Unlock();
+
+
+    //인덱스 정보
+    DWORD* pIndexes;
+    if (FAILED(g_pIB->Lock(0, 0, (void**)&pIndexes, 0)))
+        return;
+    memcpy(pIndexes, g_Indexes, sizeof(DWORD) * 6);
+    g_pIB->Unlock();
+}
+
+void DrawRect(D3DXVECTOR2 pos, D3DXVECTOR2 size, LPDIRECT3DTEXTURE9 tex)
+{
+    SetupMatrices(pos.x, pos.y, 0, 7.0, 7.0, 1.0f);
+    CreateRectGeometry();
+    SetShaderParameter("RectDraw", D3DXVECTOR4(1, 1, 1, 1));
+
+    UINT passCount;
+    g_lpEffect->Begin(&passCount, 0);
+    for (int pass = 0; pass < passCount; pass++)
+    {
+        g_lpEffect->BeginPass(pass);
+        g_pd3dDevice->DrawIndexedPrimitive(/*D3DPT_TRIANGLESTRIP*/D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
+        g_lpEffect->EndPass();
+
+    }
+    g_lpEffect->End();
+}
 
 void DrawFont2(WCHAR* str, D3DXVECTOR2 startPos, D3DXVECTOR4 baseColor, char* technique = "SoftEdgeDraw")
 {
@@ -585,6 +740,32 @@ void DrawFont2(WCHAR* str, D3DXVECTOR2 startPos, D3DXVECTOR4 baseColor, char* te
     CreateFontGeometry(str, startPos);
 
     SetShaderParameter(technique, baseColor);
+
+    //출력
+    UINT passCount;
+    g_lpEffect->Begin(&passCount, 0);
+    for (int pass = 0; pass < passCount; pass++)
+    {
+        g_lpEffect->BeginPass(pass);
+        g_pd3dDevice->DrawIndexedPrimitive(/*D3DPT_TRIANGLESTRIP*/D3DPT_TRIANGLELIST, 0, 0, 4 * strsize, 0, 2 * strsize);
+        g_lpEffect->EndPass();
+
+    }
+    g_lpEffect->End();
+
+}
+
+void DrawFont3(WCHAR* str, D3DXVECTOR2 startPos, D3DXVECTOR4 baseColor, char* technique = "SoftEdgeDraw")
+{
+
+    //글자 하나당 Vertex의 크기는 Metrics 파일에 있는 크기 정보로 만든다.
+    int strsize = wcslen(str);
+
+    SetupMatrices(startPos.x, startPos.y, 0, 1.0f, 1.0f, 1);
+
+    CreateFontGeometry2(str, startPos);
+
+    SetShaderParameter("RectDraw", baseColor);
 
     //출력
     UINT passCount;
@@ -803,10 +984,11 @@ VOID Render()
         //g_pd3dDevice->SetRenderState(D3DRS_ALPHAREF, /*0x00000001*//*0x80*//*0x1*/0x80);
         //g_pd3dDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL/*D3DCMP_LESSEQUAL*/); // D3DCMP_GREATEREQUAL => 픽셀의 알파 값이 ALPHAREF에 설정된 값보다 크거나 같으면 Alpha를 1로해서 출력 한다.
 
-        DrawFont2(L"가나다라마바사", D3DXVECTOR2(0, 100), D3DXVECTOR4(1, 1, 1, 1), "NewDropShadow");
-        DrawFont2(L"안녕하세요", D3DXVECTOR2(0, 120), D3DXVECTOR4(1, 1, 1, 1), "NewDropShadow");
-        DrawFont2(L"Draw DropShadow", D3DXVECTOR2(0, 140), D3DXVECTOR4(1, 1, 1, 1), "NewDropShadow");
-       
+        DrawFont2(L"가나다라마바사", D3DXVECTOR2(0, 100), D3DXVECTOR4(1, 1, 1, 1), "NewSoftDraw");
+        DrawFont2(L"안녕하세요", D3DXVECTOR2(0, 120), D3DXVECTOR4(1, 1, 1, 1), "NewSoftDraw");
+        DrawFont2(L"Draw DropShadow", D3DXVECTOR2(0, 140), D3DXVECTOR4(1, 1, 1, 1), "NewSoftDraw");
+        //DrawFont3(L"가", D3DXVECTOR2(0, 160), D3DXVECTOR4(1, 1, 1, 1), "NewSoftDraw");
+        DrawRect(D3DXVECTOR2(0.5, testPoint.y), D3DXVECTOR2(500, 500), g_SDFGenerator->GetCashedTexture(0));
         //SetGeometry
         //SetupMatrices
 

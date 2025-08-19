@@ -310,23 +310,28 @@ bool SDFGenerator::LoadGlyph4(int fonttype, long unicode)
 	//FT_Render_Glyph()
 
 	float* sdf = new float[width * height];
+	std::vector<unsigned char> sdf8(width * height);
 
+
+	float sdf2[2048] = { 0 };
 	for (int y = 0; y < height; ++y)
 	{
 		for (int x = 0; x < width; ++x)
 		{
-			sdf[y * width + x] = bitmap.buffer[y * width + x];
+			//sdf[y * width + x] = bitmap.buffer[y * width + x];
+			sdf8[y * width + x] = bitmap.buffer[y * width + x];
 		}
 	}
 
-	//getFontMetrics(FontMetrics &metrics, FontHandle *font, FontCoordinateScaling coordinateScaling = FONT_SCALING_LEGACY);
+	//memcpy(sdf2, sdf, sizeof(float) * width * height);
 
+	//getFontMetrics(FontMetrics &metrics, FontHandle *font, FontCoordinateScaling coordinateScaling = FONT_SCALING_LEGACY);
 	//NormalizeAndQuantizeWithSpread(sdf, width * height, sdf, /*16*/3/*5*/);
 
-	NormalizeSDF3(sdf, width * height);
-
-	std::vector<unsigned char> sdf8(width * height);
-	QuantizeSDF(sdf, width * height, sdf8.data());
+	///////////////////////////////////////////////////////////////////////////////////
+	//NormalizeSDF3(sdf, width * height);
+	
+	//QuantizeSDF(sdf, width * height, sdf8.data());
 
 	POINT pos;
 	CasheSDFTextureRev(fonttype, sdf8.data(), width, height, &pos);

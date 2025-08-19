@@ -373,6 +373,15 @@ PS_OUTPUT DebugFrag(VS_OUTPUT In)
     return Out;
 }
 
+PS_OUTPUT RectDrawFrag(VS_OUTPUT In)
+{
+    PS_OUTPUT Out;
+    float4 color = tex2D(_FontSampler, In.TexCoord0);
+    Out.Color = color;
+    Out.EmissiveColor = float4(0, 0, 0, color.a);
+    return Out;
+}
+
 technique BasicDraw
 {
     pass P0
@@ -471,5 +480,14 @@ technique NewDropShadow
     {
         VertexShader = compile vs_2_a Vert();
         PixelShader = compile ps_2_a NewDropShadowFrag();
+    }
+}
+
+technique RectDraw
+{
+    pass P0
+    {
+        VertexShader = compile vs_2_a Vert();
+        PixelShader = compile ps_2_a RectDrawFrag();
     }
 }
