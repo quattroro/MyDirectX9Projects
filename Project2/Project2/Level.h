@@ -122,6 +122,28 @@ static void SortActorsHierarchy(TArray<TObjectPtr<AActor>>& Actors, ULevel* Leve
 //       [ ] explain BSP brush with the editor
 // - rest of content will be skipped for now:
 //   - when we cover different topics like world-partition, streaming etc, we will visit it again
+
+/**
+* 레벨 객체:
+* 레벨의 배우 목록, BSP 정보 및 브러시 목록을 포함합니다
+* 모든 레벨에는 외부 세계가 있으며 지속적인 레벨로 사용할 수 있습니다,
+* OwningWorld에서 레벨이 스트리밍된 경우 레벨은 해당 레벨이 속한 월드를 나타냅니다
+*/
+
+/**
+* 레벨은 배우들(빛, 볼륨, 메쉬 인스턴스 등)의 모음입니다
+* 여러 레벨을 로드하고 언로드하여 스트리밍 경험을 만들 수 있습니다
+*/
+
+// 10 - 파운데이션 - 크리에이트월드 - U레벨 클래스
+// 해커:
+// 레벨?
+// - 레벨 == 배우 모음:
+// - 배우들의 예:
+// - 가볍고, 정적인 메쉬, 볼륨, 브러시(예: BSP 브러시: 이진 검색 분할), ...
+// 편집자와 함께 BSP 브러시를 설명합니다
+// - 나머지 콘텐츠는 당분간 생략하겠습니다:
+// - 월드 partition, 스트리밍 등 다양한 주제를 다룰 때 다시 방문할 예정입니다
 class ULevel : public UObject
 {
     // 49 - Foundation - CreateWorld - ULevel::ULevel() constructor
@@ -273,6 +295,9 @@ class ULevel : public UObject
     /** array of all actors in this level, used by FActorIteratorBase and derived classes */
     // haker: this is the member variable which contains a list of AActor
     // see AActor (goto 12)
+
+    /** 이 수준의 모든 배우 배열, FActorIteratorBase 및 파생 클래스에서 사용됨 */
+// 하커: 이것은 AActor 목록을 포함하는 멤버 변수입니다
     TArray<TObjectPtr<AActor>> Actors;
 
     /** cached level collection that this level is contained in */

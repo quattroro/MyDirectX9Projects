@@ -346,6 +346,21 @@ struct FLevelCollection
 // 4 - Foundation - CreateWorld - UWorld class
 // see UObject
 // haker: now see World's member variables (goto 9)
+/**
+* 세계는 행위자와 구성 요소가 존재하고 렌더링될 지도나 샌드박스를 나타내는 최상위 객체입니다
+*
+* 볼륨 및 청사진 함수를 통해 로드 및 언로드되는 스트리밍 레벨 목록을 선택할 수 있는 하나의 영구 레벨이 될 수 있습니다
+* 또는 월드 컴포지션으로 구성된 레벨 모음일 수도 있습니다(->haker: Old Comment...)
+*
+* 독립형 게임에서는 일반적으로 목적지와 현재 세계가 모두 존재하는 원활한 영역 전환을 제외하고는 단일 세계만 존재합니다
+* 편집자에게는 많은 세계가 존재합니다:
+* - 편집 중인 레벨
+* - 각 PIE 인스턴스
+* - 대화형 렌더링 뷰포트가 있는 각 편집기 도구 등
+*/
+// 4 - 재단 - 크리에이트월드 - UWorld 클래스
+// see UObject
+// 하커: 이제 월드의 멤버 변수를 확인하세요 (9로 이동)
 class UWorld final : public UObject, public FNetworkNotify
 {
     // 2 - Foundation - CreateWorld - UWorld::InitializationValues
@@ -398,6 +413,10 @@ class UWorld final : public UObject, public FNetworkNotify
         // haker: what is 'Transient' in Unreal Engine?
         // - if you have property or asset which is not serialized, we mark it as 'Transient'
         // - Transient == (meta data to mark it as not-to-be-serialize)
+        // 패키지에 월드가 포함된 것으로 표시
+        // 하커: 언리얼 엔진에서 'Transient'이란 무엇인가요?
+        // - 직렬화되지 않은 자산이나 자산이 있는 경우 'Transient'으로 표시합니다
+        // - Transient == (serial화되지 않도록 표시하기 위한 데이터 meta)
         if (WorldPackage != GetTransientPackage())
         {
             WorldPackage->ThisContainsMap();
@@ -409,6 +428,8 @@ class UWorld final : public UObject, public FNetworkNotify
 
         // haker: we set NewWorld's outer as WorldPackage:
         // - normally, when you look into outer object, it will finally end-up-with package(asset file containing this UObject)
+        // 하커: 우리는 NewWorld의 외부를 WorldPackage로 설정했습니다:
+        // - 일반적으로 외부 객체를 들여다보면 결국 패키지(이 UObject가 포함된 자산 파일)로 마무리됩니다
         UWorld* NewWorld = NewObject<UWorld>(WorldPackage, *WorldNameString);
 
         // haker: UObject::SetFlags -> set unreal object's attribute with flag by bit operator (AND(&), OR(|), SHIFT(>>, <<) etc...)
@@ -812,6 +833,10 @@ class UWorld final : public UObject, public FNetworkNotify
     /** the URL that was used when loading this World */
     // haker: think of the URL as package path:
     // - e.g. Game\Map\Seoul\Seoul.umap
+
+    /** 이 월드를 로드할 때 사용된 URL */
+    // 하커: URL을 패키지 경로로 생각해 보세요:
+    // - 예: 게임\\Map\\Seoul.umap
     FURL URL;
 
     /** the type of world this is. Describes the context in which it is being used (Editor, Game, Preview etc.) */
@@ -819,12 +844,17 @@ class UWorld final : public UObject, public FNetworkNotify
     // - TEnumAsByte is helper wrapper class to support bit operation on enum type
     // - I recommend to read it how it is implemented
     // ADVICE: as C++ programmer, it is VERY important **to manipulate bit operations freely!**
+    /** 이 세계의 유형입니다. 이 세계가 사용되고 있는 맥락을 설명합니다 (편집자, 게임, 미리보기 등) */
+    // 하커: 우리는 이미 EWorldType를 보았습니다
+    // - TEnumAsByte는 enum 타입에서 비트 연산을 지원하는 헬퍼 래퍼 클래스입니다
+    // - 구현 방식을 읽어보시기를 권장합니다
+    // 조언: C++ 프로그래머로서 비트 연산을 자유롭게 조작하는 것은 매우 중요합니다!**!
     TEnumAsByte<EWorldType::Type> WorldType;
 
     /** persistent level containing the world info, default brush and actors pawned during gameplay among other things */
     // see ULevel (goto 10)
     // hacker: short explanation about world info
-    TObjectPtr<class ULevel> PersistentLevel;
+    TObjectPtr<class ULevel> PersistentLevel; // world info 정보를 가지고있는 level이 persistentlevel 이고 가지고있지 않은 레벨은 썸 레벨이다.
 
 #if WITH_EDITORONLY_DATA || 1
     /** pointer to the current level being edited; level has to be in the levels array and == PersistentLevel in the game */

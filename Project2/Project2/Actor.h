@@ -603,6 +603,10 @@ class AActor : public UObject
     /** all ActorComponents owned by this Actor; stored as a Set as actors may have a large number of components */
     // haker: all components in AActor is stored here
     // see UActorComponent (goto 14)
+    // 
+    // /** 이 Actor가 소유한 모든 ActorAomponents; actors 집합으로 저장된 배우 구성 요소는 다수일 수 있습니다 */
+    // 하커: AActor의 모든 구성 요소는 여기에 저장됩니다
+    // 모든 생성된 컴포넌트들은 이곳에 들어가있다.
     TSet<TObjectPtr<UActorComponent>> OwnedComponents;
 
     /**
@@ -610,10 +614,18 @@ class AActor : public UObject
      * prevents re-initializing of actors spawned during level startup 
      */
     // haker: when PostInitializeComponents is called, bActorInitialized is set to 'true'
+    // 현재 Initialize단계가 어디까지 진행되었는지를 마킹해주는 비트 플래그
+    /**
+    * 이 행위자에게 PreInitializeComponents/PostInitializeComponents가 호출되었음을 나타냅니다
+    * 레벨 시작 중에 생성된 액터의 initial 재설정을 방지합니다
+    */
+    // haker: PostInitializeComponents가 호출되면 bActorInitialize가 'true'로 설정됩니다
     uint8 bActorInitialized : 1;
 
     /** whether we've tried to register tick functions; reset when they are unregistered */
     // haker: tick function is registered
+    /** 틱 기능을 등록하려고 했는지 여부; 등록이 취소되면 재설정 */
+    // 하커: 틱 기능이 등록되었습니다
     uint8 bTickFunctionsRegistered : 1;
 
     /** enum defining if BeginPlay has started or finished */
@@ -631,6 +643,14 @@ class AActor : public UObject
     // haker: this is VERY INTERESTING!
     // - uint8 bit assignment is working even on middle of uint8's enum type!
     // - ActorHasBegunPlay is updated by BeginPlay() or EndPlay() calls
+
+    /**
+    * 이 배우를 위해 BeginPlay가 호출되었음을 나타냅니다
+    * EndPlay가 호출되면 HasNotBegunPlay로 돌아갑니다
+    */
+    // 하커: 정말 흥미롭네요!
+    // - uint8 비트 할당이 uint8의 열거형 중간에서도 작동합니다!
+    // - ActorHasBegunPlay는 BeginPlay() 또는 EndPlay() 호출을 통해 업데이트됩니다
     EActorBeginPlayState ActorHasBegunPlay : 2;
 
     /** 
@@ -665,6 +685,7 @@ class AActor : public UObject
     //       └────Hierachrical Format─────┘                                                  
     //                                                                                       
     // see USceneComponent (goto 17)
+    // USceneComponent -> 계층구조를 가능하게 해주는 컴포넌트
     TObjectPtr<USceneComponent> RootComponent;
 
     /** The UChildActorComponent that owns this Actor */
