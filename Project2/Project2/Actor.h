@@ -723,6 +723,7 @@ class AActor : public UObject
     //                 │                   └─Actor2 ◄────     │                                                  
     //                 │                                      │                                                  
     //                 │                                      │                                                  
-    //                 └──────────────────────────────────────┘                                                  
+    //                 └──────────────────────────────────────┘           
+    // 엑터끼리 종속관계를 만들어주기 위한 컴포넌트                                      
     TWeakObjectPtr<UChildActorComponent> ParentComponent;
 };

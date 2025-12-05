@@ -301,6 +301,8 @@ class ULevel : public UObject
     TArray<TObjectPtr<AActor>> Actors;
 
     /** cached level collection that this level is contained in */
+    /** 이 레벨이 에 포함된 캐시 레벨 컬렉션*/
+    //레벨의 CollectionType을 정해준다.(레벨들은 해당 CollectionType에 따라서 분류된다.) 그로인해 파티클들믄 들어있는 레벨, 맵만 들어있는 레벨 등등의 엑터의 분류가 가능해진다.
     // see FLevelCollection (goto 19)
     FLevelCollection* CachedLevelCollection;
 
@@ -309,7 +311,12 @@ class ULevel : public UObject
      * this is not the same as GetOuter(), because GetOuter() for a streaming level is a vestigial world that is not used
      * it should not be accessed during BeginDestroy(), just like any other UObject references, since GC may occur in any order
      */
-    // haker: let's understand OwningWorld vs. OuterPrivate
+     /**
+     * 레벨 배열에 이 레벨이 있는 세계
+     * 이것은 GetOutter()와 다릅니다. 왜냐하면 스트리밍 레벨의 GetOutter()는 사용되지 않는 잔여 세계이기 때문입니다
+     * 다른 UObject 참조와 마찬가지로 BeginDestroy() 동안에는 GC가 어떤 순서로든 발생할 수 있으므로 액세스해서는 안 됩니다
+     */
+    // haker: let's understand OwningWorld vs. OuterPrivate (여기 나오는 OuterPrivate은 Level이 상속받고 있는 UObject.h에서 가지고있는 월드 객체이다)
     // - note that my explanation is based on WorldComposition's level streaming or LevelBlueprint's level load/unload manipulation
     //   - World Partition has different concept which usually OwningWorld and OuterPrivate is same
     // - Diagram:                                                                                                        
@@ -339,6 +346,7 @@ class ULevel : public UObject
 
     /** the current stage for incrementally updating actor components in the level */
     // haker: we already covered AActor's initialization steps
+    // 한번에 컴포넌트들을 전부다 로드하면 느리기때문에 증분적으로 진행한다. 그 상태를 저장하기위한 변수
     EIncrementalComponentState IncrementalComponentState;
 
     /** whether the actor referenced by CurrentActorIndexForUpdateComponents has called PreRegisterAllComponents */
@@ -353,6 +361,7 @@ class ULevel : public UObject
 
     /** data structures for holding the tick functions */
     // haker: for now, member variables related to tick function are skipped
+    // 엑터가 틱을 도는데 사용
     FTickTaskLevel* TickTaskLevel;
     
     // goto 9 (UWorld's member variables)

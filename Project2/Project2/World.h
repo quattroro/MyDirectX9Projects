@@ -252,6 +252,9 @@ class FObjectSubsystemCollection : public FSubsystemCollectionBase
 //   - if you try to use Subsytem, it will be very easy and handy!
 // - read examples of how to access subsystems
 
+// 내가 만드는 시스템이 다른 시스템과 같은 라이프타임을 가지게 하고 싶을때 USubsystem을 상속받도록 작업하면 된다. 라이프타임을 관리할 필요가 없어진다.
+// USubsystem을 상속받는 클래스를 찾아서 분석해보기
+// 
 class USubsystem : public UObject
 {
     /**
@@ -293,6 +296,10 @@ enum class ELevelCollectionType : uint8
      * the dynamic levels that are used for normal gameplay and the source for any duplicated collections
      * will contain a world's persistent level and any streaming levels that contain dynamic or replicated gameplay actors
      */
+     /**
+     * 일반적인 게임 플레이에 사용되는 동적 레벨과 중복된 컬렉션의 출처
+     * 세계의 지속적인 레벨과 동적 또는 복제된 게임 플레이 배우를 포함하는 모든 스트리밍 레벨을 포함할 것입니다
+     */
     DynamicSourceLevels,
 
     /** gameplay relevant levels that have been duplicated from DynamicSourceLevels if requested by the game */
@@ -303,6 +310,12 @@ enum class ELevelCollectionType : uint8
      * only static geometry and other visuals that are not replicated or affected by gameplay
      * thsese will not be duplicated in order to save memory 
      */
+     /**
+     * 이러한 레벨은 소스 레벨과 중복된 레벨 간에 공유되며 다음을 포함해야 합니다
+     * 복제되거나 게임 플레이에 영향을 받지 않는 정적 지오메트리 및 기타 시각 자료만 제공됩니다
+     * 메모리를 절약하기 위해 이 항목들은 중복되지 않습니다
+     */
+    //레벨이 변하지 않는것 (맵 등등)
     StaticLevels,
 
     MAX
@@ -314,6 +327,8 @@ enum class ELevelCollectionType : uint8
  */
 // 19 - Foundation - CreateWorld - FLevelCollection
 // haker: FLevelCollection is collection based on ELevelCollectionType
+
+//레벨의 CollectionType을 정해준다.(레벨들은 해당 CollectionType에 따라서 분류된다.) 그로인해 파티클들믄 들어있는 레벨, 맵만 들어있는 레벨 등등의 엑터의 분류가 가능해진다.
 struct FLevelCollection
 {
     /** the type of this collection */
@@ -325,6 +340,11 @@ struct FLevelCollection
      * the source collection and the duplicated collection will have their own instances 
      */
     // haker: usually OwnerWorld's PersistentLevel
+    /**
+    * 이 컬렉션과 관련된 지속적인 수준
+    * 소스 컬렉션과 복제된 컬렉션에는 고유한 인스턴스가 있습니다
+    */
+    // 하커: 보통 OwnerWorld의 지속적인 레벨
     TObjectPtr<class ULevel> PersistentLevel;
 
     /** all the levels in this collection */
@@ -875,6 +895,7 @@ class UWorld final : public UObject, public FNetworkNotify
 
     /** DefaultPhysicsVolume used for whole game */
     // haker: you can think of physics volume as 3d range of physics engine works (== physics world covers)
+    // 피직스 월드에서 일정 범위에만 피직스를 적용하고 싶은 경우를 위해서 존재
     TObjectPtr<APhysicsVolume> DefaultPhysicsVolume;
 
     /** physics scene for this world */
