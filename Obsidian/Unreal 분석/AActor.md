@@ -47,3 +47,7 @@ AActor의 Initialization순서
 
 11. AActor::Beginplay
    - 레벨이 플레이되면 AActor가 Beginplay를 호출한다.
+
+
+
+werw
