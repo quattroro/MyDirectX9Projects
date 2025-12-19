@@ -40,6 +40,7 @@ struct FActorSpawnParameters
     /** a name to assign as the Name of the Actor being spawned; if no value is specified, the name of the spawned Actor will be automatically generated using the form [Class]_[Number] */
     // haker: default format of FName is [ClassName]_[Number]:
     // - e.g. WorldSettings_0
+    // FName 은 FString과 다르게 중복이 존재할 수 없다.
     FName Name;
 
     /** method for resolving collisions at the spawn point; undefined means no override, use the actor's setting */
@@ -85,6 +86,7 @@ class FSubsystemCollectionBase
                 if (CDO->ShouldCreateSubsystem(Outer))
                 {
                     // haker: create new USubsystem by SubsystemClass (in our case, the class is UWorldSubsystem)
+                    // 이것 또한 subobject와 같다. 내 outer가 upackage가 아니고 누군가면 나는 그것의 subobject 이다
                     USubsystem* Subsystem = NewObject<USubsystem>(Outer, SubsystemClass);
                     SubsystemMap.Add(SubsystemClass, Subsystem);
                     Subsystem->InternalOwningSubsystem = this;
@@ -99,7 +101,8 @@ class FSubsystemCollectionBase
     }
 
     /** initialize the collection of systems; systems will be created and initialized */
-    // 30 - Foundation - CreateWorld - FSubsystemCollectionBase::Initialize
+    // 30 - Foundation - CreateWorld - FSubsystemCollectionBase::Initialize\
+    // FSubsystemCollectionBase::Initialize 매개변수로 나를 가지고있는 월드를 받아온다.
     void Initialize(UObject* NewOuter)
     {
         // already initialized
@@ -120,12 +123,15 @@ class FSubsystemCollectionBase
             {
                 // haker: BaseType is UWorldSubsystem for UWorld::SubsystemCollection
                 // - calling GetDerivedClasses() collects all classes derived from UWorldSubsystem
+                // 여기서 넘겨준 BaseType을 상속받는 모든 subsystemClasse들을 받아온다
                 TArray<UClass*> SubsystemClasses;
                 GetDerivedClasses(BaseType, SubsystemClasses, true);
 
                 // haker: looping subsystem's classes derived from UWorldSubsystem
+                // 위에서 받아온 클래스들을 전부 다 순회하면서 
                 for (UClass* SubsystemClass : SubsystemClasses)
                 {
+                    // 추가해준다.
                     // see FSubsystemCollectionBase::AddAndInitializeSubsystem (goto 31)
                     AddAndInitializeSubsystem(SubsystemClass);
                 }
@@ -458,6 +464,7 @@ class UWorld final : public UObject, public FNetworkNotify
         NewWorld->WorldType = InWorldType;
         NewWorld->SetFeatureLevel(InFeatureLevel);
 
+        //생성한 world를 Init해준다.
         NewWorld->InitializeNewWorld(
             InIVS ? *InIVS : UWorld::InitializationValues()
                 // haker: as we saw FWorldInitializationValues, the below member functions mark the flag to refer when we create new world
@@ -493,6 +500,7 @@ class UWorld final : public UObject, public FNetworkNotify
     void InitializeSubsystems()
     {
         // see FSubsystemCollectionBase::Initialize (goto 30)
+        // uWorld에 존재하는 subsystemcollention들을 Initialize 해준다.
         SubsystemCollection.Initialize(this);
     }
 
@@ -621,13 +629,17 @@ class UWorld final : public UObject, public FNetworkNotify
 
     /** initializes the world, associates the persistent level and sets the proper zones */
     // 28 - Foundation - CreateWorld - UWorld::InitWorld
+    // 월드 서브시스템을 로드하고 등등등
+
     void InitWorld(const FWorldInitializationValues IVS = FWorldInitializationValues())
     {
         // haker: CoreUObjectDelegate has delegates related to GC events -> USEFUL!
+        // 여기에 유용한 이벤트들이 많이 존재한다.!
         FCoreUObjectDelegates::GetPostGarbageCollect().AddUObject(this, &UWorld::OnPostGC);
 
         // haker: we initialize UWorldSubsystems
         // see UWorld::InitializeSubsystems(goto 29)
+        // 월드 안에 존재하는 서브시스템들을 초기화 해준다.
         InitializeSubsystems();
 
         FWorldDelegates::OnPreWorldInitialization.Broadcast(this, IVS);
@@ -653,6 +665,7 @@ class UWorld final : public UObject, public FNetworkNotify
         
         // haker: add persistent level
         // - you can think of persistent level to have world info(AWorldSettings)
+        // 레벨에 persistentLevel을 등록해준다.
         Levels.Empty(1);
         Levels.Add(PersistentLevel);
 
@@ -686,6 +699,7 @@ class UWorld final : public UObject, public FNetworkNotify
 
         // see ConditionallyCreateDefaultLevelCollections (goto 36)
         // haker: make sure all level collection types are instantiated
+        // 여기를 타고 들어가 보면 persistentlevel의 디폴트는 dynamic 레벨이란걸 알 수 있다. 즉 persistentlevel은 dynamic레벨에 속한다.
         ConditionallyCreateDefaultLevelCollections();
 
         // we're initialized now:
@@ -713,6 +727,7 @@ class UWorld final : public UObject, public FNetworkNotify
 
     /** updates world components like e.g. line batcher and all level components */
     // 38 - Foundation - CreateWorld - UWorld::UpdateWorldComponents
+    // 
     void UpdateWorldComponents(bool bRerunConstructionScripts, bool bCurrentLevelOnly, FRegisterComponentContext* Context = nullptr)
     {
         if (!IsRunningDedicatedServer())
@@ -722,6 +737,7 @@ class UWorld final : public UObject, public FNetworkNotify
             // - ULineBatchComponent can be seen as UActorComponent
             // - UWorld is NOT AActor, but has UActorComponent as its dynamic object for LineBatcher
             // - LineBatchers should be registered separately
+            // 
             if (!LineBatcher)
             {
                 LineBatcher = NewObject<ULineBatchComponent>();
@@ -791,6 +807,8 @@ class UWorld final : public UObject, public FNetworkNotify
         }
 
         // haker: create default persistent level for new world
+        // PersistentLevel  == OwningWorld ->항상 머물고있는 레벨이다. 
+        // world가 없어지지 않는 한 계속 로드되어있는 레벨을 PersistentLevel이라고도 한다. OwningWorld와 매칭되는 레벨과 해당 레벨 두가지가 있다.
         PersistentLevel = NewObject<ULevel>(this, TEXT("PersistentLevel"));
         PersistentLevel->OwningWorld = this;
 
@@ -813,6 +831,8 @@ class UWorld final : public UObject, public FNetworkNotify
             SpawnInfo.Name = GEngine->WorldSettingsClass->GetFName();
 
             // haker: we'll cover SpawnActor in the future (I just leave it in to-do list)
+            // 이렇게 스폰을 해준면 해당 엑터는 world의 PersistentLevel에 종속되어진다.
+            // 아래에서 PersistentLevel->SetWorldSetting함수를 통해 세팅해준다.
             WorldSettings = SpawnActor<AWorldSettings>(GEngine->WorldSettingsClass, SpawnInfo);
         }
         
