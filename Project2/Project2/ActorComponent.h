@@ -8,7 +8,7 @@ struct FActorComponentTickFunction : public FTickFunction
 
 DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_TwoParams(FActorComponentActivatedSignature, UActorComponent, OnComponentActivated, UActorComponent*, Component, bool, bReset);
 
-// 16 - Foundation - CreateWorld - EComponentCreationMethod
+// 016 - Foundation - CreateWorld ** - EComponentCreationMethod
 enum class EComponentCreationMethod : uint8
 {
     /** a component that is part of a native class */
@@ -17,19 +17,157 @@ enum class EComponentCreationMethod : uint8
     SimpleConstructionScript,
     /** a dynamically created component, either from the UserConstructionScript or from a Add component node in a Blueprint event graph */
     UserConstructionScript,
+    /** a component added to a single Actor instance via the Component section of the Actor's details panel */
+    Instance,
+};
+
+/** Information about how to update transform when something is moved */
+// 004 - Foundation - UpdateComponentToWorld - EUpdateTransformFlags
+enum class EUpdateTransformFlags : int32
+{
+	/** Default options */
+	None = 0x0,
+	/** Don't update the underlying physics */
+    // haker: as the word implies, it is related to SkipPhysicsUpdate, for now, we'll not covered today with this flag
+	SkipPhysicsUpdate = 0x1,		
+	/** The update is coming as a result of the parent updating (i.e. not called directly) */
+    // haker: when we propagate UpdateComponentToWorld from parent to AttachChildren
+	PropagateFromParent = 0x2,		
+	/** Only update child transform if attached to parent via a socket */
+    // haker: it is special purpose flag type, but for now, we don't need to care so much
+	OnlyUpdateIfUsingSocket = 0x4	
+};
+
+struct FSimpleMemberReference
+{
+    /**
+     * most often the Class that this member is defined in
+     * Could be a UPackage, if it is a native delegate signature function (declared globally) 
+     */
+    TObjectPtr<UObject> MemberParent;
+
+    /** name of the member */
+    FName MemberName;
+
+    /** the GUID of the member */
+    FGuid MemberGuid;
+};
+
+/**
+ * base class for component re-register objects, provides helper functions for performing the UnRegister and ReRegister 
+ */
+class FComponentReregisterContextBase
+{
+    TSet<FSceneInterface*>* ScenesToUpdateAllPrimitiveSceneInfos = nullptr;
+
+    /** unregister the component and returns the world it was registered to */
+    UWorld* Unregister(UActorComponent* InComponent)
+    {
+        UWorld* World = nullptr;
+
+        if (InComponent->IsRegistered() && InComponent->GetWorld())
+        {
+            // save the world and set the component's world to NULL to prevent a nested FComponentReregisterContext from reregistering this component
+            World = InComponent->GetWorld();
+            
+            // will set bRegistered to false
+            InComponent->ExecuteUnregisterEvents();
+
+            InComponent->WorldPrivate = nullptr;
+        }
+
+        return World;
+    }
+    
+    /** reregister the given component on the given scene */
+    void Reregister(UActorComponent* InComponent, UWorld* InWorld)
+    {
+        if (IsValid(InComponent))
+        {
+            if (InComponent->IsRegistered())
+            {
+                // the component has been registered already but external code is going to expect the reregister to happen now
+                // so unregister and re-register
+                InComponent->ExecuteUnregisterEvents();
+            }
+
+            InComponent->WorldPrivate = InWorld;
+
+            // will set bRegistered to true
+            InComponent->ExecuteRegisterEvents();
+        }
+    }
+};
+
+/**
+ * unregisters a component for the lifetime of this class
+ * 
+ * typically used by constructing the class on the stack:
+ * {
+ *  FComponentReregisterContext ReregisterContext(this);
+ *  // The component is unregistered with the world here as ReregisterContext is constructed.
+ *  //...
+ *  // The component is registered with the world here as ReregisterContext is destructed.
+ * } 
+ */
+class FComponentReregisterContext : public FComponentReregisterContextBase
+{
+    /** pointer to component we are unregistering */
+    TWeakObjectPtr<UActorComponent> Component;
+    /** cache pointer to world from which we were removed */
+    TWeakObjectPtr<UWorld> World;
+
+    FComponentReregisterContext(UActorComponent* InComponent, TSet<FSceneInterface*>* InScenesToUpdateAllPrimitiveSceneInfos = nullptr)
+        : World(nullptr)
+    {
+        ScenesToUpdateAllPrimitiveSceneInfos = InScenesToUpdateAllPrimitiveSceneInfos;
+        World = UnRegister(InComponent);
+
+        // if we didn't get a scene back NULL the component so we don't try to process it on destruction
+        Component = World.IsValid() ? InComponent : nullptr;
+    }
+
+    ~FComponentReregisterContext()
+    {
+        if (Component.IsValid() && World.IsValid())
+        {
+            Reregister(Component.Get(), World.Get());
+        }
+    }
 };
 
 /**
  * ActorComponent is the base class for components that define reusable behavior that can be added to a different types of Actors
  * ActorComponents that have a transform are known as 'SceneComponents' and those that can be rendered are 'PrimitiveComponents'
  */
-// 14 - Foundation - CreateWorld - UActorComponent
+// 014 - Foundation - CreateWorld ** - UActorComponent
 // haker: ActorComponent is base class to attach to the AActor:
 // - support scene graph (hierarchy): USceneComponent
 // - support rendering: UPrimitiveComponent
 // see UActorComponent's member variables (goto 15)
 class UActorComponent : public UObject
 {
+    virtual void void SendRenderTransform_Concurrent()
+    {
+        bRenderTransformDirty = false;
+    }
+
+    // 001 - Foundation - CreateRenderState * - UActorComponent::CreateRenderState_Concurrent
+    virtual void CreateRenderState_Concurrent(FRegisterComponentContext* Context)
+    {
+        // haker: we just create render state, so mark 'bRenderStateCreated' as true
+        bRenderStateCreated = true;
+
+        // haker: dirty flags to notify any changes in world to render-world
+        bRenderStateDirty = false;
+        bRenderTransformDirty = false;
+        //...
+
+        // haker: we can't find any code to create new render state here:
+        // - render state is only created for PrimitiveComponent
+        // - it is natural to create render state on PrimitiveComponent, cuz PrimitiveComponent is the base class who has geometry data (e.g. vertex buffer/index buffer) to render
+    }
+
     AActor* GetOwner() const
     {
         return OwnerPrivate;
@@ -66,17 +204,27 @@ class UActorComponent : public UObject
      * tick after the actor; don't tick if the actor is static, or if the actor is a template or if this is a 'NeverTick' component
      * tick while paused if only if my owner does
      */
-    // 62 - Foundation - CreateWorld - UActorComponent::SetupActorComponentTickFunction
+    // 062 - Foundation - CreateWorld * - UActorComponent::SetupActorComponentTickFunction
+    // haker: this TickFunction is for ActorComponent:
+    // - ActorComponent's TickFunction run after Actor's TickFunction
+    // - do NOT tick
+    //   1. Actor is static
+    //   2. Actor is template(==CDO)
+    //   3. NeverTick is 'true'
+    // - ActorComponent's can be PAUSED, only if owner does
     bool SetupActorComponentTickFunction(FTickFunction* TickFunction)
     {
         if (TickFunction->bCanEverTick && !IsTemplate())
         {
             AActor* MyOwner = GetOwner();
+            // haker: MyOwner (AActor) also should NOT be Template()
             if (!MyOwner || !MyOwner->IsTemplate())
             {
                 ULevel* ComponentLevel = (MyOwner ? MyOwner->GetLevel() : ToRawPtr(GetWorld()->PersistentLevel));
                 // haker: if TickFunction is not registered, just TickState will be updated
                 // - we have seen SetTickFunctionEnable(), but let's see one more again briefly
+                // see IsTickFunctionEnabled()
+                // see SetTickFunctionEnable() - we already had seen!
                 TickFunction->SetTickFunctionEnable(TickFunction->bStartsWithTickEnabled || TickFunction->IsTickFunctionEnabled());
 
                 // haker: we need ULevel where the component resides in, cuz FTickFunction is resides in TickTaskLevel!
@@ -91,7 +239,7 @@ class UActorComponent : public UObject
     }
 
     /** virtual call chain to register all tick functions */
-    // 61 - Foundation - CreateWorld - UActorComponent::RegisterComponentTickFunctions
+    // 061 - Foundation - CreateWorld * - UActorComponent::RegisterComponentTickFunctions
     // haker: the function name is 'TickFunctions'
     // - you can override this function to add multiple TickFunctions (maybe we will have a chance to see this in the future)
     virtual void RegisterComponentTickFunctions(bool bRegister)
@@ -115,7 +263,7 @@ class UActorComponent : public UObject
     }
 
     /** when called, will call virtual call chain to register all of the tick functions */
-    // 60 - Foundation - CreateWorld - UActorComponent::RegisterAllComponentTickFunctions
+    // 060 - Foundation - CreateWorld * - UActorComponent::RegisterAllComponentTickFunctions
     void RegisterAllComponentTickFunctions(bool bRegister)
     {
         // components don't have tick functions until they are registered with the world
@@ -154,11 +302,12 @@ class UActorComponent : public UObject
     virtual void UpdateComponentToWorld(EUpdateTransformFlags UpdateTransformFlags = EUpdateTransformFlags::None, ETeleportType Teleport = ETeleportType::None) {}
 
     /** set this component's tick functions to be enabled or disabled; only has an effect if the function is registered */
-    // 53 - Foundation - CreateWorld - SetComponentTickEnabled
+    // 053 - Foundation - CreateWorld * - SetComponentTickEnabled
     virtual void SetComponentTickEnabled(bool bEnabled)
     {
-        // haker: bCanEverTick is the variable to determine whether tick-function is enabled for ticking every frame
+        // haker: bCanEverTick is the variable to determine whether tick-function is enabled for ticking (registered)
         // see UObject::IsTemplate (goto 54)
+        // - if current ActorComponent is CDO, it doesn't make sense to enable TickFunction
         if (PrimaryComponentTick.bCanEverTick && !IsTemplate())
         {
             // see SetTickFunctionEnabled (goto 55)
@@ -176,18 +325,19 @@ class UActorComponent : public UObject
     }
 
     /** activates the SceneComponent, should be overriden by native child classes */
-    // 42 - Foundation - CreateWorld - UActorComponent::Activate
+    // 042 - Foundation - CreateWorld ** - UActorComponent::Activate
     virtual void Activate(bool bReset=false)
     {
         // haker: before we are getting into the details of Activate, see FTickFunction related classes first:
-        // see AActor::PrimaryActorTick (goto 43)
-        // see UActorComponent::PrimaryComponentTick (goto 51)
+        // see AActor::PrimaryActorTick (goto 043)
+        // see UActorComponent::PrimaryComponentTick (goto 051)
         if (bReset || ShouldActivate() == true)
         {
-            // 52 - Foundation - CreateWorld - Activate cont.
-            // see SetComponentTickEnabled (goto 53)
+            // 052 - Foundation - CreateWorld * - Activate cont.
+            // see SetComponentTickEnabled (goto 053)
             SetComponentTickEnabled(true);
             // see SetActiveFlag
+            // - bIsActive is the indicator of Activate()
             SetActiveFlag(true);
 
             OnComponentActivated.Broadcast(this, bReset);
@@ -195,7 +345,7 @@ class UActorComponent : public UObject
     }
 
     /** called when a component is registered, after Scene is set, but before CreateRenderState_Concurrent or OnCreatePhysicsState are called */
-    // 41 - Foundation - CreateWorld - UActorComponent::OnRegister
+    // 041 - Foundation - CreateWorld ** - UActorComponent::OnRegister
     virtual void OnRegister()
     {
         bRegistered = true;
@@ -213,14 +363,15 @@ class UActorComponent : public UObject
             AActor* Owner = GetOwner();
 
             // haker: Owner == nullptr which is exact condition we matched for LineBatcher
+            // - (!WorldPrivate->IsGameWorld()) means not tyically calling normal game-play
             if (!WorldPrivate->IsGameWorld() 
                 // haker: Owner can be nullptr, if a component is contained directly by UWorld
                 // e.g. LineBatcher in UWorld
                 || Owner == nullptr 
                 || Owner->IsActorInitialized)
             {
-                // haker: as we covered before, Activate() is usually called on BeginPlay()
                 // see Activate (goto 42)
+                // haker: usually we are not in here!
                 Activate(true);
             }
         }
@@ -236,13 +387,19 @@ class UActorComponent : public UObject
     }
 
     /** calls OnRegister, CreateRenderState_Concurrent and OnCreatePhysicsState */
-    // 40 - Foundation - CreateWorld - UWorld::ExecuteRegisterEvents
+    // 040 - Foundation - CreateWorld ** - UWorld::ExecuteRegisterEvents
     void ExecuteRegisterEvents(FRegisterComponentContext* Context = nullptr)
     {
         if (!bRegistered)
         {
             // see OnRegister (goto 41)
+            // 000 - Foundation - AttachToComponent - BEGIN
+            // haker: try to remember how we can reach ExecuteRegisterEvents():
+            // - RegisterComponentWithWorld() -> ExecuteRegisterEvents() -> OnRegister()
+            // - what does ExecuteRegisterEvents() do?
+            // see USceneComponent::OnRegister (goto 001: AttachToComponent)
             OnRegister();
+            // 022 - Foundation - AttachToComponent - END
         }
 
         if (FApp::CanEverRender() && !bRenderStateCreated && WorldPrivate->Scene 
@@ -252,7 +409,14 @@ class UActorComponent : public UObject
             // haker:
             // - remember this
             // - this is the place that we add primitive to render world (world's scene == FScene)
+
+            // 000 - Foundation - CreateRenderState * - BEGIN
+            // haker: we make our new render object reflecting world object
+            // - FRegisterComponentContext Context is passed as 'nullptr'
+            // - see UActorComponent::CreateRenderState_Concurrent (goto 001: CreateRenderState)
+            // - see UPrimitiveComponent::CreateRenderState_Concurrent(goto 002: CreateRenderState)
             CreateRenderState_Concurrent(Context);
+            // 015 - Foundation - CreateRenderState * - END
         }
 
         // haker:
@@ -261,6 +425,22 @@ class UActorComponent : public UObject
 
         // haker:
         // - create[render|physics]state means 'creating the reflection of main world's state into each render-world and physics world'
+    }
+
+    /** calls OnUnregister, DestroyRenderState_Concurrent and OnDestroyPhysicsState */
+    void ExecuteUnregisterEvents()
+    {
+        DestroyPhysicsState();
+
+        if (bRenderStateCreated)
+        {
+            DestroyRenderState_Concurrent();
+        }
+
+        if (bRegistered)
+        {
+            OnUnregister();
+        }
     }
 
     /** 
@@ -281,7 +461,7 @@ class UActorComponent : public UObject
     }
 
     /** registers a component with a specific world, which creates any visual/physical state */
-    // 39 - Foundation - CreateWorld - UActorComponent::RegisterComponentWithWorld
+    // 039 - Foundation - CreateWorld ** - UActorComponent::RegisterComponentWithWorld
     void RegisterComponentWithWorld(UWorld* InWorld, FRegisterComponentContext* Context = nullptr)
     {
         // if the component was already registered, do nothing
@@ -290,7 +470,7 @@ class UActorComponent : public UObject
             return;
         }
 
-        // haker: it is natural to early-out cuz there is no world to register
+        // haker: it is natural to early-out cuz there is no world to register 
         if (InWorld == nullptr)
         {
             return;
@@ -323,6 +503,8 @@ class UActorComponent : public UObject
             // haker: 
             // - if the world is not game world, we didn't call InitializeComponent()
             //   - see the condition below (MyOwner == nullptr) 
+            // - we are debugging with PIE, so we are not in here
+            //   - the PIE returns true on IsGameWorld()
             RegisterAllComponentTickFunctions(true);
         }
         else if (MyOwner == nullptr)
@@ -336,8 +518,6 @@ class UActorComponent : public UObject
 
             // see RegisterAllComponentTickFunctions (goto 60)
             RegisterAllComponentTickFunctions(true);
-
-            // haker: here is the exact case matching UWorld::LineBatcher
         }
         else
         {
@@ -359,8 +539,10 @@ class UActorComponent : public UObject
             {
                 if (UActorComponent* ChildComponent = Cast<UActorComponent>(Child))
                 {
+                    // haker: when RegisterComponentWithWorld is called, bRegister will be true
                     if (ChildComponent->bAutoRegister && !ChildComponent->IsRegistered() && ChildComponent->GetOwner() == MyOwner)
                     {
+                        // maybe some ActorComponents from SCS or CCS not registered yet, if so, register components
                         ChildComponent->RegisterComponentWithWorld(InWorld);
                     }
                 }
@@ -368,10 +550,209 @@ class UActorComponent : public UObject
         }
     }
 
+    /** return true if the component requires end of frame updates to happen from the game thread */
+    virtual bool RequiresGameThreadEndOfFrameUpdates() const
+    {
+        return false;
+    }
+
+    // 003 - Foundation - SceneRenderer * - UActorComponent::MarkForNeededEndOfFrameUpdate
+    void MarkForNeededEndOfFrameUpdate()
+    {
+        UWorld* ComponentWorld = GetWorld();
+        if (ComponentWorld)
+        {
+            // haker: see UWorld::MarkActorComponentForNeededEndOfFrameUpdate (goto 004: SceneRenderer)
+            ComponentWorld->MarkActorComponentForNeededEndOfFrameUpdate(this, RequiresGameThreadEndOfFrameUpdates());
+        }
+    }
+
+    /**
+     * uses the bRender[State|Transform|Instances]Dirty to perform any necessary work on this component
+     * do NOT call this directly, call MarkRender[State|DynamicData|Instances]Dirty instead
+     */
+    // 006 - Foundation - SceneRenderer * - UActorComponent::DoDeferredRenderUpdates_Concurrent
+    void DoDeferredRenderUpdates_Concurrent()
+    {
+        // haker: as we expected, depending on bRenderStateDirty, bRenderTransformDirty, we process all pending calls (RecreateRenderState_Concurrent and SendRenderTransform_Concurrent)
+        if (bRenderStateDirty)
+        {
+            RecreateRenderState_Concurrent();
+        }
+        else
+        {
+            if (bRenderTransformDirty)
+            {
+                // update the component's transform if the actor has been moved since it was last updated
+                // haker: see UPrimitiveComponent::SendRenderTransform_Concurrent (goto 007: SceneRenderer)
+                SendRenderTransform_Concurrent();
+            }
+
+            //...
+        }
+    } 
+
+    // 001 - Foundation - SceneRenderer * - UActorComponent::MarkRenderTransformDirty
+    // haker: see where MarkRenderTransformDirty() is called (goto 002: SceneRenderer)
+    void MarkRenderTransformDirty()
+    {
+        // haker: world's transform update(change) can be applied after bRenderStateCreated:
+        // - in UActorComponent::CreateRenderState_Concurrent(), we update 'bRenderStateCreated' as true
+        if (IsRegistered() && bRenderStateCreated)
+        {
+            // haker: mark 'bRenderTransformDirty' as true, and register this component to do EOFUpdate(EndOfFrameUpdate)
+            // - see UActorComponent::MarkForNeededEndOfFrameUpdate (goto 003: SceneRenderer)
+            bRenderTransformDirty = true;
+            MarkForNeededEndOfFrameUpdate();
+        }
+        else if (!IsUnreachable())
+        {
+            // we don't have a world, do it right now
+            DoDeferredRenderUpdates_Concurrent();
+        }
+    }
+
     /** indicates that InitializeComponent has been called, but UninitializeComponent has not yet */
     bool HasBeenInitialized() const { return bHasBeenInitialized; }
 
-    // 15 - Foundation - CreateWorld - UActorComponent's member variables
+    /** Tracks whether the component has been added to one of the world's end of frame update lists */
+    uint32 GetMarkedForEndOfFrameUpdateState() const { return MarkedForEndOfFrameUpdateState; }
+
+    /** returns whether replication is enabled or not */
+    bool GetIsReplicated() const
+    {
+        return bReplicates;
+    }
+
+    /** register this component, creating any rendering/physics state; will also add itself to the outer Actor's components array, if not already present */
+    void RegisterComponent()
+    {
+        Actor* MyOwner = GetOwner();
+        UWorld* MyOwnerWorld = (MyOwner ? MyOwner->GetWOrld() : nullptr);
+        if (ensure(MyOwnerWorld))
+        {
+            RegisterComponentWithWorld(MyOwnerWorld);
+        }
+    }
+
+    /** initializes the list of properties that are modified by the UserConstructionScript */
+    void DetermineUCSModifiedProperties()
+    {
+        if (CreationMethod == EComponentCreationMethod::SimpleConstructionScript)
+        {
+            TArray<FSimpleMemberReference> UCSModifiedProperties;
+
+            class FComponentPrioertySkipper : public FArchive
+            {
+                FComponentPropertySkipper()
+                    : FArchive()
+                {
+                    this->SetIsSaving(true);
+                    
+                    // include properties that would normally skip tagged serialization (e.g. bulk serialization of array properties)
+                    ArPortFlags |= PPF_ForceTaggedSerialization;
+                }
+
+                virtual bool ShouldSkipProperty(const FProperty* InProperty) const override
+                {
+                    static const FName MD_SkipUCSModifiedProperties(TEXT("SkipUCSModifiedProperties"));
+                    return (InProperty->HasAnyPropertyFlags(CPF_Transient)
+                        || !InProperty->HasAnyPropertyFlags(CPF_Edit | CPF_Interp)
+                        || InProperty->IsA<FMulticastDelegateProperty>());
+                }
+            } PropertySkipper;
+
+            UClass* ComponentClass = GetClass();
+            UObject* ComponentArchetype = GetArchetype();
+
+            for (TFieldIterator<FProperty> It(ComponentClass); It; ++It)
+            {
+                FProperty* Property = *It;
+                if (Property->ShouldSerializeValue(PropertySkipper))
+                {
+                    for (int32 Idx=0; Idx<Property->ArrayDim; ++Idx)
+                    {
+                        uint8* DataPtr = Property->ContainerPtrToValuePtr<uint8>((uint8*)this, Idx);
+                        uint8* DefaultValue = Property->ContainerPtrToValuePtrForDefaults<uint8>(ComponentCalss, (uint8*)ComponentArchetype, Idx);
+                        if (!Property->Identical(DataPtr, DefaultValue, PPF_DeepCompareInstances))
+                        {
+                            UCSModifiedProperties.Add(FSimpleMemberReference());
+                            FMemberReference::FillSimpleMemberReference<FProperty>(Property, UCSModifiedProperties.Last());
+                            break;
+                        }
+                    }
+                }
+            }
+
+            FRWScopeLock Lock(AllUCSModifiedPropertiesLock, SLT_Write);
+            if (UCSModifiedProperties.Num() > 0)
+            {
+                AllUCSModifiedProperties.Add(this, MoveTemp(UCSModifiedProperties));
+            }
+            else
+            {
+                AllUCSModifiedProperties.Remove(this);
+            }
+        }
+    }
+
+    void ClearUCSModifiedProperties()
+    {
+        FRWScopeLock Lock(AllUCSModifiedPropertiesLock, SLT_Write);
+        AllUCSModifiedProperties.Remove(this);
+    }
+
+    /** check whether the component class allows reregistration during ReregisterAllComponents */
+    bool AllowReregistration() const { return bAllowReregistration; }
+
+    void ReregisterComponent()
+    {
+        if (AllowReregisteration())
+        {
+            if (!IsRegistered())
+            {
+                return;
+            }
+
+            FComponentReregisterContext(this);
+        }
+    }
+
+    void PostApplyToComponent()
+    {
+        if (IsRegistered())
+        {
+            ReregisterComponent();
+        }
+    }
+
+    /** 
+     * Blueprint implementable event for when the component is beginning play, called before its owning actor's BeginPlay
+     * or when the component is dynamically created if the Actor has already BegunPlay. 
+     */
+    UFUNCTION(BlueprintImplementableEvent, meta=(DisplayName = "Begin Play"))
+    ENGINE_API void ReceiveBeginPlay();
+
+    /**
+     * begin play for the component
+     * - called when the owning Actor begins play or when the component is created if the Actor has already begun play
+     * - Actor BeginPlay() normally right after PostInitializeComponents but can be delayed for networked or child actors
+     * - requires component to be registered and initialized 
+     */
+    // 011 - Foundation - SpawnActor - UActorComponent::BeginPlay
+    virtual void BeginPlay()
+    {
+        // haker: if it is compiled by BP, call BP's BeginPlay BP node
+        if (GetClass()->HasAnyClassFlags(CLASS_CompiledFromBlueprint) || !GetClass()->HasAnyClassFlags(CLASS_Native))
+        {
+            ReceiveBeginPlay();
+        }
+
+        // haker: mark current component is BeginPlay'ed
+        bHasBegunPlay = true;
+    }
+
+    // 015 - Foundation - CreateWorld ** - UActorComponent's member variables
 
     /** describes how a component instance will be created */
     // haker: EComponentCreationMethod is just four, I recommend to remember these four methods (not memorizing!)
@@ -380,24 +761,32 @@ class UActorComponent : public UObject
 
     /** main tick function for the component */
     // haker: as we covered FActorTickFunction in AActor, similar functionality is provided
-    // 51 - Foundation - CreateWorld - UActorComponent::PrimaryComponentTick
+    // 051 - Foundation - CreateWorld * - UActorComponent::PrimaryComponentTick
     // see FActorComponentTickFunction
     FActorComponentTickFunction PrimaryComponentTick;
+
+    /** used for fast removal of end of frame update */
+    int32 MarkedForEndOfFrameUpdateArrayIndex;
 
     // haker: the below bit flags is used to describe the UActorComponent's current initialization state
     // - pop QUIZ:
     //   - what happens if we used all of bits of uint8?
+    //     - it will allocate another uint8 after being used up all 8 bits for uint8 (1 byte)
 
     /** indicates if this ActorComponent is currently registered with a scene */
     uint8 bRegistered : 1;
 
     /** if the render state is currently created for this component */
+    // haker: whether an ActorComponent is created in RenderWorld(FScene)
     uint8 bRenderStateCreated : 1;
 
     /** does this component automatically register with its owner */
     uint8 bAutoRegister : 1;
 
     /** whether the component is activated at creation or must be explicitly activated */
+    // haker: understand difference between stages (Register vs. Activate)
+    // - Register is 'register tickfunction' to TickTaskLevel
+    // - Activate is 'enable tickfunction (including cooling-down)'
     uint8 bAutoActivate : 1;
 
     /** whether the component is currently active */
@@ -419,6 +808,25 @@ class UActorComponent : public UObject
     /** whether we've tried to register tick functions; reset when they are unregistered */
     uint8 bTickFunctionsRegistered : 1;
 
+    /** Is this component in need of its whole state being sent to the renderer? */
+	uint8 bRenderStateDirty:1;
+
+    /** Is this component's transform in need of sending to the renderer? */
+    uint8 bRenderTransformDirty : 1;
+
+    /** tracks whether the component has been added to one of the world's end of frame update lists */
+    // haker: it has 2bits covering 3 values in EComponentMarkedForEndOfFrameUpdateState
+    uint8 MarkedForEndOfFrameUpdateState : 2;
+
+    /** track whether the component has been added to the world's pre and end of frame sync list */
+    uint8 bMarkedForPreEndOfFrameSync : 1;
+
+    /** if this component currently replicating? should the network code consider it for replication? owning Actor must be replicating first! */
+    uint8 bReplicates : 1;
+
+    /** check whether the component class allows reregistration during ReregisterAllComponents */
+    uint8 bAllowReregistration : 1;
+
     /** cached pointer to owning actor */
     // haker: UActorComponent should have its owner as AActor
     mutable AActor* OwnerPrivate;
@@ -435,4 +843,7 @@ class UActorComponent : public UObject
      */
     // haker: AActor resides in ULevel -> ULevel resides in UWorld : UActorComponent resides in UWorld~ :)
     UWorld* WorldPrivate;
+
+    static FRWLock AllUCSModifiedPropertiesLock;
+    static TMap<UActorComponent*, TArray<FSimpleMemberReference>> AllUCSModifiedProperties;
 };

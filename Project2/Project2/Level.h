@@ -2,8 +2,11 @@
  * sorts actors such that parent actors will appear before children actors in the list:
  * Stable Sort 
  */
+// 069 - Foundation - CreateWorld - SortActorsHierarchy
 static void SortActorsHierarchy(TArray<TObjectPtr<AActor>>& Actors, ULevel* Level)
 {
+    // haker: we covered conceptually how child-actor works in AActor-UActorComponent structure
+    // - this function sorts actor's depth considering AActor-AActor parent-child relationships
     TMap<AActor*, int32> DepthMap;
     TArray<AActor*, TInlineAllocator<10>> VistedActors;
 
@@ -11,16 +14,45 @@ static void SortActorsHierarchy(TArray<TObjectPtr<AActor>>& Actors, ULevel* Leve
 
     bool bFoundWorldSettings = false;
 
+    // haker: we need to understand how child actor's root-component is attached its parent-actor:
+    // - in the last time, I just simply mention how child actor works in unreal
+    // - the actual way is related to SceneComponent's AttachParent and AttachChildren:
+    //                                                                                                                                              
+    //       ┌──────────┐                                                               ┌──────────┐                                                
+    //       │  Actor0  ├──────────────────────────────────────────────────────────────►│  Actor1  │                                                
+    //       └──┬───────┘                                                               └─┬────────┘                                                
+    //          │                                                                         │                                                         
+    //       ┌─RootComponent─────────────────────────────────┐                         ┌─RootComponent─────────────────────────────────┐            
+    //       │ AttachParent: NULL                            │                         │ AttachParent: Actor0's Component1             │            
+    //       │ Children: [Component1, Component3]            │               ┌─────────┤ Children: [Component1, Component2]            │            
+    //       └──┬────────────────────────────────────────────┘               │         └──┬────────────────────────────────────────────┘            
+    //          │                                                       Actor0──Actor1    │                                                         
+    //          │ ┌─Component1────────────────────────────────────┐          │            │ ┌─Component1────────────────────────────────────┐       
+    //          ├─┤ AttachParent: RootComponent                   │◄─────────┘            ├─┤ AttachParent: RootComponent                   │       
+    //          │ │ Children: [Actor1's RootComponent,Component2] │                       │ │ Children: []                                  │       
+    //          │ └─┬─────────────────────────────────────────────┘                       │ └───────────────────────────────────────────────┘       
+    //          │   │                                                                     │                                                         
+    //          │   │  ┌─Component2────────────────────────────────────┐                  │ ┌─Component2────────────────────────────────────┐       
+    //          │   └──┤ AttachParent: Component1                      │                  └─┤ AttachParent: RootComponent                   │       
+    //          │      │ Children: []                                  │                    │ Children: []                                  │       
+    //          │      └───────────────────────────────────────────────┘                    └───────────────────────────────────────────────┘       
+    //          │                                                                                                                                   
+    //          │   ┌─Component3────────────────────────────────────┐                                                                               
+    //          └───┤ AttachParent: RootComponent                   │                                                                               
+    //              │ Children: []                                  │                                                                               
+    //              └───────────────────────────────────────────────┘                                                                               
+    //                                                                                                                                              
     TFunction<int32(AActor*)> CalcAttachDepth = [
         &DepthMap, 
         &VisitedActors, 
-        // haker: we capture TFunction CalcAttachDepth to call recursively
+        // haker: we capture TFunction CalcAttachDepth to call lambda recursively
         &CalcAttachDepth, 
         &bFoundWorldSettings]
         (AActor* Actor)
     {
         int32 Depth = 0;
-        if (int32* FoundDepth = Depth.Find(Actor))
+        // haker: not need to do it again if we found the depth of Actor
+        if (int32* FoundDepth = DepthMap.Find(Actor))
         {
             Depth = *FoundDepth;
         }
@@ -29,11 +61,13 @@ static void SortActorsHierarchy(TArray<TObjectPtr<AActor>>& Actors, ULevel* Leve
             // WorldSettings is expected to be the first element in the sorted Actors array
             // to accomodate for the known issue where two world settings can exist, we only sort the
             // first one we find to the 0 index
+            // haker: as we saw previously, AWorldSettings is the first Actor added when we create UWorld
+            // - we need to make sure AWorldSetting is in index-0
             if (Actor->IsA<AWorldSettings>())
             {
                 if (!bFoundWorldSettings)
                 {
-                    // haker: it should be set as lowest value in int32
+                    // haker: by setting AWorldSetting's depth as lowest value in int32, we can guarantee that AWorldSetting is in index-0
                     Depth = TNumericLimits<int32>::Lowest();
                     bFoundWorldSettings = true;
                 }
@@ -42,6 +76,7 @@ static void SortActorsHierarchy(TArray<TObjectPtr<AActor>>& Actors, ULevel* Leve
                     UE_LOG(LogLevel, Warning, TEXT("Detected duplicate WorldSettings actor - UE-62934"));
                 }
             }
+            // see AActor::GetAttachParentActor (goto 070)
             else if (AActor* ParentActor = Actor->GetAttachParentActor())
             {
                 if (!VisitedActors.Contains(ParentActor))
@@ -51,14 +86,32 @@ static void SortActorsHierarchy(TArray<TObjectPtr<AActor>>& Actors, ULevel* Leve
                     // Actors attached to a ChildActor have to be registered first or else
                     // they will become detached due to the AttachChildren not yet being populated
                     // and thus not recorded in the ComponentInstanceDataCache
+                    // see AActor::IsChildActor (goto 071)
                     if (ParentActor->IsChildActor())
                     {
+                        // haker: this case is kind of exception handling... BUT, still can't come up with proper scenario...
+                        // *** I need to experiment how it works ?!
                         Depth = CalcAttachDepth(ParentActor) - 1;
                     }
                     else
                     {
                         // haker: 
-                        // @todo - explain with picture
+                        //       ┌──────────────────────────────────────────────────────────┐                                                                           
+                        //       │                                                          │                                                                           
+                        //       │      Actor0 ◄───  Depth = 0                              │                                                                           
+                        //       │       │                                                  │                                                                           
+                        //       │       └─RootComponent                                    │                                                                           
+                        //       │          │                                               │                                                                           
+                        //       │          └─Component1                                    │                                                                           
+                        //       │             │                                            │                                                                           
+                        //       │             └─Actor1 ◄───  Depth = 1                     │                                                                           
+                        //       │                │                                         │                                                                           
+                        //       │                └─RootComponent                           │                                                                           
+                        //       │                   │                                      │                                                                           
+                        //       │                   └─Actor2 ◄────  Depth = 2              │                                                                           
+                        //       │                                                          │                                                                           
+                        //       │                                                          │                                                                           
+                        //       └──────────────────────────────────────────────────────────┘                                                                           
                         Depth = CalcAttachDepth(ParentActor) + 1;
                     }
                 }
@@ -68,6 +121,7 @@ static void SortActorsHierarchy(TArray<TObjectPtr<AActor>>& Actors, ULevel* Leve
         return Depth;
     };
 
+    // haker: iterating Actors in ULevel, calculate depth with respect to AActor (not ActorComponent!)
     for (AActor* Actor : Actors)
     {
         if (Actor)
@@ -89,17 +143,24 @@ static void SortActorsHierarchy(TArray<TObjectPtr<AActor>>& Actors, ULevel* Leve
     StableSortInternal(Actors.GetData(), Actors.Num(), DepthSorter);
 
     // since all the null entries got sorted to the end, loop them off right now
+    // haker: after sorting, there are remaining entries in Actors array, so remove them
     int32 RemoveAtIndex = Actors.Num();
     while (RemoveAtIndex > 0 && Actors[RemoveAtIndex - 1] == nullptr)
     {
         --RemoveAtIndex;
     }
-
     if (RemoveAtIndex < Actors.Num())
     {
         Actors.RemoveAt(RemoveAtIndex, Actors.Num() - RemoveAtIndex);
     }
 }
+
+/** struct that holds on to information about Actors that wish to be auto enabled for input before the player controller has been created */
+struct FPendingAutoReceiveInputActor
+{
+    TWeakObjectPtr<AActor> Actor;
+    int32 PlayerIndex;
+};
 
 /**
  * the level object:
@@ -113,40 +174,84 @@ static void SortActorsHierarchy(TArray<TObjectPtr<AActor>>& Actors, ULevel* Leve
  * multiple levels can be loaded and unloaded into the World to create a streaming experience 
  */
 
-// 10 - Foundation - CreateWorld - ULevel class
+// 010 - Foundation - CreateWorld ** - ULevel class
 // haker:
 // Level?
 // - level == collection of actors:
 //   - examples of actors:
 //     - light, static-mesh, volume, brush(e.g. BSP brush: binary-search-partitioning), ...
-//       [ ] explain BSP brush with the editor
+//       [*] explain BSP brush with the editor
 // - rest of content will be skipped for now:
 //   - when we cover different topics like world-partition, streaming etc, we will visit it again
-
-/**
-* 레벨 객체:
-* 레벨의 배우 목록, BSP 정보 및 브러시 목록을 포함합니다
-* 모든 레벨에는 외부 세계가 있으며 지속적인 레벨로 사용할 수 있습니다,
-* OwningWorld에서 레벨이 스트리밍된 경우 레벨은 해당 레벨이 속한 월드를 나타냅니다
-*/
-
-/**
-* 레벨은 배우들(빛, 볼륨, 메쉬 인스턴스 등)의 모음입니다
-* 여러 레벨을 로드하고 언로드하여 스트리밍 경험을 만들 수 있습니다
-*/
-
-// 10 - 파운데이션 - 크리에이트월드 - U레벨 클래스
-// 해커:
-// 레벨?
-// - 레벨 == 배우 모음:
-// - 배우들의 예:
-// - 가볍고, 정적인 메쉬, 볼륨, 브러시(예: BSP 브러시: 이진 검색 분할), ...
-// 편집자와 함께 BSP 브러시를 설명합니다
-// - 나머지 콘텐츠는 당분간 생략하겠습니다:
-// - 월드 partition, 스트리밍 등 다양한 주제를 다룰 때 다시 방문할 예정입니다
+// see ULevel's member variables (goto 11)
 class ULevel : public UObject
 {
-    // 49 - Foundation - CreateWorld - ULevel::ULevel() constructor
+    /** register an actor that should be added to player's input stack when they are created */
+    // 042 - Foundation - CreateInnerProcessPIEGameInstance - ULevel::RegisterActorForAutoReceiveInput
+    void RegisterActorForAutoReceiveInput(AActor* Actor, const int32 PlayerIndex)
+    {
+        // haker: see PendingAutoReceiveInputActors as well as FPendingAutoReceiveInputActor
+        PendingAutoReceiveInputActors.Add(FPendingAutoReceiveInputActor(Actor, PlayerIndex));
+    }
+
+    /** push any pending auto receive input actor's input components on to the player controller's input stack */
+    // 043 - Foundation - CreateInnerProcessPIEGameInstance - ULevel::PushPendingAutoReceiveInput
+    // haker: this function process our pending entries of registering InputComponents in the world
+    void PushPendingAutoReceiveInput(APlayerController* InPlayerController)
+    {
+        check(InPlayerController);
+
+        // haker: find the PlayerIndex matching InPlayerController
+        int32 PlayerIndex = -1;
+        int32 Index = 0;
+        for (FConstPlayerControllerIterator Iterator = InPlayerController->GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+        {
+            APlayerController* PlayerController = Iterator->Get();
+            if (InPlayerController == PlayerController)
+            {
+                PlayerIndex = Index;
+                break;
+            }
+            Index++;
+        }
+
+        if (PlayerIndex >= 0)
+        {
+            // haker: get the Actors from PendingAutoReceiveInputActors matching PlayerIndex
+            TArray<AActor*> ActorsToAdd;
+            for (int32 PendingIndex = PendingAutoReceiveInputActors.Num() - 1; PendingIndex >= 0; --PendingIndex)
+            {
+                FPendingAutoReceiveInputActor& PendingActor = PendingAutoReceiveInputActors[PendingIndex];
+                if (PendingActor.PlayerIndex == PlayerIndex)
+                {
+                    if (PendingActor.Actor.IsValid())
+                    {
+                        ActorsToAdd.Add(PendingActor.Actor.Get());
+                    }
+                    PendingAutoReceiveInputActors.RemoveAtSwap(PendingIndex);
+                }
+            }
+
+            // haker: iterating ActorsToAdd for enabling InputComponents
+            for (int32 ToAddIndex = ActorsToAdd.Num() - 1; ToAddIndex >= 0; --ToAddIndex)
+            {
+                APawn* PawnToPossess = Cast<APawn>(ActorsToAdd[ToAddIndex]);
+                if (PawnToPossess)
+                {
+                    // haker: we'll see Possess sooner or later
+                    InPlayerController->Possess(PawnToPossess);
+                }
+                else
+                {
+                    // haker: by calling EnableInput, we add InputComponent to PC
+                    // - we already saw EnableInput()
+                    ActorsToAdd[ToAddIndex]->EnableInput(InPlayerController);
+                }
+            }
+        }
+    }
+
+    // 049 - Foundation - CreateWorld * - ULevel::ULevel() constructor
     ULevel(const FObjectInitializer& ObjectInitializer)
         : UObject(ObjectInitializer)
         // haker: as the function name describes, ULevel allocate new FTickTaskLevel
@@ -166,15 +271,18 @@ class ULevel : public UObject
         return bIsPersistent;
     }
 
+    // 072 - Foundation - CreateWorld - ULevel::IncrementalRegisterComponents
     bool IncrementalRegisterComponents(bool bPreRegisterComponents, int32 NumComponentsToUpdate, FRegisterComponentContext* Context)
     {
         // find next valid actor to process components registration
+        // haker: CurrentActorIndexForIncrementalUpdate is persistent index to keep track of the last index which we have done in IncrementalRegisterComponents
         while (CurrentActorIndexForIncrementalUpdate < Actors.Num())
         {
             AActor* Actor = Actors[CurrentActorIndexForIncrementalUpdate];
             bool bAllComponentsRegistered = true;
             if (IsValid(Actor))
             {
+                // haker: bPreRegisterComponent is whether we call PreRegisterComponents for each Actor in Level
                 if (bPreRegisterComponents && !bHasCurrentActorCalledPreRegister)
                 {
                     // haker: remember AActor's PreRegisterAllComponent() call in here
@@ -183,9 +291,11 @@ class ULevel : public UObject
                 }
 
                 // haker: here, we register component in the incremental manner
+                // see AActor::IncrementalRegisterComponents (goto 073)
                 bAllComponentsRegistered = Actor->IncrementalRegisterComponents(NumComponentsToUpdate, Context);
             }
 
+            // haker: when we successfully register all components in AActor, we prepare next actor
             if (bAllComponentsRegistered)
             {
                 // all components have been registered for this actor, move to a next one
@@ -195,12 +305,23 @@ class ULevel : public UObject
 
             // if we do an incremental registration return to outer loop after each processed actor
             // so outer loop can decide whether we want to continue processing this frame
+            // haker: what does this condition means?
+            // - we do NOT modify NumComponentsToUpdate in AActor::IncrementalRegisterComponents()
+            // - NumComponentsToUpdate != 0 is that we are going to do incremental-update
+            //   - when incremental-update is enabled, we are get out of while-loop every actor
+            // - ULevel keep track of current actor index to do incremental-update with CurrentActorIndexForIncrementalUpdate
+            // - the comment describes:
+            //   - ***outer loop calling this function*** determines whether we are going to continue do incremental-update for this Level
+            //   - see the src to understand : 
+            //     Level->IncrementalUpdateComponents in World.cpp
+            //       - it determines by how much time do we left to do incremental-update
             if (NumComponentsToUpdate != 0)
             {
                 break;
             }
         }
 
+        // haker: we successfully done to do all incremental-updates for this Level, and return 'true'
         if (CurrentActorIndexForIncrementalUpdate >= Actors.Num())
         {
             // we need to process pending adds prior to rerunning the construction scripts which may internally preform removals / adds themselves
@@ -216,6 +337,7 @@ class ULevel : public UObject
     }
 
     /** incrementally update all components of actor associated with this level */
+    // 068 - Foundation - CreateWorld - IncrementalUpdateComponents
     void IncrementalUpdateComponents(int32 NumComponentsToUpdate, bool bRerunConstructionScripts, FRegisterComponentContext* Context = nullptr)
     {
         // a value of 0 means that we want to update all components
@@ -226,22 +348,51 @@ class ULevel : public UObject
             check(OwningWorld->IsGameWorld());
         }
 
+        // haker: if we pass NumComponentsToUpdate as 0, it will update all components in the level:
+        // - this is our case!
         bool bFullyUpdateComponents = (NumComponentsToUpdate == 0);
 
         // the editor is never allowed to incrementally update components; make sure to pass in a value of zero for NumActorsToUpdate
+        // haker: you should understand the below check() function conveniently
         check(bFullyUpdateComponents || OwningWorld->IsGameWorld());
 
         do
         {
+            // haker: see IncrementalComponentState:
+            // the incremental update is happened:            
+            // - for Init and Finalize is done all at once
+            // - in RegisterInitialComponent is done incrementally based on NumComponentsToUpdate
+            //
+            // ┌──────────────────────────────────┐                       
+            // │ EIncrementalComponentState::Init │                       
+            // └─┬─┬──────────────────────────────┘                       
+            //   │ │                                                      
+            //   │ └──SortActorHierarchy()                                
+            //   │                                                        
+            //   │                                                        
+            // ┌─▼─────────────────────────────────────────────────────┐  
+            // │ EIncrementalComponentState::RegisterInitialComponents │  
+            // └─┬─┬───────────────────────────────────────────────────┘  
+            //   │ │                                                      
+            //   │ └──IncrementalRegisterComponents(NumComponentsToUpdate)
+            //   │                                                        
+            //   │                                                        
+            // ┌─▼────────────────────────────────────┐                   
+            // │ EIncrementalComponentState::Finalize │                   
+            // └──────────────────────────────────────┘   
+            //
             switch (IncrementalComponentState)
             {
             case EIncrementalComponentState::Init:
                 // sort actors to ensure that parent actors will be registered before child actors
+                // haker: before registering components for all actors in Level, sort actors hierarchically
+                // see SortActorsHierarchy (goto 069)
                 SortActorsHierarchy(Actors, this);
                 IncrementalComponentState = EIncrementalComponentState::RegisterInitialComponents;
                 // haker: NOTE that no break expression here!
 
             case EIncrementalComponentState::RegisterInitialComponents:
+                // see ULevel::IncrementalRegisterComponents (goto 072)
                 if (IncrementalRegisterComponents(true, NumComponentsToUpdate, Context))
                 {
 #if WITH_EDITOR || 1
@@ -263,6 +414,7 @@ class ULevel : public UObject
                 break;
 #endif
             case EIncrementalComponentState::Finalize:
+                // haker: we finish registering components for all actors in Level
                 IncrementalComponentState = EIncrementalComponentState::Init;
                 CurrentActorIndexForIncrementalUpdate = 0;
                 bHasCurrentActorCalledPreRegister = false;
@@ -271,9 +423,13 @@ class ULevel : public UObject
                 CreateCluster();
                 break;
             }
+        
+        // haker: focus the condition:
+        // - we only iterate again only if bFullyUpdateComponents is 'true'
         } while (bFullyUpdateComponents && !bAreComponentsCurrentlyRegistered);
         
         // haker: process all pending physics state creation
+        // - by processing deferred creation of physics state, all components are reflected to Physics World (FPhysScene)
         {
             FPhysScene* PhysScene = OwningWorld->GetPhysicsScene();
             if (PhysScene)
@@ -284,25 +440,179 @@ class ULevel : public UObject
     }
 
     /** update all components of actors associated with this level (aka in Actors array) and creates the BSP model components */
+    // 067 - Foundation - CreateWorld - UpdateLevelComponents
     void UpdateLevelComponents(bool bRerunConstructionScripts, FRegisterComponentContext* Context = nullptr)
     {
         // update all components in one swoop
+        // haker: UpdateComponents for each level is incremental:
+        // - NOTE that NumComponentsToUpdate == 0 -> we update all components in the level
+        // see ULevel::IncrementalUpdateComponents (goto 068)
         IncrementalUpdateComponents(0, bRerunConstructionScripts, Context);
     }
 
-    // 11 - Foundation - CreateWorld - ULevel's member variables
+    /** routes pre and post initialization for the next time this level is streamed in */
+    // 025 - Foundation - CreateInnerProcessPIEGameInstance * - ULevel::RouteActorInitialize
+    void RouteActorInitialize(int32 NumActorsToProcess)
+    {
+        // haker: here, we follow initialization steps:
+        // 1. PreInitialize
+        // 2. Initialize
+        // 3. (if the World's BeginPlay() is called), BeginPlay
+
+        // haker: if we pass NumActorsToProcess as '0', it will update all actors!
+        const bool bFullProcessing = (NumActorsToProcess <= 0);
+        switch (RouteActorInitializationState)
+        {
+            case ERouteActorInitializationState::Preinitialize:
+            {
+                // actor pre-initialization may spawn new actors so we need to incrementally process until actor count stablizes
+                while (RouteActorInitializationIndex < Actors.Num())
+                {
+                    AActor* const Actor = Actors[RouteActorInitializationIndex];
+                    if (Actor && !Actor->IsActorInitialized())
+                    {
+                        // haker: before going further, let's consider AGameModeBase cases:
+                        // - see AGameModeBase::PreInitializeComponents (goto 026: CreateInnerProcessPIEGameInstance)
+                        Actor->PreInitializeComponents();
+                    }
+
+                    ++RouteActorInitializationIndex;
+                    if (!bFullProcessing && (--NumActorsToProcess == 0))
+                    {
+                        return;
+                    }
+                } 
+
+                RouteActorInitializationIndex = 0;
+                RouteActorInitializationState = ERouteActorInitializationState::Initialize;
+                // haker: note that we don't have break statement for case statement!
+            }
+
+            // intental fall-through, proceeding if we haven't expired our actor count budget
+            case ERouteActorInitializationState::Initialize:
+            {
+                while (RouteActorInitializationIndex < Actors.Num())
+                {
+                    AActor* const Actor = Actors[RouteActorInitializationIndex];
+                    if (Actor)
+                    {
+                        if (!Actor->IsActorInitialized())
+                        {
+                            // haker: all tick functions of all components in Actor are enabled, if possible
+                            Actor->InitializeComponents();
+                            Actor->PostInitializeComponents();
+                        }
+                    }
+
+                    ++RouteActorInitializationIndex;
+                    if (!bFullProcessing && (--NumActorsToProcess == 0))
+                    {
+                        return;
+                    }
+                }
+
+                RouteActorInitializationIndex = 0;
+                RouteActorInitializationState = ERouteActorInitializationState::BeginPlay;
+            }
+
+            // intentional fall-through, proceeding if we haven't expired our actor count budget
+            case ERouteActorInitializationState::BeginPlay:
+            {
+                // haker: our world is not called BeginPlay()
+                // - we will call this later, so for now skip it
+                if (OwningWorld->HasBegunPlay())
+                {
+                    while (RouteActorInitializationIndex < Actors.Num())
+                    {
+                        // child actors have play begun explicitly by their parents
+                        AActor* const Actor = Actors[RouteActorInitializationIndex];
+                        if (Actor && !Actor->IsChildActor())
+                        {
+                            const bool bFromLevelStreaming = true;
+                            Actor->DispatchBeginPlay(bFromLevelStreaming);
+                        }
+
+                        ++RouteActorInitializationIndex;
+                        if (!bFullProcessing && (--NumActorsToProcess == 0))
+                        {
+                            return;
+                        }
+                    }
+                }
+
+                RouteActorInitializationState = ERouteActorInitializationState::Finished;
+            }
+
+            // intentional fall-through if we're done
+            case ERouteActorInitializationState::Finished:
+            {
+                break;
+            }
+        }
+    }
+
+    /**
+     * sorts the actor list by net relevancy and static behavior
+     * first all not net relevant static actors, then all net relevant static actors and then the rest
+     * this is done to allow the dynamic and net relevant actor iterators to skip large amount of actors 
+     */
+    void SortActorList()
+    {
+        if (Actors.Num() == 0)
+        {
+            return;
+        }
+
+        TArray<AActor*> NewActors;
+        TArray<AActor*> NewNetActors;
+        NewActors.Reserve(Actors.Num());
+        NewNetActors.Reserve(Actors.Num());
+
+        if (WorldSettings)
+        {
+            // the WorldSettings tries to stay at index 0
+            NewActors.Add(WorldSettings);
+
+            if (OwningWorld != nullptr)
+            {
+                OwningWorld->AddNetworkActor(WorldSettings);
+            }
+        }
+
+        // add non-net actors to the NewActors immediately, cache off the net actors to Append after
+        for (AActor* Actor : Actors)
+        {
+            if (IsValid(Actor) && Actor != WorldSettings)
+            {
+                if (IsNetActor(Actor))
+                {
+                    NewNetActors.Add(Actor);
+                    if (OwningWorld != nullptr)
+                    {
+                        OwningWorld->AddNetworkActor(Actor);
+                    }
+                }
+                else
+                {
+                    NewActors.Add(Actor);
+                }
+            }
+        }
+
+        NewActors.Append(MoveTemp(NewNetActors));
+
+        // replace with sorted list
+        Actors = ObjectPtrWrap(MoveTemp(NewActors));
+    }
+
+    // 011 - Foundation - CreateWorld ** - ULevel's member variables
 
     /** array of all actors in this level, used by FActorIteratorBase and derived classes */
     // haker: this is the member variable which contains a list of AActor
     // see AActor (goto 12)
-
-    /** 이 수준의 모든 배우 배열, FActorIteratorBase 및 파생 클래스에서 사용됨 */
-// 하커: 이것은 AActor 목록을 포함하는 멤버 변수입니다
     TArray<TObjectPtr<AActor>> Actors;
 
     /** cached level collection that this level is contained in */
-    /** 이 레벨이 에 포함된 캐시 레벨 컬렉션*/
-    //레벨의 CollectionType을 정해준다.(레벨들은 해당 CollectionType에 따라서 분류된다.) 그로인해 파티클들믄 들어있는 레벨, 맵만 들어있는 레벨 등등의 엑터의 분류가 가능해진다.
     // see FLevelCollection (goto 19)
     FLevelCollection* CachedLevelCollection;
 
@@ -311,12 +621,7 @@ class ULevel : public UObject
      * this is not the same as GetOuter(), because GetOuter() for a streaming level is a vestigial world that is not used
      * it should not be accessed during BeginDestroy(), just like any other UObject references, since GC may occur in any order
      */
-     /**
-     * 레벨 배열에 이 레벨이 있는 세계
-     * 이것은 GetOutter()와 다릅니다. 왜냐하면 스트리밍 레벨의 GetOutter()는 사용되지 않는 잔여 세계이기 때문입니다
-     * 다른 UObject 참조와 마찬가지로 BeginDestroy() 동안에는 GC가 어떤 순서로든 발생할 수 있으므로 액세스해서는 안 됩니다
-     */
-    // haker: let's understand OwningWorld vs. OuterPrivate (여기 나오는 OuterPrivate은 Level이 상속받고 있는 UObject.h에서 가지고있는 월드 객체이다)
+    // haker: let's understand OwningWorld vs. OuterPrivate
     // - note that my explanation is based on WorldComposition's level streaming or LevelBlueprint's level load/unload manipulation
     //   - World Partition has different concept which usually OwningWorld and OuterPrivate is same
     // - Diagram:                                                                                                        
@@ -346,13 +651,15 @@ class ULevel : public UObject
 
     /** the current stage for incrementally updating actor components in the level */
     // haker: we already covered AActor's initialization steps
-    // 한번에 컴포넌트들을 전부다 로드하면 느리기때문에 증분적으로 진행한다. 그 상태를 저장하기위한 변수
+    // - incremental register components for each AActor
     EIncrementalComponentState IncrementalComponentState;
 
     /** whether the actor referenced by CurrentActorIndexForUpdateComponents has called PreRegisterAllComponents */
     uint8 bHasCurrentActorCalledPreRegister : 1;
 
     /** whether components are currently registered or not */
+    // haker: the incremental update is based on the count of components:
+    // - it could be ceased when it reach maximum component count in Actor
     uint8 bAreComponentsCurrentlyRegistered : 1;
 
     /** current index into actors array for updating components */
@@ -361,10 +668,27 @@ class ULevel : public UObject
 
     /** data structures for holding the tick functions */
     // haker: for now, member variables related to tick function are skipped
-    // 엑터가 틱을 도는데 사용
     FTickTaskLevel* TickTaskLevel;
     
     // goto 9 (UWorld's member variables)
+
+    enum class ERouteActorInitializationState : uint8
+    {
+        Preinitialize,
+        Initialize,
+        BeginPlay,
+        Finished,
+    };
+    ERouteActorInitializationState RouteActorInitializationState;
+    int32 RouteActorInitializationIndex;
+
+    TObjectPtr<AWorldSettings> WorldSettings;
+
+    /** array of actors to be exposed to GC in this level; all other actors will be referenced through ULevelActorContainer */
+    TArray<TObjectPtr<AActor>> ActorsForGC;
+
+    /** Actors awaiting input to be enabled once the appropriate PlayerController has been created */
+    TArray<FPendingAutoReceiveInputActor> PendingAutoReceiveInputActors;
 };
 
 /**

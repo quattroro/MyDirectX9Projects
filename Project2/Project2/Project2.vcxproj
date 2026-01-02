@@ -128,12 +128,18 @@
     <ClInclude Include="Class.h" />
     <ClInclude Include="EditorEngine.h" />
     <ClInclude Include="EngineBaseTypes.h" />
+    <ClInclude Include="GameInstance.h" />
+    <ClInclude Include="GameModeBase.h" />
+    <ClInclude Include="GameViewportClient.h" />
     <ClInclude Include="Launch.h" />
     <ClInclude Include="LaunchEngineLoop.h" />
     <ClInclude Include="Level.h" />
+    <ClInclude Include="LocalPlayer.h" />
     <ClInclude Include="Object.h" />
+    <ClInclude Include="PlayerController.h" />
     <ClInclude Include="SceneComponent.h" />
     <ClInclude Include="TickTaskManager.h" />
+    <ClInclude Include="UnrealClient.h" />
     <ClInclude Include="World.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
