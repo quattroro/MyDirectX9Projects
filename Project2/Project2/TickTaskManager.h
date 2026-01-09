@@ -64,6 +64,7 @@ class FTickTaskLevel
         {
         // haker: note that in our callstack, the TickFunction is not in Enabled state, but see how RemoveTickFunction() works when TickFunction is Enabled
         case FTickFunction::ETickState::Enabled:
+            // 활성 상태지만 완전한 활성상태가 아니고 TickFunctionsToReschedule이나 AllCoolingDownTickFunctions 리스트에 들어가서 상태 업데이트를 기다리고 있는 경우 
             if (TickFunction->InternalData->bWasInternal)
             {
                 // an enabled function with a tick interval could be in either the enabled or cooling down list

@@ -147,6 +147,8 @@ struct FTickFunction
             // - state is changed from disabled -> enabled
             // - if our state is Enabled, no need to re-enable TickFunction!
             // - if our state is Disabled and bInEnable is 'false', enable -> disable
+
+            // 비활성화 -> 활성화, 활성화 -> 비활성화 이렇게 2가지 경우만 들어온다. 잘 만들어놨네ㅣ...
             if (bInEnabled == (TickState == ETickState::Disabled))
             {
                 // haker: InternalData has tick-task-level which it is resides in

@@ -308,6 +308,8 @@ class UActorComponent : public UObject
         // haker: bCanEverTick is the variable to determine whether tick-function is enabled for ticking (registered)
         // see UObject::IsTemplate (goto 54)
         // - if current ActorComponent is CDO, it doesn't make sense to enable TickFunction
+        // IsTemplate -> 이게 무엇인가.
+        // 현재 오브젝트 뿐만 아니라 outer들도 전부다 ArchetypeObejct 또는 DefaultObject인지 확인한다. -> 이것들은 실제 사용되는 오브젝트가 아닌 더미로 만들어진 DefaultObject란 뜻이다.
         if (PrimaryComponentTick.bCanEverTick && !IsTemplate())
         {
             // see SetTickFunctionEnabled (goto 55)
@@ -388,6 +390,7 @@ class UActorComponent : public UObject
 
     /** calls OnRegister, CreateRenderState_Concurrent and OnCreatePhysicsState */
     // 040 - Foundation - CreateWorld ** - UWorld::ExecuteRegisterEvents
+    // AActor::RegisterComponent() 이 함수에서 호출되었다
     void ExecuteRegisterEvents(FRegisterComponentContext* Context = nullptr)
     {
         if (!bRegistered)
@@ -415,12 +418,14 @@ class UActorComponent : public UObject
             // - FRegisterComponentContext Context is passed as 'nullptr'
             // - see UActorComponent::CreateRenderState_Concurrent (goto 001: CreateRenderState)
             // - see UPrimitiveComponent::CreateRenderState_Concurrent(goto 002: CreateRenderState)
+            // 나의 분신을 여기에 만들어 준다.
             CreateRenderState_Concurrent(Context);
             // 015 - Foundation - CreateRenderState * - END
         }
 
         // haker:
         // we are not going to do deep-dive on physics for a while.
+        // 나의 분신을 여기에 만들어 준다.
         CreatePhysicsState(/*bAllowDeferral=*/true);
 
         // haker:
@@ -510,6 +515,7 @@ class UActorComponent : public UObject
         else if (MyOwner == nullptr)
         {
             // haker: here is the InitializeComponent() call which we covered in AActor's initialization stages
+            // 만약 내가 레지스터 렌더링까지 다 반영된 이후에 무언가 처리를 하고싶으면 InitializeComponent()이걸 오버라이드 해서 처리하면 가능하다 (이런 팁 필요)
             if (!bHasBeenInitialized && bWantsInitializeComponent)
             {
                 // see InitializeComponent()
