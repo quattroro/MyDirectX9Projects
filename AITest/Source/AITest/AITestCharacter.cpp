@@ -10,6 +10,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "GameFramework/Controller.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -42,7 +44,19 @@ AAITestCharacter::AAITestCharacter()
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
+	//CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
+	////////////////////////////////////////////////////
+	///수정
+	////////////////////////////////////////////////////
+	CameraBoom->TargetArmLength = 900.0f;
+	CameraBoom->SetRelativeRotation(FRotator(-70.0f, 0.0f, 0.0f));
+	// 컨트롤러를 기반으로 스피링 암을 회전시키지 않도록 설정한다.
+	CameraBoom->bUsePawnControlRotation = false;
+	// 캐릭터의 회전에 의해 카메라의 회전이 변경되지 않도록 폰의 피치, 요, 롤 회전을 무시한다.
+	CameraBoom->bInheritPitch = false;
+	CameraBoom->bInheritYaw = false;
+	CameraBoom->bInheritRoll = false;
+	////////////////////////////////////////////////////
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
 	// Create a follow camera
@@ -58,15 +72,18 @@ void AAITestCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-
-	//Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
+	////////////////////////////////////////////////////
+	///수정
+	////////////////////////////////////////////////////
+	////Add Input Mapping Context
+	//if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	//{
+	//	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+	//	{
+	//		Subsystem->AddMappingContext(DefaultMappingContext, 0);
+	//	}
+	//}
+	////////////////////////////////////////////////////
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -77,15 +94,26 @@ void AAITestCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 		
+		////////////////////////////////////////////////////
+		///수정
+		////////////////////////////////////////////////////
 		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
+		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		// Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAITestCharacter::Move);
-
+		//EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAITestCharacter::Move);
 		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AAITestCharacter::Look);
+		//EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AAITestCharacter::Look);
+		////////////////////////////////////////////////////
+
+		if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+		{
+			if (UEnhancedInputLocalPlayerSubsystem* EnhancedSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+			{
+				EnhancedSubsystem->AddMappingContext(IC_Character, 1);
+			}
+		}
+		EnhancedInputComponent->BindAction(IA_Move, ETriggerEvent::Triggered, this, &AAITestCharacter::Move2);
 	}
 	else
 	{
@@ -115,6 +143,26 @@ void AAITestCharacter::Move(const FInputActionValue& Value)
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
 }
+
+void AAITestCharacter::Move2(const FInputActionValue& Value)
+{
+	FVector2D InputValue = Value.Get<FVector2D>();
+	if (Controller != nullptr && InputValue.X != 0.0f || InputValue.Y != 0.0f)
+	{
+		const FRotator YawRotation(0, Controller->GetControlRotation().Yaw, 0);
+		if (InputValue.X != 0.0f)
+		{
+			const FVector RightDirection = UKismetMathLibrary::GetRightVector(YawRotation);
+			AddMovementInput(RightDirection, InputValue.X);
+		}
+		if (InputValue.Y != 0.0f)
+		{
+			const FVector ForwardDirection = YawRotation.Vector();
+			AddMovementInput(ForwardDirection, InputValue.Y);
+		}
+	}
+}
+
 
 void AAITestCharacter::Look(const FInputActionValue& Value)
 {

@@ -53,9 +53,12 @@ protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
+	void Move2(const FInputActionValue& Value);
+
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 			
+	void Look2(const FInputActionValue& Value);
 
 protected:
 	// APawn interface
@@ -69,5 +72,12 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	class UInputMappingContext* IC_Character;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	class UInputAction* IA_Move;
+
 };
 

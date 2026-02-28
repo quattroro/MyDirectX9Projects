@@ -30,7 +30,7 @@ APlayerProjectile::APlayerProjectile()
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
 	//MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
+	UE_LOG(LogTemp, Warning, TEXT("Init111111"));
 	InitialLifeSpan = 3.0;
 }
 
