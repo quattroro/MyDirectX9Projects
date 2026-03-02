@@ -19,6 +19,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -28,4 +29,7 @@ public:
 
 	void LookAtActor(AActor* TargetActor);
 	bool CanSeeActor(const AActor* TargetActor) const;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "LookAt", meta = (AllowPrivateAccess = "true"))
+	class USceneComponent* SightSource;
 };
