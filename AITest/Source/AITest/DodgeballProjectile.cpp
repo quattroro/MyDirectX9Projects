@@ -23,6 +23,10 @@ ADodgeballProjectile::ADodgeballProjectile()
 	SphereComponent->OnComponentHit.AddDynamic(this, &ADodgeballProjectile::OnHit);
 
 	RootComponent = SphereComponent;
+	// ProjectileMovementComponent 생성
+	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement"));
+	// 초기 속도 설정
+	ProjectileMovement->InitialSpeed = 1500.0f;
 }
 
 // Called when the game starts or when spawned

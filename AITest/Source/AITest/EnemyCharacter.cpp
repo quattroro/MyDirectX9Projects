@@ -6,6 +6,7 @@
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
 
 
 // Sets default values
@@ -31,7 +32,22 @@ void AEnemyCharacter::Tick(float DeltaTime)
 
 	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
 
-	LookAtActor(PlayerCharacter);
+	bCanSeePlayer = LookAtActor(PlayerCharacter);
+
+	if (bCanSeePlayer != bPreviousCanSeePlayer)
+	{
+		if (bCanSeePlayer)
+		{
+			// 닷지볼 던지기를 시작한다.
+			GetWorldTimerManager().SetTimer(ThrowTimerHandle, this, AEnemyCharacter::ThrowDodgeball, ThrowingInterval, true, ThrowingDelay);
+		}
+		else
+		{
+			// 닷지볼 던지기를 멈춘다.
+			GetWorldTimerManager().ClearTimer(ThrowTimerHandle);
+		}
+	}
+	bPreviousCanSeePlayer = bCanSeePlayer;
 }
 
 // Called to bind functionality to input
@@ -40,6 +56,12 @@ void AEnemyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
+
+void AEnemyCharacter::ThrowDodgeball()
+{
+
+}
+
 
 bool AEnemyCharacter::CanSeeActor(const AActor* TargetActor) const
 {
@@ -72,10 +94,10 @@ bool AEnemyCharacter::CanSeeActor(const AActor* TargetActor) const
 	return !Hit.bBlockingHit;
 }
 
-void AEnemyCharacter::LookAtActor(AActor* TargetActor)
+bool AEnemyCharacter::LookAtActor(AActor* TargetActor)
 {
 	if (TargetActor == nullptr)
-		return;
+		return false;
 
 	if (CanSeeActor(TargetActor))
 	{
@@ -86,6 +108,8 @@ void AEnemyCharacter::LookAtActor(AActor* TargetActor)
 
 		SetActorRotation(LookAtRotation);
 
-
+		return true;
 	}
+
+	return true;
 }

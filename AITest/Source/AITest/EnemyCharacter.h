@@ -27,9 +27,24 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void LookAtActor(AActor* TargetActor);
+	bool LookAtActor(AActor* TargetActor);
 	bool CanSeeActor(const AActor* TargetActor) const;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "LookAt", meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* SightSource;
+
+	// 적 캐릭터가 이번 프레임에 플레이어를 볼 수 있는지 여부
+	bool bCanSeePlayer = false;
+
+	// 적 캐릭터가 이전 프레임에 플레이어를 볼 수 있었는지 여부
+	bool bPreviousCanSeePlayer = false;
+
+	FTimerHandle ThrowTimerHandle;
+	float ThrowingInterval = 2.f;
+	float ThrowingDelay = 0.5f;
+	void ThrowDodgeball();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dodgeball")
+	TSubclassOf<class ADodgeballProjectile> DodgeballClass;
+
 };
