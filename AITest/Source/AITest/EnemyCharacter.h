@@ -47,4 +47,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dodgeball")
 	TSubclassOf<class ADodgeballProjectile> DodgeballClass;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Dodgeball")
+	class ADodgeballProjectile* DodgeballClass2;
+
 };

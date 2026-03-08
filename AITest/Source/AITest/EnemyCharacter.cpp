@@ -7,6 +7,9 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "DodgeballProjectile.h"
+//#include "Components/ProjectileMovementComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 
 
 // Sets default values
@@ -22,7 +25,8 @@ AEnemyCharacter::AEnemyCharacter()
 void AEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	bCanSeePlayer = false;
+	bPreviousCanSeePlayer = false;
 }
 
 // Called every frame
@@ -33,16 +37,19 @@ void AEnemyCharacter::Tick(float DeltaTime)
 	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
 
 	bCanSeePlayer = LookAtActor(PlayerCharacter);
+	
 
 	if (bCanSeePlayer != bPreviousCanSeePlayer)
 	{
 		if (bCanSeePlayer)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Start Timer"));
 			// 닷지볼 던지기를 시작한다.
-			GetWorldTimerManager().SetTimer(ThrowTimerHandle, this, AEnemyCharacter::ThrowDodgeball, ThrowingInterval, true, ThrowingDelay);
+			GetWorldTimerManager().SetTimer(ThrowTimerHandle, this, &AEnemyCharacter::ThrowDodgeball, ThrowingInterval, true, ThrowingDelay);
 		}
 		else
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Stop Timer"));
 			// 닷지볼 던지기를 멈춘다.
 			GetWorldTimerManager().ClearTimer(ThrowTimerHandle);
 		}
@@ -59,7 +66,27 @@ void AEnemyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 void AEnemyCharacter::ThrowDodgeball()
 {
+	if (DodgeballClass == nullptr)
+	{
+		return;
+	}
 
+	UE_LOG(LogTemp, Warning, TEXT("Throw"));
+	FVector ForwardVector = GetActorForwardVector();
+	float SpawnDistance = 40.f;
+	FVector SpawnLocation = GetActorLocation() + (ForwardVector * SpawnDistance);
+	FRotator SpawnRotation = GetActorRotation();
+
+
+	FTransform SpawnTransform = FTransform(SpawnRotation, SpawnLocation);
+
+	// 새 닷지볼 스폰하기
+	//GetWorld()->SpawnActor<ADodgeballProjectile>(DodgeballClass, SpawnLocation, GetActorRotation());
+
+	ADodgeballProjectile* Projectile = GetWorld()->SpawnActorDeferred<ADodgeballProjectile>(DodgeballClass, SpawnTransform);
+	Projectile->GetProjectileMovementComponent()->InitialSpeed = 2200;
+	//FinishSpawning(SpawnTransform);
+	Projectile->FinishSpawning(SpawnTransform);
 }
 
 
@@ -111,5 +138,5 @@ bool AEnemyCharacter::LookAtActor(AActor* TargetActor)
 		return true;
 	}
 
-	return true;
+	return false;
 }
