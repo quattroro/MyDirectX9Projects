@@ -69,26 +69,30 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Physical Material.md",
+                "file": "TSubclassOf.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Physical Material"
+              "title": "TSubclassOf"
             }
           },
           {
-            "id": "3f01127e70ae8eb0",
+            "id": "1f09832af0af3202",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "USceneComponent.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "새 탭"
+              "title": "USceneComponent"
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 5
       }
     ],
     "direction": "vertical"
@@ -236,11 +240,13 @@
       "bases:새 베이스 생성하기": false
     }
   },
-  "active": "6904a7931162fe54",
+  "active": "1f09832af0af3202",
   "lastOpenFiles": [
+    "TSubclassOf.md",
+    "USceneComponent.md",
+    "Physical Material.md",
     "Pasted image 20260302142356.png",
     "CustomChannel.md",
-    "Physical Material.md",
     "LineTrace.md",
     "객체의 기저벡터 구하기.md",
     "PrimitiveComponent.md",
