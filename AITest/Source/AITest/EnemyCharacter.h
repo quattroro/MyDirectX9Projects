@@ -28,7 +28,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	bool LookAtActor(AActor* TargetActor);
-	bool CanSeeActor(const AActor* TargetActor) const;
+	//bool CanSeeActor(const AActor* TargetActor) const;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "LookAt", meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* SightSource;

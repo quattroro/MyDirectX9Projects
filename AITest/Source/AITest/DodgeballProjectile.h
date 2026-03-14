@@ -36,4 +36,7 @@ public:
 	{
 		return ProjectileMovement;
 	}
+
+	UPROPERTY(EditAnywhere, Category = "Damage")
+	float Damage = 34.f;
 };

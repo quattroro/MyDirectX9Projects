@@ -79,5 +79,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	class UInputAction* IA_Move;
 
+
+	class UHealthComponent* HealthComponent;
 };
 

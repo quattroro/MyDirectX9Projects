@@ -4,6 +4,7 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "AITestCharacter.h"
+#include "HealthComponent.h"
 
 // Sets default values
 ADodgeballProjectile::ADodgeballProjectile()
@@ -45,10 +46,14 @@ void ADodgeballProjectile::Tick(float DeltaTime)
 
 void ADodgeballProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (Cast<AAITestCharacter>(OtherActor) != nullptr)
+	AAITestCharacter* Player = Cast<AAITestCharacter>(OtherActor);
+	if (Player != nullptr)
 	{
+		UHealthComponent* HealthComponent = Player->FindComponentByClass<UHealthComponent>();
+		if (HealthComponent != nullptr)
+		{
+			HealthComponent->LoseHealth(Damage);
+		}
 		Destroy();
 	}
-
-
 }

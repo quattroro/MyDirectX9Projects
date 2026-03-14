@@ -10,6 +10,7 @@
 #include "DodgeballProjectile.h"
 //#include "Components/ProjectileMovementComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "DodgeballFunctionLibrary.h"
 
 
 // Sets default values
@@ -90,43 +91,45 @@ void AEnemyCharacter::ThrowDodgeball()
 }
 
 
-bool AEnemyCharacter::CanSeeActor(const AActor* TargetActor) const
-{
-	if (TargetActor == nullptr)
-	{
-		return false;
-	}
-	
-	FHitResult Hit;
-	FVector start = SightSource->GetComponentLocation()/*GetActorLocation()*/;
-	FVector end = TargetActor->GetActorLocation();
-
-	ECollisionChannel Channel = ECollisionChannel::/*ECC_Visibility*/ECC_GameTraceChannel1;
-
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this);
-	QueryParams.AddIgnoredActor(TargetActor);
-
-	GetWorld()->LineTraceSingleByChannel(Hit, start, end, Channel, QueryParams);
-	//GetWorld()->LineTraceMultiByChannel()
-
-	DrawDebugLine(GetWorld(), start, end, FColor::Red);
-
-	//
-	//FQuat Rotation = FQuat::Identity;
-	//FCollisionShape Shape = FCollisionShape::MakeBox(FVector(20.0f, 20.0f, 20.0f));
-	//GetWorld()->SweepSingleByChannel(Hit, start, end, Rotation, Channel, Shape, QueryParams);
-
-
-	return !Hit.bBlockingHit;
-}
+//bool AEnemyCharacter::CanSeeActor(const AActor* TargetActor) const
+//{
+//	if (TargetActor == nullptr)
+//	{
+//		return false;
+//	}
+//	
+//	FHitResult Hit;
+//	FVector start = SightSource->GetComponentLocation()/*GetActorLocation()*/;
+//	FVector end = TargetActor->GetActorLocation();
+//
+//	ECollisionChannel Channel = ECollisionChannel::/*ECC_Visibility*/ECC_GameTraceChannel1;
+//
+//	FCollisionQueryParams QueryParams;
+//	QueryParams.AddIgnoredActor(this);
+//	QueryParams.AddIgnoredActor(TargetActor);
+//
+//	GetWorld()->LineTraceSingleByChannel(Hit, start, end, Channel, QueryParams);
+//	//GetWorld()->LineTraceMultiByChannel()
+//
+//	DrawDebugLine(GetWorld(), start, end, FColor::Red);
+//
+//	//
+//	//FQuat Rotation = FQuat::Identity;
+//	//FCollisionShape Shape = FCollisionShape::MakeBox(FVector(20.0f, 20.0f, 20.0f));
+//	//GetWorld()->SweepSingleByChannel(Hit, start, end, Rotation, Channel, Shape, QueryParams);
+//
+//
+//	return !Hit.bBlockingHit;
+//}
 
 bool AEnemyCharacter::LookAtActor(AActor* TargetActor)
 {
 	if (TargetActor == nullptr)
 		return false;
 
-	if (CanSeeActor(TargetActor))
+
+	const TArray<const AActor*> IgnoreActors = { this, TargetActor };
+	if (/*CanSeeActor(TargetActor)*/UDodgeballFunctionLibrary::CanSeeActor(GetWorld(), SightSource->GetComponentLocation(), TargetActor, IgnoreActors))
 	{
 		FVector Start = GetActorLocation();
 		FVector End = TargetActor->GetActorLocation();
