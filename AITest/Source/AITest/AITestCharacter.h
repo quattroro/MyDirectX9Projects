@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "HealthInterface.h"
 #include "AITestCharacter.generated.h"
 
 class USpringArmComponent;
@@ -16,7 +17,7 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class AAITestCharacter : public ACharacter
+class AAITestCharacter : public ACharacter, public IHealthInterface
 {
 	GENERATED_BODY()
 
@@ -81,5 +82,7 @@ public:
 
 
 	class UHealthComponent* HealthComponent;
+
+	virtual void OnDeath_Implementation() override;
 };
 

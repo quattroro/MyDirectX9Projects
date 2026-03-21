@@ -11,6 +11,7 @@
 //#include "Components/ProjectileMovementComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "DodgeballFunctionLibrary.h"
+#include "LookAtActorComponent.h"
 
 
 // Sets default values
@@ -20,6 +21,10 @@ AEnemyCharacter::AEnemyCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	SightSource = CreateDefaultSubobject<USceneComponent>(TEXT("SightSource"));
 	SightSource->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+
+	LookAtActorComponent = CreateDefaultSubobject<ULookAtActorComponent>(TEXT("LookAtActorComponent"));
+	LookAtActorComponent->SetupAttachment(RootComponent);
+	//LookAtActorComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
 }
 
 // Called when the game starts or when spawned
@@ -28,6 +33,8 @@ void AEnemyCharacter::BeginPlay()
 	Super::BeginPlay();
 	bCanSeePlayer = false;
 	bPreviousCanSeePlayer = false;
+	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
+	LookAtActorComponent->SetTarget(PlayerCharacter);
 }
 
 // Called every frame
@@ -37,8 +44,8 @@ void AEnemyCharacter::Tick(float DeltaTime)
 
 	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
 
-	bCanSeePlayer = LookAtActor(PlayerCharacter);
-	
+	//bCanSeePlayer = LookAtActor(PlayerCharacter);
+	bCanSeePlayer = LookAtActorComponent->CanSeeActor();
 
 	if (bCanSeePlayer != bPreviousCanSeePlayer)
 	{
@@ -122,24 +129,24 @@ void AEnemyCharacter::ThrowDodgeball()
 //	return !Hit.bBlockingHit;
 //}
 
-bool AEnemyCharacter::LookAtActor(AActor* TargetActor)
-{
-	if (TargetActor == nullptr)
-		return false;
-
-
-	const TArray<const AActor*> IgnoreActors = { this, TargetActor };
-	if (/*CanSeeActor(TargetActor)*/UDodgeballFunctionLibrary::CanSeeActor(GetWorld(), SightSource->GetComponentLocation(), TargetActor, IgnoreActors))
-	{
-		FVector Start = GetActorLocation();
-		FVector End = TargetActor->GetActorLocation();
-
-		FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(Start, End);
-
-		SetActorRotation(LookAtRotation);
-
-		return true;
-	}
-
-	return false;
-}
+//bool AEnemyCharacter::LookAtActor(AActor* TargetActor)
+//{
+//	if (TargetActor == nullptr)
+//		return false;
+//
+//
+//	const TArray<const AActor*> IgnoreActors = { this, TargetActor };
+//	if (/*CanSeeActor(TargetActor)*/UDodgeballFunctionLibrary::CanSeeActor(GetWorld(), SightSource->GetComponentLocation(), TargetActor, IgnoreActors))
+//	{
+//		FVector Start = GetActorLocation();
+//		FVector End = TargetActor->GetActorLocation();
+//
+//		FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(Start, End);
+//
+//		SetActorRotation(LookAtRotation);
+//
+//		return true;
+//	}
+//
+//	return false;
+//}

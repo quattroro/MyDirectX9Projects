@@ -27,11 +27,13 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	bool LookAtActor(AActor* TargetActor);
+	//bool LookAtActor(AActor* TargetActor); // LookAtActorComponent로 이동
 	//bool CanSeeActor(const AActor* TargetActor) const;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "LookAt", meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* SightSource;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "LookAt", meta = (AllowPrivateAccess = "true"))
+	class ULookAtActorComponent* LookAtActorComponent;
 
 	// 적 캐릭터가 이번 프레임에 플레이어를 볼 수 있는지 여부
 	bool bCanSeePlayer = false;
