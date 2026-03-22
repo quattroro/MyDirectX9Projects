@@ -24,5 +24,8 @@ class AITEST_API IHealthInterface
 public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Health")
 	void OnDeath();
+	// 블루프린트 구현 가능 인터페이스 함수를 상속받아서 구현하려면
+	// Inplementation을 붙여줘야 한다.
+	// 해당 함수를 호출할때는 Execute_OnDeath() 이렇게 호출해야 한다.
 	virtual void OnDeath_Implementation() = 0;
 };

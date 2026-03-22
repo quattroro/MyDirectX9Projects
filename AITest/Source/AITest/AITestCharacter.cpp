@@ -14,6 +14,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/Controller.h"
 #include "HealthComponent.h"
+#include "DodgeballPlayerController.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -181,7 +182,19 @@ void AAITestCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+// 해당 함수는 인터페이스 함수로 UHealthInterFace에 선언이 존재한다.
+// 함수는 OnDeath이고 블루프린트 구현 가능 인터페이스 이므로 _Implementation을 붙여줘야 한다.
+// 함수 호출은 UHealthComponent::LoseHealth() 함수 안에서  IHealthInterface::Execute_OnDeath 함수 호출을 통해서 실행된다.
 void AAITestCharacter::OnDeath_Implementation()
 {
-	UKismetSystemLibrary::QuitGame(this, nullptr, EQuitPreference::Quit, true);
+	// RestartWidget을 추가하면서 변경
+	//UKismetSystemLibrary::QuitGame(this, nullptr, EQuitPreference::Quit, true);
+
+	// 게임을 종료하는 대신 UI를 보여준다.
+	ADodgeballPlayerController* PlayerController = Cast<ADodgeballPlayerController>(GetController());
+	if (PlayerController != nullptr)
+	{
+		PlayerController->ShowRestartWidget();
+	}
+
 }
