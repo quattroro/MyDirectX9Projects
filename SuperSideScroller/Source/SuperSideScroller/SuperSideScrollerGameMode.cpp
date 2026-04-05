@@ -7,7 +7,7 @@
 ASuperSideScrollerGameMode::ASuperSideScrollerGameMode()
 {
 	// set default pawn class to our Blueprinted character
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT(/*"/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"*/"/Game/MainCharacter/Blueprints/BP_SuperSideScroller_MainCharacter"));
+	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"/*"/Game/MainCharacter/Blueprints/BP_SuperSideScroller_MainCharacter"*/));
 	if (PlayerPawnBPClass.Class != NULL)
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
