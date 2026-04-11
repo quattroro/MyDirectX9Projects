@@ -31,6 +31,11 @@ void ASuperSideScroller_Player::StopSprinting()
 	}
 }
 
+void ASuperSideScroller_Player::TrowProjectile()
+{
+
+}
+
 void ASuperSideScroller_Player::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -51,6 +56,9 @@ void ASuperSideScroller_Player::SetupPlayerInputComponent(class UInputComponent*
 
 			// Sprint 입력 액션의 입력 해제 이벤트를 StopSprinting 함수에 바인딩 한다.
 			EnhancedPlayerInput->BindAction(IA_Sprint, ETriggerEvent::Completed, this, &ASuperSideScroller_Player::StopSprinting);
+
+			// Sprint 입력 액션의 입력 해제 이벤트를 StopSprinting 함수에 바인딩 한다.
+			EnhancedPlayerInput->BindAction(IA_Sprint, ETriggerEvent::Triggered, this, &ASuperSideScroller_Player::TrowProjectile);
 		}
 	}
 }

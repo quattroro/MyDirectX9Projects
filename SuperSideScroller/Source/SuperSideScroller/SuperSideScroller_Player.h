@@ -16,6 +16,7 @@ public:
 	ASuperSideScroller_Player();
 	void Sprint();
 	void StopSprinting();
+	void TrowProjectile();
 
 protected:
 	// 플레이어 입력 컴포넌트를 설정하기 위해 부모 캐릭터 클래스의 함수를 재정의한다.
@@ -30,4 +31,7 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	class UInputAction* IA_Sprint;
+
+	UPROPERTY(EditAnywhere, Category = "Input")
+	class UInputAction* IA_Throw;
 };
