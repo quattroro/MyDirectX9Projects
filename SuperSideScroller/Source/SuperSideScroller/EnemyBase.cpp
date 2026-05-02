@@ -3,3 +3,7 @@
 
 #include "EnemyBase.h"
 
+void AEnemyBase::DestroyEnemy()
+{
+	Destroy();
+}

@@ -17,6 +17,7 @@ public:
 	void Sprint();
 	void StopSprinting();
 	void TrowProjectile();
+	void SpawnProjectile();
 
 protected:
 	// 플레이어 입력 컴포넌트를 설정하기 위해 부모 캐릭터 클래스의 함수를 재정의한다.
@@ -34,4 +35,12 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	class UInputAction* IA_Throw;
+
+	// 애니메이션 몽타주
+	UPROPERTY(EditAnywhere)
+	class UAnimMontage* ThrowMontage;
+
+	// projectile 발사체 오브젝트 참조 변수
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class APlayerProjectile> PlayerProjectile;
 };
