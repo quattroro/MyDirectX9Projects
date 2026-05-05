@@ -19,6 +19,12 @@ public:
 	void TrowProjectile();
 	void SpawnProjectile();
 
+	// 이 함수를 블루프린트에 노출시키고, 이후 UMG에서 사용할 수 있도록 BlueprintPure 키워드를 사용
+	UFUNCTION(BlueprintPure)
+	int GetCurrentNumberOfCollectables() { return Numberofcollectabels; }
+
+	// 플레이어가 수집한 동전의 수를 추적하는 데 사용할 함수
+	void IncrementNumberofCollectables(int32 Value);
 protected:
 	// 플레이어 입력 컴포넌트를 설정하기 위해 부모 캐릭터 클래스의 함수를 재정의한다.
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -43,4 +49,7 @@ private:
 	// projectile 발사체 오브젝트 참조 변수
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class APlayerProjectile> PlayerProjectile;
+
+	// 플레이어가 수집한 코인의 수를 추적
+	int32 Numberofcollectabels;
 };

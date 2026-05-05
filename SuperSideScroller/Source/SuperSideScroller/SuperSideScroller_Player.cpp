@@ -103,3 +103,16 @@ void ASuperSideScroller_Player::SetupPlayerInputComponent(class UInputComponent*
 		}
 	}
 }
+
+void ASuperSideScroller_Player::IncrementNumberofCollectables(int32 Value)
+{
+	if (Value <= 0)
+	{
+		return;
+	}
+	else
+	{
+		Numberofcollectabels += Value;
+		UE_LOG(LogTemp, Warning, TEXT("Number of Coins : %d"), Numberofcollectabels);
+	}
+}
