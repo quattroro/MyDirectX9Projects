@@ -10,6 +10,7 @@
 #include "PlayerProjectile.h"
 #include "Engine/World.h"
 #include "Components/SphereComponent.h"
+#include "TimerManager.h"
 
 ASuperSideScroller_Player::ASuperSideScroller_Player()
 {
@@ -114,5 +115,19 @@ void ASuperSideScroller_Player::IncrementNumberofCollectables(int32 Value)
 	{
 		Numberofcollectabels += Value;
 		UE_LOG(LogTemp, Warning, TEXT("Number of Coins : %d"), Numberofcollectabels);
+	}
+}
+
+void ASuperSideScroller_Player::IncreaseMovementPowerup()
+{
+	bHasPowerupActive = true;
+	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+	GetCharacterMovement()->JumpZVelocity = 1500.0f;
+
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		World->GetTimerManager().SetTimer(PowerupHandle, this, &ASuperSideScroller_Player::EndPowerup, 8.0, false);
+
 	}
 }

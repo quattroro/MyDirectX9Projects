@@ -52,4 +52,15 @@ private:
 
 	// 플레이어가 수집한 코인의 수를 추적
 	int32 Numberofcollectabels;
+
+
+private:
+	// 타이머 핸들 (타이머의 일시 정지, 재시작, 초기화, 시간 늘리기 등등의 조작이 가능하다)
+	FTimerHandle PowerupHandle;
+	
+	bool bHasPowerupActive;
+
+public:
+	void IncreaseMovementPowerup();
+	void EndPowerup();
 };
