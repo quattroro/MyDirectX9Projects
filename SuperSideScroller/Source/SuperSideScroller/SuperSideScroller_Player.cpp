@@ -23,7 +23,14 @@ void ASuperSideScroller_Player::Sprint()
 	if (!bIsSprinting)
 	{
 		bIsSprinting = true;
-		GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+		if (bHasPowerupActive)
+		{
+			GetCharacterMovement()->MaxWalkSpeed = 900.0f;
+		}
+		else
+		{
+			GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+		}
 	}
 }
 
@@ -32,7 +39,15 @@ void ASuperSideScroller_Player::StopSprinting()
 	if (bIsSprinting)
 	{
 		bIsSprinting = false;
-		GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+
+		if (bHasPowerupActive)
+		{
+			GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+		}
+		else
+		{
+			GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+		}
 	}
 }
 
@@ -128,6 +143,19 @@ void ASuperSideScroller_Player::IncreaseMovementPowerup()
 	if (World)
 	{
 		World->GetTimerManager().SetTimer(PowerupHandle, this, &ASuperSideScroller_Player::EndPowerup, 8.0, false);
+	}
+}
 
+void ASuperSideScroller_Player::EndPowerup()
+{
+	bHasPowerupActive = false;
+	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+	GetCharacterMovement()->JumpZVelocity = 1000.0f;
+
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		// 타이머 초기화
+		World->GetTimerManager().ClearTimer(PowerupHandle);
 	}
 }
