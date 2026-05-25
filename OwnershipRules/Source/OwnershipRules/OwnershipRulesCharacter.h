@@ -70,5 +70,13 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	UPROPERTY(Replicated)
+	float A = 100.0f;
+	UPROPERTY(ReplicatedUsing = OnRepNotify_B)
+	int32 B;
+
+	UFUNCTION()
+	void OnRepNotify_B();
 };
 

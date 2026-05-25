@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "OwnershipRules.h"
+#include "Net/UnrealNetwork.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -140,6 +141,34 @@ void AOwnershipRulesCharacter::Tick(float DeltaTime)
 	const FString OwnerString = GetOwner() != nullptr ? GetOwner()->GetName() : TEXT("No Owner");
 	const FString ConnectionString = GetNetConnection() != nullptr ? TEXT("Valid Connection") : TEXT("Invalid Connection");
 	const FString Values = FString::Printf(TEXT("LocalRole = %s\nRemoteRole = %s\nOwner = %s\nConnection = %s"), *LocalRoleString, *RomoteRoleString, *OwnerString, *ConnectionString);
-	DrawDebugString(GetWorld(), GetActorLocation(), Values, nullptr, FColor::White, 0.0f, true);
+	//DrawDebugString(GetWorld(), GetActorLocation(), Values, nullptr, FColor::White, 0.0f, true);
+
+	// 이 캐릭터는 서버에서 생성되기 때문에 서버에서만 이 로직이 실행된다.
+	if (HasAuthority())
+	{
+		A++;
+		B++;
+	}
+
+	const FString Values2 = FString::Printf(TEXT("A = %.2f B = %d"), A, B);
+	DrawDebugString(GetWorld(), GetActorLocation(), Values2, nullptr, FColor::White, 0.0f, true);
+}
+
+void AOwnershipRulesCharacter::OnRepNotify_B()
+{
+	const FString String = FString::Printf(TEXT("서버에서 변수 B를 변경했고, 그 값은 이제 %d 입니다!"), B);
+	GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, String);
+}
+
+void AOwnershipRulesCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps)const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	// 변수 A를 추가 조건 없이 복제할 변수로 선언한다.
+	DOREPLIFETIME(AOwnershipRulesCharacter, A);
+
+	// 변수 B를 이 액터의 소유자에게만 복제될 변수로 선언한다.
+	DOREPLIFETIME_CONDITION(AOwnershipRulesCharacter, B, COND_OwnerOnly);
+
+
 
 }
