@@ -36,3 +36,59 @@ void OnRep_Health()
 }
 ```
 
+
+# GetLifetimeReplicatedProps
+
+변수를 Replicated로 표시하는 것 외에도 액터의 cpp 파일에서 GetLifetimeReplicatedProps 함수를 구현해야 한다. 여기서 주의해야 할 점은 Replicated로 선언된 변수가 1개 이상 있으면 이 함수가 내부적으로 선언되기 때문에 헤더 파일에 선언하면 안 된다는 점이다. 이 함수의 목적은 Replicated 선언된 각 변수를 어떻게 복제해야 하는지를 알려주는 데 있다. 복제하려는 모든 변수에 DOREPLIFETIME 매크로를 사용해 이를 수행할 수 있다.
+
+# DOREPLIFETIME
+
+이 매크로는 Replicated로 선언된 변수가 리플리케이션 조건 없이 모든 클라이언트에 복제된다는 것을 리플리케이션 시스템에 알려준다.
+
+구문은 다음과 같다.
+```
+DOREPLIFETIME(<클래스 이름>, <Replicated로 선언된 변수 이름>)
+```
+
+```
+void AvariableReplicationActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AvariableReplicationActor, Health);
+}
+```
+위의 코드에서는 리플리케이션 시스템에 AVariableRoplicationActor 클래스의 Health변수를 추가 조건 없이 복제하기 위해 DOREPLIFETIME 매크로를 사용한다.
+
+# DOREPLIFETIME_CONDITION
+
+이 매크로는 Replicated로 선언된 변수가 조건을 만족했을 때 클라이언트에서만 복제된 것이라고 리플리케이션 시스템에 알려준다.
+구문은 다음과 같다.
+
+```
+DOREPLIFETIME_CONDITION(<클래스 이름>, <Replicated 변수 이름>, <조건>);
+```
+
+조건 파라미터는 다음의 값들 중 하나를 설정할 수 있다.
+
+* COND_InitialOnly : 이 변수는 초기 리플리케이션에서 한 번만 복제된다.
+* COND_OwnerOnly : 이 변수는 액터의 소유자에게만 복제호니다.
+* COND_SkipOwner : 이 변수는 액터의 소유자에게 복제되지 않는다.
+* COND_SimulatedOnly : 변수가 시뮬레이션 중인 액터에만 복제된다.
+* COND_AutonomousOnly : 변수가 Autonomous 상태인 액터에만 복제된다.
+* COND_SimulatedOrPhysics : 변수가 시뮬레이션 중인 액터나 bRepPhysics 값이 true로 설정된 액터에만 복제된다.
+* COND_InitialOrOwner : 변수가 초기 리플리케이션이나 액터 소유자에게 한번만 복제된다.
+* COND_Custom : 변수가 SetCustomIsActiveOverride 불리언 조건이 true인 경우에만 복제된다.
+
+```
+void AVariableReplicationActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OurLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME_CONDITION(AvariableReplicationActor, Health, COND_OwnerOnly);
+}
+```
+
+위의 코드에서는 DOREPLIFETIME_CONDITION 매크로를 사용해 리플리케이션 시스템에 AVariableReplicationActor 클래스의 Health 변수가 이 액터의 소유자에게만 복제된다고 알려준다.
+
+
+
+

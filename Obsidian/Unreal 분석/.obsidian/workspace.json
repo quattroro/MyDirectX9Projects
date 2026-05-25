@@ -153,16 +153,44 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "UI 텍스트 서식.md",
+                "file": "UE5의 서버 (리플리케이션).md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "UI 텍스트 서식"
+              "title": "UE5의 서버 (리플리케이션)"
+            }
+          },
+          {
+            "id": "a180bd35bca145ea",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "(AI 고찰)시니어 개발자가 전문성을 전달하지 못하는 이유.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "(AI 고찰)시니어 개발자가 전문성을 전달하지 못하는 이유"
+            }
+          },
+          {
+            "id": "302f62bd4e67aabc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "UE5의 서버 (RPC 사용).md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "UE5의 서버 (RPC 사용)"
             }
           }
         ],
-        "currentTab": 10
+        "currentTab": 12
       }
     ],
     "direction": "vertical"
@@ -310,10 +338,15 @@
       "bases:새 베이스 생성하기": false
     }
   },
-  "active": "bc638d0c797221c6",
+  "active": "302f62bd4e67aabc",
   "lastOpenFiles": [
-    "URotationMovementComponent.md",
+    "(AI 고찰)시니어 개발자가 전문성을 전달하지 못하는 이유.md",
+    "UE5의 서버 (RPC 사용).md",
+    "애니메이션 본 변환하기.md",
+    "무제 1",
+    "UE5의 서버 (리플리케이션).md",
     "UI 텍스트 서식.md",
+    "URotationMovementComponent.md",
     "애니메이션 블루프린트.md",
     "트랜지션 룰, 컨듀잇.md",
     "애님슬롯.md",
@@ -338,10 +371,6 @@
     "UE5 에서 3D 사운드 사용 (Sound Attenuation).md",
     "Pasted image 20260404011305.png",
     "Pasted image 20260404002616.png",
-    "TSubclassOf.md",
-    "TSubclassOf 이거 뭐야 찾아서 채워 넣어.md",
-    "UPROPERTY().md",
-    "PlayerController 와 입력 모드.md",
     "Pasted image 20260302142356.png",
     "무제",
     "무제.canvas"
