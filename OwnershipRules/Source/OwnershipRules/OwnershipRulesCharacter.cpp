@@ -12,6 +12,8 @@
 #include "InputActionValue.h"
 #include "OwnershipRules.h"
 #include "Net/UnrealNetwork.h"
+#include "Kismet/GameplayStatics.h"
+
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -54,6 +56,9 @@ AOwnershipRulesCharacter::AOwnershipRulesCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	// Tick 함수를 활성화한다.
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 void AOwnershipRulesCharacter::BeginPlay()
@@ -69,6 +74,9 @@ void AOwnershipRulesCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	constexpr int32 AmmoTypeCount = ENUM_TO_INT32(EAmmoType::MAX);
+	Ammo.AmmoList.Init(10, AmmoTypeCount);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -93,6 +101,12 @@ void AOwnershipRulesCharacter::SetupPlayerInputComponent(UInputComponent* Player
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+
+
+	PlayerInputComponent->BindAction("Pistol", IE_Pressed, this, &AOwnershipRulesCharacter::Pistol);
+	PlayerInputComponent->BindAction("Shotgun", IE_Pressed, this, &AOwnershipRulesCharacter::Shotgun);
+	PlayerInputComponent->BindAction("Rocket Launcher", IE_Pressed, this, &AOwnershipRulesCharacter::RocketLauncher);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AOwnershipRulesCharacter::ServerFire);
 }
 
 void AOwnershipRulesCharacter::Move(const FInputActionValue& Value)
@@ -150,14 +164,42 @@ void AOwnershipRulesCharacter::Tick(float DeltaTime)
 		B++;
 	}
 
-	const FString Values2 = FString::Printf(TEXT("A = %.2f B = %d"), A, B);
-	DrawDebugString(GetWorld(), GetActorLocation(), Values2, nullptr, FColor::White, 0.0f, true);
+	//const FString Values2 = FString::Printf(TEXT("A = %.2f B = %d"), A, B);
+	//DrawDebugString(GetWorld(), GetActorLocation(), Values2, nullptr, FColor::White, 0.0f, true);
+
+
+	// Ammo 변수의 값을 보여준다.
+	//const FString AmmoString = FString::Printf(TEXT("Ammo = %d"), Ammo);
+	//DrawDebugString(GetWorld(), GetActorLocation(), AmmoString, nullptr, FColor::White, 0.0f, true);
+
+
+	//
+	const int32 WraponIndex = ENUM_TO_INT32(Weapon);
+	const FString WeaponString = ENUM_TO_FSTRING("EWeaponType", Weapon);
+	const FString AmmoTypeString = ENUM_TO_FSTRING("EAmmoType", Weapon);
+	const int32 AmmoCount = Ammo.AmmoList[WraponIndex].Count;
+
+	const FString String = FString::Printf(TEXT("Weapon = %s\nAmmo Type = %s\nAmmo Count = %d"), *WeaponString, *AmmoTypeString, AmmoCount);
+	DrawDebugString(GetWorld(), GetActorLocation(), String, nullptr, FColor::White, 0.0f, true);
+}
+
+void AOwnershipRulesCharacter::Pistol()
+{
+	Weapon = EWeaponType::Pistol;
+}
+void AOwnershipRulesCharacter::Shotgun()
+{
+	Weapon = EWeaponType::Shotgun;
+}
+void AOwnershipRulesCharacter::RocketLauncher()
+{
+	Weapon = EWeaponType::RocketLauncher;
 }
 
 void AOwnershipRulesCharacter::OnRepNotify_B()
 {
-	const FString String = FString::Printf(TEXT("서버에서 변수 B를 변경했고, 그 값은 이제 %d 입니다!"), B);
-	GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, String);
+	//const FString String = FString::Printf(TEXT("서버에서 변수 B를 변경했고, 그 값은 이제 %d 입니다!"), B);
+	//GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Red, String);
 }
 
 void AOwnershipRulesCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps)const
@@ -169,6 +211,51 @@ void AOwnershipRulesCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	// 변수 B를 이 액터의 소유자에게만 복제될 변수로 선언한다.
 	DOREPLIFETIME_CONDITION(AOwnershipRulesCharacter, B, COND_OwnerOnly);
 
+	// Ammo 변수를 모든 클라이어트에 복제할 있도록 한다.
+	DOREPLIFETIME(AOwnershipRulesCharacter, Ammo);
 
+	DOREPLIFETIME(AOwnershipRulesCharacter, Weapon);
+}
 
+// 발사 서버 RPC 검증 함수를 구현한다.
+bool AOwnershipRulesCharacter::ServerFire_Validate()
+{
+	return true;
+}
+
+void AOwnershipRulesCharacter::ServerFire_Implementation()
+{
+	// 지난 발사 이후에 아직 발사 타이머가 활성화 상태인 경우 함수를 중단하는 로직을 추가한다.
+	if (GetWorldTimerManager().IsTimerActive(FireTimer))
+	{
+		return;
+	}
+
+	if (Ammo.AmmoList[ENUM_TO_INT32(Weapon)].Count == 0)
+	{
+		ClientPlaySound2D(NoAmmoSound);
+		return;
+	}
+
+	Ammo.AmmoList[ENUM_TO_INT32(Weapon)].Count--;
+	Ammo.MarkItemDirty(Ammo.AmmoList[ENUM_TO_INT32(Weapon)]);
+
+	GetWorldTimerManager().SetTimer(FireTimer, 1.5f, false);
+
+	// 모든 클라이언트에서 발사 애니메이션을 재생할 수 있도록 발사 멀티캐스트 RPC를 호출한다.
+	MulticastFire();
+}
+
+// 발사 애니메이션  몽타주를 재생하는 발사 멀티캐스트 RPC를 구현한다.
+void AOwnershipRulesCharacter::MulticastFire_Implementation()
+{
+	if (FireAniMontage != nullptr)
+	{
+		PlayAnimMontage(FireAniMontage);
+	}
+}
+
+void AOwnershipRulesCharacter::ClientPlaySound2D_Implementation(USoundBase* Sound)
+{
+	UGameplayStatics::PlaySound2D(GetWorld(), Sound);
 }
