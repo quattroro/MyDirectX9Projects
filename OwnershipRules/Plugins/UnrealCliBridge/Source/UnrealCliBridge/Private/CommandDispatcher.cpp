@@ -157,6 +157,8 @@ TSharedPtr<FJsonObject> FCommandDispatcher::RunOnGameThread(
 	});
 
 	// Block the IPC thread waiting for the game thread result.
+	// UE5's TFuture::Get() does not block — Wait() must be called first.
+	ResultFuture.Wait();
 	TSharedPtr<FJsonObject> Data = ResultFuture.Get();
 
 	if (CaughtException->IsSet())
@@ -181,7 +183,8 @@ FString FCommandDispatcher::BuildOkResponse(const FString& RequestId, TSharedPtr
 	}
 
 	FString Output;
-	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Output);
+	TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> Writer =
+		TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Output);
 	FJsonSerializer::Serialize(Root.ToSharedRef(), Writer);
 	return Output;
 }
@@ -203,7 +206,8 @@ FString FCommandDispatcher::BuildErrorResponse(const FString& RequestId, const F
 	}
 
 	FString Output;
-	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Output);
+	TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> Writer =
+		TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Output);
 	FJsonSerializer::Serialize(Root.ToSharedRef(), Writer);
 	return Output;
 }

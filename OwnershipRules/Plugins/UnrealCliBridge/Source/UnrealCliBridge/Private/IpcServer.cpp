@@ -143,6 +143,7 @@ void FIpcServer::ServeOneClient(void* ClientPipeRaw)
 	if (Buffer.Num() > 0 && Buffer.Last() == '\r')
 		Buffer.Pop(false);
 
+	Buffer.Add(0); // null terminator for UTF8_TO_TCHAR
 	FString RequestJson = FString(UTF8_TO_TCHAR(reinterpret_cast<const char*>(Buffer.GetData())));
 	FString ResponseJson = Handler(RequestJson);
 
