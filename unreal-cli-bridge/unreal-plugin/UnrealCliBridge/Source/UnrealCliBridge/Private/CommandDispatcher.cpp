@@ -119,7 +119,6 @@ TSharedPtr<FJsonObject> FCommandDispatcher::RunOnGameThread(
 
 	// Marshal to game thread via promise/future pattern.
 	TPromise<TSharedPtr<FJsonObject>> ResultPromise;
-	TPromise<FCommandFailedException*> ExceptionPromise;
 	TFuture<TSharedPtr<FJsonObject>> ResultFuture = ResultPromise.GetFuture();
 
 	// We need to capture the exception across threads.
@@ -181,7 +180,8 @@ FString FCommandDispatcher::BuildOkResponse(const FString& RequestId, TSharedPtr
 	}
 
 	FString Output;
-	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Output);
+	TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> Writer =
+		TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Output);
 	FJsonSerializer::Serialize(Root.ToSharedRef(), Writer);
 	return Output;
 }
@@ -203,7 +203,8 @@ FString FCommandDispatcher::BuildErrorResponse(const FString& RequestId, const F
 	}
 
 	FString Output;
-	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Output);
+	TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> Writer =
+		TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Output);
 	FJsonSerializer::Serialize(Root.ToSharedRef(), Writer);
 	return Output;
 }
