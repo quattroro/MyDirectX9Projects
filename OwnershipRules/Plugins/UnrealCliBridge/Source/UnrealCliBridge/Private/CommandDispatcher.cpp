@@ -117,14 +117,6 @@ TSharedPtr<FJsonObject> FCommandDispatcher::RunOnGameThread(
 		return Handler(Args, bForce);
 	}
 
-	// Marshal to game thread via promise/future pattern.
-	TPromise<TSharedPtr<FJsonObject>> ResultPromise;
-	TPromise<FCommandFailedException*> ExceptionPromise;
-	TFuture<TSharedPtr<FJsonObject>> ResultFuture = ResultPromise.GetFuture();
-
-	// We need to capture the exception across threads.
-	TSharedPtr<TOptional<FCommandFailedException>> CaughtException = MakeShared<TOptional<FCommandFailedException>>();
-
 	FCommandHandlerFn* HandlerPtr = Handlers.Find(Command);
 	if (!HandlerPtr)
 	{
@@ -132,41 +124,61 @@ TSharedPtr<FJsonObject> FCommandDispatcher::RunOnGameThread(
 	}
 	FCommandHandlerFn HandlerCopy = *HandlerPtr;
 
+	// Use FEvent + shared result struct instead of TPromise/TFuture.
+	// TPromise abandoned without SetValue() (e.g. during editor shutdown) puts the future into a
+	// non-complete state; TFuture::Wait() returns immediately but TFuture::Get() then asserts
+	// IsComplete() and crashes. FEvent avoids that entire class of issue.
+	struct FGameThreadResult
+	{
+		TSharedPtr<FJsonObject> Data;
+		TOptional<FCommandFailedException> Exception;
+	};
+	TSharedPtr<FGameThreadResult> Result = MakeShared<FGameThreadResult>();
+	FEvent* DoneEvent = FPlatformProcess::GetSynchEventFromPool(false);
+
 	AsyncTask(ENamedThreads::GameThread, [
 		HandlerCopy = MoveTemp(HandlerCopy),
 		Args,
 		bForce,
-		Promise = MoveTemp(ResultPromise),
-		CaughtException
+		Result,
+		DoneEvent
 	]() mutable
 	{
-		TSharedPtr<FJsonObject> Data;
 		try
 		{
-			Data = HandlerCopy(Args, bForce);
+			Result->Data = HandlerCopy(Args, bForce);
 		}
 		catch (const FCommandFailedException& Ex)
 		{
-			*CaughtException = Ex;
+			Result->Exception = Ex;
 		}
 		catch (...)
 		{
-			*CaughtException = FCommandFailedException(TEXT("INTERNAL_ERROR"), TEXT("Unhandled exception on game thread."));
+			Result->Exception = FCommandFailedException(TEXT("INTERNAL_ERROR"), TEXT("Unhandled exception on game thread."));
 		}
-		Promise.SetValue(MoveTemp(Data));
+		DoneEvent->Trigger();
 	});
 
-	// Block the IPC thread waiting for the game thread result.
-	// UE5's TFuture::Get() does not block — Wait() must be called first.
-	ResultFuture.Wait();
-	TSharedPtr<FJsonObject> Data = ResultFuture.Get();
-
-	if (CaughtException->IsSet())
+	static constexpr uint32 TimeoutMs = 30000;
+	const bool bCompleted = DoneEvent->Wait(TimeoutMs);
+	if (bCompleted)
 	{
-		throw CaughtException->GetValue();
+		FPlatformProcess::ReturnSynchEventToPool(DoneEvent);
+	}
+	// On timeout, intentionally leak DoneEvent: the game thread may still call Trigger() later
+	// and returning it to the pool would corrupt a recycled handle.
+
+	if (!bCompleted)
+	{
+		throw FCommandFailedException(TEXT("TIMEOUT"), TEXT("Game thread did not respond within 30 seconds."));
 	}
 
-	return Data;
+	if (Result->Exception.IsSet())
+	{
+		throw Result->Exception.GetValue();
+	}
+
+	return Result->Data;
 }
 
 FString FCommandDispatcher::BuildOkResponse(const FString& RequestId, TSharedPtr<FJsonObject> Data, double DurationMs) const
