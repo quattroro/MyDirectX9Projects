@@ -1,20 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Codes\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Cli\\UnrealCli.Cli.csproj": {}
+    "C:\\Codes\\Git\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Cli\\UnrealCli.Cli.csproj": {}
   },
   "projects": {
-    "C:\\Codes\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Cli\\UnrealCli.Cli.csproj": {
+    "C:\\Codes\\Git\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Cli\\UnrealCli.Cli.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Codes\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Cli\\UnrealCli.Cli.csproj",
+        "projectUniqueName": "C:\\Codes\\Git\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Cli\\UnrealCli.Cli.csproj",
         "projectName": "unreal-cli",
-        "projectPath": "C:\\Codes\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Cli\\UnrealCli.Cli.csproj",
-        "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
-        "outputPath": "C:\\Codes\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Cli\\obj\\",
+        "projectPath": "C:\\Codes\\Git\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Cli\\UnrealCli.Cli.csproj",
+        "packagesPath": "C:\\Users\\kio71\\.nuget\\packages\\",
+        "outputPath": "C:\\Codes\\Git\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Cli\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\USER\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\kio71\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -28,8 +32,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Codes\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Protocol\\UnrealCli.Protocol.csproj": {
-                "projectPath": "C:\\Codes\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Protocol\\UnrealCli.Protocol.csproj"
+              "C:\\Codes\\Git\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Protocol\\UnrealCli.Protocol.csproj": {
+                "projectPath": "C:\\Codes\\Git\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Protocol\\UnrealCli.Protocol.csproj"
               }
             }
           }
@@ -53,7 +57,7 @@
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[9.0.16, )",
+              "version": "[9.0.7, )",
               "autoReferenced": true
             }
           },
@@ -71,15 +75,15 @@
           "downloadDependencies": [
             {
               "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
-              "version": "[9.0.16, 9.0.16]"
+              "version": "[9.0.7, 9.0.7]"
             },
             {
               "name": "Microsoft.NETCore.App.Runtime.win-x64",
-              "version": "[9.0.16, 9.0.16]"
+              "version": "[9.0.7, 9.0.7]"
             },
             {
               "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
-              "version": "[9.0.16, 9.0.16]"
+              "version": "[9.0.7, 9.0.7]"
             }
           ],
           "frameworkReferences": {
@@ -87,7 +91,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.314/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       },
       "runtimes": {
@@ -96,17 +100,21 @@
         }
       }
     },
-    "C:\\Codes\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Protocol\\UnrealCli.Protocol.csproj": {
+    "C:\\Codes\\Git\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Protocol\\UnrealCli.Protocol.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Codes\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Protocol\\UnrealCli.Protocol.csproj",
+        "projectUniqueName": "C:\\Codes\\Git\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Protocol\\UnrealCli.Protocol.csproj",
         "projectName": "UnrealCli.Protocol",
-        "projectPath": "C:\\Codes\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Protocol\\UnrealCli.Protocol.csproj",
-        "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
-        "outputPath": "C:\\Codes\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Protocol\\obj\\",
+        "projectPath": "C:\\Codes\\Git\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Protocol\\UnrealCli.Protocol.csproj",
+        "packagesPath": "C:\\Users\\kio71\\.nuget\\packages\\",
+        "outputPath": "C:\\Codes\\Git\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Protocol\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\USER\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\kio71\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -141,7 +149,7 @@
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[9.0.16, )",
+              "version": "[9.0.7, )",
               "autoReferenced": true
             }
           },
@@ -159,15 +167,15 @@
           "downloadDependencies": [
             {
               "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
-              "version": "[9.0.16, 9.0.16]"
+              "version": "[9.0.7, 9.0.7]"
             },
             {
               "name": "Microsoft.NETCore.App.Runtime.win-x64",
-              "version": "[9.0.16, 9.0.16]"
+              "version": "[9.0.7, 9.0.7]"
             },
             {
               "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
-              "version": "[9.0.16, 9.0.16]"
+              "version": "[9.0.7, 9.0.7]"
             }
           ],
           "frameworkReferences": {
@@ -175,7 +183,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.314/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       },
       "runtimes": {

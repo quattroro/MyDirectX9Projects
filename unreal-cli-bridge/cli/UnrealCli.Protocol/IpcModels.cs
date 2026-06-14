@@ -22,10 +22,10 @@ public sealed class ResponseEnvelope
     [JsonPropertyName("errorCode")] public string? errorCode { get; set; }
     [JsonPropertyName("errorMessage")] public string? errorMessage { get; set; }
     [JsonPropertyName("errorDetail")] public string? errorDetail { get; set; }
-    [JsonPropertyName("durationMs")] public long durationMs { get; set; }
+    [JsonPropertyName("durationMs")] public double durationMs { get; set; }
     [JsonPropertyName("transport")] public string transport { get; set; } = ProtocolConstants.TransportLive;
 
-    public static ResponseEnvelope Success(string requestId, object? data, long durationMs) => new()
+    public static ResponseEnvelope Success(string requestId, object? data, double durationMs) => new()
     {
         protocolVersion = ProtocolConstants.ProtocolVersion,
         requestId = requestId,
@@ -35,7 +35,7 @@ public sealed class ResponseEnvelope
         transport = ProtocolConstants.TransportLive,
     };
 
-    public static ResponseEnvelope Failure(string requestId, string errorCode, string errorMessage, long durationMs, string? errorDetail = null) => new()
+    public static ResponseEnvelope Failure(string requestId, string errorCode, string errorMessage, double durationMs, string? errorDetail = null) => new()
     {
         protocolVersion = ProtocolConstants.ProtocolVersion,
         requestId = requestId,

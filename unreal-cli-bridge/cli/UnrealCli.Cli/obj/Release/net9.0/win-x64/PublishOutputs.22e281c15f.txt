@@ -1,0 +1,3 @@
+C:\Codes\Git\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Cli\bin\Release\net9.0\win-x64\publish\unreal-cli.pdb
+C:\Codes\Git\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Cli\bin\Release\net9.0\win-x64\publish\UnrealCli.Protocol.pdb
+C:\Codes\Git\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Cli\bin\Release\net9.0\win-x64\publish\unreal-cli.exe
