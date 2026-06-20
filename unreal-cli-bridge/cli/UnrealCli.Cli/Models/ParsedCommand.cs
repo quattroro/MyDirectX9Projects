@@ -35,6 +35,12 @@ public enum CommandKind
     LevelAssignMaterial,
     BlueprintInspect,
     BlueprintSetProperty,
+    AnimCreateAbp,
+    AnimAssignAbp,
+    AnimListStates,
+    AnimAddVariable,
+    AnimPlayMontage,
+    AnimSetupStateMachine,
     PluginList,
     PluginEnable,
     PluginDisable,
@@ -110,6 +116,22 @@ public sealed class ParsedCommand
     public bool BlueprintWithValues { get; set; }
     public string? BlueprintProperty { get; set; }
     public string? BlueprintValue { get; set; }
+
+    // anim
+    public string? AnimSkeletonPath { get; set; }
+    public string? AnimPath { get; set; }
+    public string? AnimBlueprintPath { get; set; }
+    public string? AnimTargetBpPath { get; set; }
+    public string? AnimComponentName { get; set; }
+    public string? AnimVariableName { get; set; }
+    public string? AnimVariableType { get; set; }
+    public string? AnimActorLabel { get; set; }
+    public string? AnimMontagePath { get; set; }
+    public double? AnimPlayRate { get; set; }
+    // anim setup-statemachine
+    public string? AnimIdleAnimPath { get; set; }
+    public string? AnimWalkAnimPath { get; set; }
+    public double? AnimWalkThreshold { get; set; }
 
     // plugin
     public string? PluginName { get; set; }

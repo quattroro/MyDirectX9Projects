@@ -51,6 +51,14 @@ public static class ProtocolConstants
     public const string CommandPluginEnable = "plugin.enable";
     public const string CommandPluginDisable = "plugin.disable";
 
+    // Animation commands
+    public const string CommandAnimCreateAbp        = "anim.create-abp";
+    public const string CommandAnimAssignAbp        = "anim.assign-abp";
+    public const string CommandAnimListStates       = "anim.list-states";
+    public const string CommandAnimAddVariable      = "anim.add-variable";
+    public const string CommandAnimPlayMontage      = "anim.play-montage";
+    public const string CommandAnimSetupStateMachine = "anim.setup-statemachine";
+
     // Error codes
     public const string ErrorProtocolMismatch = "PROTOCOL_MISMATCH";
     public const string ErrorCliUsage = "CLI_USAGE";

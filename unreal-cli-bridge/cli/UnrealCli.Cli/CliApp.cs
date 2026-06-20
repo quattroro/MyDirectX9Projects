@@ -213,6 +213,34 @@ public static class CliApp
                 args["property"] = parsed.BlueprintProperty ?? "";
                 args["value"] = parsed.BlueprintValue ?? "";
                 break;
+            case CommandKind.AnimCreateAbp:
+                args["skeleton"] = parsed.AnimSkeletonPath ?? "";
+                args["path"]     = parsed.AnimPath ?? "";
+                break;
+            case CommandKind.AnimAssignAbp:
+                args["bp"]     = parsed.AnimTargetBpPath ?? "";
+                args["animBp"] = parsed.AnimBlueprintPath ?? "";
+                if (parsed.AnimComponentName != null) args["component"] = parsed.AnimComponentName;
+                break;
+            case CommandKind.AnimListStates:
+                args["path"] = parsed.AnimPath ?? "";
+                break;
+            case CommandKind.AnimAddVariable:
+                args["path"] = parsed.AnimPath ?? "";
+                args["name"] = parsed.AnimVariableName ?? "";
+                args["type"] = parsed.AnimVariableType ?? "";
+                break;
+            case CommandKind.AnimPlayMontage:
+                args["actor"]   = parsed.AnimActorLabel ?? "";
+                args["montage"] = parsed.AnimMontagePath ?? "";
+                if (parsed.AnimPlayRate.HasValue) args["rate"] = parsed.AnimPlayRate.Value;
+                break;
+            case CommandKind.AnimSetupStateMachine:
+                args["path"]     = parsed.AnimPath ?? "";
+                args["idleAnim"] = parsed.AnimIdleAnimPath ?? "";
+                args["walkAnim"] = parsed.AnimWalkAnimPath ?? "";
+                if (parsed.AnimWalkThreshold.HasValue) args["walkThreshold"] = parsed.AnimWalkThreshold.Value;
+                break;
             case CommandKind.PluginEnable:
                 args["name"] = parsed.PluginName ?? "";
                 break;
@@ -263,6 +291,12 @@ public static class CliApp
         CommandKind.LevelAssignMaterial => ProtocolConstants.CommandLevelAssignMaterial,
         CommandKind.BlueprintInspect => ProtocolConstants.CommandBlueprintInspect,
         CommandKind.BlueprintSetProperty => ProtocolConstants.CommandBlueprintSetProperty,
+        CommandKind.AnimCreateAbp        => ProtocolConstants.CommandAnimCreateAbp,
+        CommandKind.AnimAssignAbp        => ProtocolConstants.CommandAnimAssignAbp,
+        CommandKind.AnimListStates       => ProtocolConstants.CommandAnimListStates,
+        CommandKind.AnimAddVariable      => ProtocolConstants.CommandAnimAddVariable,
+        CommandKind.AnimPlayMontage      => ProtocolConstants.CommandAnimPlayMontage,
+        CommandKind.AnimSetupStateMachine => ProtocolConstants.CommandAnimSetupStateMachine,
         CommandKind.PluginList => ProtocolConstants.CommandPluginList,
         CommandKind.PluginEnable => ProtocolConstants.CommandPluginEnable,
         CommandKind.PluginDisable => ProtocolConstants.CommandPluginDisable,

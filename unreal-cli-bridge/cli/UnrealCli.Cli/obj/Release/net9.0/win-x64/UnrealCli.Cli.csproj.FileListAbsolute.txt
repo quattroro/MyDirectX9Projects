@@ -183,7 +183,6 @@ C:\Codes\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Cli\bin\Release\net9
 C:\Codes\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Cli\bin\Release\net9.0\win-x64\hostfxr.dll
 C:\Codes\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Cli\bin\Release\net9.0\win-x64\hostpolicy.dll
 C:\Codes\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Cli\bin\Release\net9.0\win-x64\mscordaccore.dll
-C:\Codes\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Cli\bin\Release\net9.0\win-x64\mscordaccore_amd64_amd64_9.0.1626.22923.dll
 C:\Codes\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Cli\bin\Release\net9.0\win-x64\mscordbi.dll
 C:\Codes\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Cli\bin\Release\net9.0\win-x64\mscorrc.dll
 C:\Codes\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Cli\bin\Release\net9.0\win-x64\msquic.dll
@@ -404,3 +403,4 @@ C:\Codes\Git\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Cli\obj\Release\
 C:\Codes\Git\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Cli\obj\Release\net9.0\win-x64\unreal-cli.pdb
 C:\Codes\Git\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Cli\obj\Release\net9.0\win-x64\UnrealCli.Cli.genruntimeconfig.cache
 C:\Codes\Git\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Cli\obj\Release\net9.0\win-x64\ref\unreal-cli.dll
+C:\Codes\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Cli\bin\Release\net9.0\win-x64\mscordaccore_amd64_amd64_9.0.1726.26416.dll

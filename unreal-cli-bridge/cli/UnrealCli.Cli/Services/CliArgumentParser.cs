@@ -44,6 +44,7 @@ public static class CliArgumentParser
             "asset" => ParseAsset(tokens),
             "level" => ParseLevel(tokens),
             "blueprint" => ParseBlueprint(tokens),
+            "anim" => ParseAnim(tokens),
             "plugin" => ParsePlugin(tokens),
             "instances" => ParseInstances(tokens),
             "doctor" => new ParsedCommand(CommandKind.Doctor),
@@ -100,6 +101,12 @@ public static class CliArgumentParser
         CommandKind.LevelAssignMaterial => ProtocolConstants.CommandLevelAssignMaterial,
         CommandKind.BlueprintInspect => ProtocolConstants.CommandBlueprintInspect,
         CommandKind.BlueprintSetProperty => ProtocolConstants.CommandBlueprintSetProperty,
+        CommandKind.AnimCreateAbp        => ProtocolConstants.CommandAnimCreateAbp,
+        CommandKind.AnimAssignAbp        => ProtocolConstants.CommandAnimAssignAbp,
+        CommandKind.AnimListStates       => ProtocolConstants.CommandAnimListStates,
+        CommandKind.AnimAddVariable      => ProtocolConstants.CommandAnimAddVariable,
+        CommandKind.AnimPlayMontage      => ProtocolConstants.CommandAnimPlayMontage,
+        CommandKind.AnimSetupStateMachine => ProtocolConstants.CommandAnimSetupStateMachine,
         CommandKind.PluginList => ProtocolConstants.CommandPluginList,
         CommandKind.PluginEnable => ProtocolConstants.CommandPluginEnable,
         CommandKind.PluginDisable => ProtocolConstants.CommandPluginDisable,
@@ -148,6 +155,21 @@ public static class CliArgumentParser
             "inspect" => new ParsedCommand(CommandKind.BlueprintInspect),
             "set-property" => new ParsedCommand(CommandKind.BlueprintSetProperty),
             _ => throw new CliUsageException($"알 수 없는 blueprint 하위 명령: {sub}"),
+        };
+    }
+
+    private static ParsedCommand ParseAnim(Queue<string> tokens)
+    {
+        string sub = RequireSubcommand(tokens, "anim");
+        return sub switch
+        {
+            "create-abp"        => new ParsedCommand(CommandKind.AnimCreateAbp),
+            "assign-abp"        => new ParsedCommand(CommandKind.AnimAssignAbp),
+            "list-states"       => new ParsedCommand(CommandKind.AnimListStates),
+            "add-variable"      => new ParsedCommand(CommandKind.AnimAddVariable),
+            "play-montage"      => new ParsedCommand(CommandKind.AnimPlayMontage),
+            "setup-statemachine" => new ParsedCommand(CommandKind.AnimSetupStateMachine),
+            _ => throw new CliUsageException($"알 수 없는 anim 하위 명령: {sub}"),
         };
     }
 
@@ -314,6 +336,50 @@ public static class CliArgumentParser
                 case CommandKind.LevelAssignMaterial when token == "--slot":
                     parsed.MaterialSlot = RequireInt(tokens, "--slot"); break;
 
+                // anim create-abp
+                case CommandKind.AnimCreateAbp when token == "--skeleton":
+                    parsed.AnimSkeletonPath = RequireValue(tokens, "--skeleton"); break;
+                case CommandKind.AnimCreateAbp when token == "--path":
+                    parsed.AnimPath = RequireValue(tokens, "--path"); break;
+
+                // anim assign-abp
+                case CommandKind.AnimAssignAbp when token == "--bp":
+                    parsed.AnimTargetBpPath = RequireValue(tokens, "--bp"); break;
+                case CommandKind.AnimAssignAbp when token == "--anim-bp":
+                    parsed.AnimBlueprintPath = RequireValue(tokens, "--anim-bp"); break;
+                case CommandKind.AnimAssignAbp when token == "--component":
+                    parsed.AnimComponentName = RequireValue(tokens, "--component"); break;
+
+                // anim list-states
+                case CommandKind.AnimListStates when token == "--path":
+                    parsed.AnimPath = RequireValue(tokens, "--path"); break;
+
+                // anim add-variable
+                case CommandKind.AnimAddVariable when token == "--path":
+                    parsed.AnimPath = RequireValue(tokens, "--path"); break;
+                case CommandKind.AnimAddVariable when token == "--name":
+                    parsed.AnimVariableName = RequireValue(tokens, "--name"); break;
+                case CommandKind.AnimAddVariable when token == "--type":
+                    parsed.AnimVariableType = RequireValue(tokens, "--type"); break;
+
+                // anim play-montage
+                case CommandKind.AnimPlayMontage when token == "--actor":
+                    parsed.AnimActorLabel = RequireValue(tokens, "--actor"); break;
+                case CommandKind.AnimPlayMontage when token == "--montage":
+                    parsed.AnimMontagePath = RequireValue(tokens, "--montage"); break;
+                case CommandKind.AnimPlayMontage when token == "--rate":
+                    parsed.AnimPlayRate = double.Parse(RequireValue(tokens, "--rate")); break;
+
+                // anim setup-statemachine
+                case CommandKind.AnimSetupStateMachine when token == "--path":
+                    parsed.AnimPath = RequireValue(tokens, "--path"); break;
+                case CommandKind.AnimSetupStateMachine when token == "--idle-anim":
+                    parsed.AnimIdleAnimPath = RequireValue(tokens, "--idle-anim"); break;
+                case CommandKind.AnimSetupStateMachine when token == "--walk-anim":
+                    parsed.AnimWalkAnimPath = RequireValue(tokens, "--walk-anim"); break;
+                case CommandKind.AnimSetupStateMachine when token == "--walk-threshold":
+                    parsed.AnimWalkThreshold = double.Parse(RequireValue(tokens, "--walk-threshold")); break;
+
                 // blueprint
                 case CommandKind.BlueprintInspect when token == "--path":
                 case CommandKind.BlueprintSetProperty when token == "--path":
@@ -384,6 +450,18 @@ public static class CliArgumentParser
                 throw new CliUsageException("level remove-component는 항상 --force가 필요합니다.");
             case CommandKind.LevelAssignMaterial when parsed.ActorLabel == null || parsed.MaterialPath == null:
                 throw new CliUsageException("level assign-material에는 --actor와 --material이 필요합니다.");
+            case CommandKind.AnimCreateAbp when parsed.AnimSkeletonPath == null || parsed.AnimPath == null:
+                throw new CliUsageException("anim create-abp에는 --skeleton과 --path가 필요합니다.");
+            case CommandKind.AnimAssignAbp when parsed.AnimTargetBpPath == null || parsed.AnimBlueprintPath == null:
+                throw new CliUsageException("anim assign-abp에는 --bp와 --anim-bp가 필요합니다.");
+            case CommandKind.AnimListStates when parsed.AnimPath == null:
+                throw new CliUsageException("anim list-states에는 --path가 필요합니다.");
+            case CommandKind.AnimAddVariable when parsed.AnimPath == null || parsed.AnimVariableName == null || parsed.AnimVariableType == null:
+                throw new CliUsageException("anim add-variable에는 --path, --name, --type이 필요합니다.");
+            case CommandKind.AnimPlayMontage when parsed.AnimActorLabel == null || parsed.AnimMontagePath == null:
+                throw new CliUsageException("anim play-montage에는 --actor와 --montage가 필요합니다.");
+            case CommandKind.AnimSetupStateMachine when parsed.AnimPath == null || parsed.AnimIdleAnimPath == null || parsed.AnimWalkAnimPath == null:
+                throw new CliUsageException("anim setup-statemachine에는 --path, --idle-anim, --walk-anim이 필요합니다.");
             case CommandKind.BlueprintInspect when parsed.BlueprintPath == null:
                 throw new CliUsageException("blueprint inspect에는 --path가 필요합니다.");
             case CommandKind.BlueprintSetProperty when parsed.BlueprintPath == null || parsed.BlueprintProperty == null || parsed.BlueprintValue == null:

@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>unreal-cli — 커맨드 레퍼런스</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3248;
+      --accent: #6c8ef7;
+      --accent2: #a78bfa;
+      --green: #4ade80;
+      --yellow: #fbbf24;
+      --red: #f87171;
+      --cyan: #22d3ee;
+      --orange: #fb923c;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --tag-bg: #1e2a45;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+    }
+
+    /* ── Header ── */
+    header {
+      max-width: 960px;
+      margin: 0 auto 2.5rem;
+    }
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    header h1 span { color: var(--accent); }
+    header p {
+      margin-top: 0.5rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    /* ── Global options ── */
+    .global-opts {
+      max-width: 960px;
+      margin: 0 auto 2.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+    }
+    .global-opts h2 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 0.85rem;
+    }
+    .opt-row {
+      display: flex;
+      gap: 1rem;
+      align-items: baseline;
+      padding: 0.3rem 0;
+    }
+    .opt-row + .opt-row { border-top: 1px solid var(--border); }
+    .opt-name { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.82rem; color: var(--cyan); min-width: 220px; }
+    .opt-desc { font-size: 0.85rem; color: var(--muted); }
+
+    /* ── Sections ── */
+    .section {
+      max-width: 960px;
+      margin: 0 auto 2rem;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .section-icon {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+    .section-count {
+      font-size: 0.75rem;
+      color: var(--muted);
+      background: var(--surface2);
+      padding: 0.15rem 0.5rem;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── Command cards ── */
+    .cmd-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+    .cmd-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.9rem 1.1rem;
+      transition: border-color 0.15s;
+    }
+    .cmd-card:hover { border-color: var(--accent); }
+
+    .cmd-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .cmd-syntax {
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 0.82rem;
+      color: var(--text);
+      flex: 1;
+      min-width: 0;
+      word-break: break-all;
+    }
+    .cmd-syntax .cmd-name  { color: var(--accent); font-weight: 600; }
+    .cmd-syntax .req-arg   { color: var(--cyan); }
+    .cmd-syntax .opt-arg   { color: var(--muted); }
+    .cmd-syntax .flag      { color: var(--yellow); }
+
+    .tag {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+    }
+    .tag-force   { background: #3b1c1c; color: var(--red);    border: 1px solid #6b2020; }
+    .tag-pie     { background: #1c2e1c; color: var(--green);  border: 1px solid #2d5a2d; }
+    .tag-busy    { background: #1c1c2e; color: var(--accent2);border: 1px solid #3a3a6b; }
+    .tag-wait    { background: #2e2a1c; color: var(--yellow); border: 1px solid #5a4a20; }
+    .tag-destroy { background: #3b1c1c; color: var(--red);    border: 1px solid #6b2020; }
+
+    .cmd-desc {
+      margin-top: 0.45rem;
+      font-size: 0.83rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .cmd-note {
+      margin-top: 0.4rem;
+      font-size: 0.78rem;
+      color: #4a5568;
+      font-style: italic;
+    }
+
+    /* ── Section colors ── */
+    .color-editor    { background: #1e3a5f; }
+    .color-asset     { background: #1e3d2f; }
+    .color-level     { background: #3d2f1e; }
+    .color-blueprint { background: #2f1e3d; }
+    .color-anim      { background: #1e3d3d; }
+    .color-plugin    { background: #3d3d1e; }
+    .color-instance  { background: #2e2e2e; }
+
+    /* ── Footer ── */
+    footer {
+      max-width: 960px;
+      margin: 3rem auto 0;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1><span>unreal-cli</span> 커맨드 레퍼런스</h1>
+  <p>Unreal Editor 5.3 · UnrealCliBridge Plugin · 총 38개 커맨드</p>
+</header>
+
+<!-- Global Options -->
+<div class="global-opts">
+  <h2>전역 옵션</h2>
+  <div class="opt-row">
+    <span class="opt-name">--json</span>
+    <span class="opt-desc">응답을 JSON 포맷으로 출력 (--output json 단축)</span>
+  </div>
+  <div class="opt-row">
+    <span class="opt-name">--output default|json|compact</span>
+    <span class="opt-desc">응답 포맷 지정</span>
+  </div>
+  <div class="opt-row">
+    <span class="opt-name">--project &lt;path&gt;</span>
+    <span class="opt-desc">대상 Unreal 프로젝트 루트 디렉터리 지정</span>
+  </div>
+  <div class="opt-row">
+    <span class="opt-name">--force</span>
+    <span class="opt-desc">파괴적 작업 또는 덮어쓰기 허용 (명령별 필요 여부 다름)</span>
+  </div>
+  <div class="opt-row">
+    <span class="opt-name">--wait</span>
+    <span class="opt-desc">compile / refresh 완료까지 대기 (해당 커맨드 전용)</span>
+  </div>
+</div>
+
+<!-- ── Editor Control ── -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon color-editor">🎮</div>
+    <span class="section-title">에디터 제어</span>
+    <span class="section-count">10개</span>
+  </div>
+  <div class="cmd-list">
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax"><span class="cmd-name">status</span></div>
+        <span class="tag tag-busy">언제든 가능</span>
+      </div>
+      <div class="cmd-desc">에디터 연결 상태, 현재 레벨, PIE 상태를 반환합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax"><span class="cmd-name">play</span></div>
+        <span class="tag tag-pie">PIE 시작</span>
+      </div>
+      <div class="cmd-desc">Play-In-Editor(PIE)를 시작합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax"><span class="cmd-name">pause</span></div>
+      </div>
+      <div class="cmd-desc">실행 중인 PIE를 일시정지합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax"><span class="cmd-name">stop</span></div>
+      </div>
+      <div class="cmd-desc">PIE를 종료합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">compile</span>
+          <span class="opt-arg"> [--wait]</span>
+        </div>
+        <span class="tag tag-wait">--wait 지원</span>
+      </div>
+      <div class="cmd-desc">Hot Reload 컴파일을 트리거합니다. --wait 시 완료까지 폴링합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">refresh</span>
+          <span class="opt-arg"> [--wait]</span>
+        </div>
+        <span class="tag tag-wait">--wait 지원</span>
+      </div>
+      <div class="cmd-desc">수정된 에셋을 에디터에서 재임포트합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">read-log</span>
+          <span class="opt-arg"> [--limit N] [--type log|warning|error]</span>
+        </div>
+        <span class="tag tag-busy">언제든 가능</span>
+      </div>
+      <div class="cmd-desc">Output Log 최근 항목을 읽어옵니다. 타입 필터링 가능.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">screenshot</span>
+          <span class="opt-arg"> [--viewport game|editor] [--path out.png] [--width N] [--height N]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">게임 또는 에디터 뷰포트의 스크린샷을 캡처합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">execute-menu</span>
+          <span class="req-arg"> (--path "Menu/Item"</span><span class="opt-arg"> | </span><span class="req-arg">--list "Prefix")</span>
+        </div>
+      </div>
+      <div class="cmd-desc">메뉴 아이템을 실행하거나, 접두사로 등록된 메뉴 항목 목록을 조회합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">execute</span>
+          <span class="req-arg"> (--code &lt;python&gt; | --file &lt;path.py&gt;)</span>
+          <span class="opt-arg"> [--args &lt;json&gt;]</span>
+          <span class="flag"> --force</span>
+        </div>
+        <span class="tag tag-force">--force 필수</span>
+      </div>
+      <div class="cmd-desc">Python Script Plugin을 통해 에디터 내에서 파이썬 코드를 실행합니다.</div>
+      <div class="cmd-note">Python Script Plugin이 활성화되어 있어야 합니다. result 변수에 값을 할당하면 호출자에게 반환됩니다.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Asset Workflows ── -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon color-asset">📦</div>
+    <span class="section-title">에셋 워크플로</span>
+    <span class="section-count">7개</span>
+  </div>
+  <div class="cmd-list">
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">asset find</span>
+          <span class="opt-arg"> [--name &lt;term&gt;] [--type &lt;type&gt;] [--folder /Game/...] [--limit N]</span>
+        </div>
+        <span class="tag tag-busy">언제든 가능</span>
+      </div>
+      <div class="cmd-desc">이름·타입·폴더 조건으로 에셋을 검색합니다. --name 또는 --type 중 하나는 필수.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">asset info</span>
+          <span class="req-arg"> --path /Game/...</span>
+        </div>
+        <span class="tag tag-busy">언제든 가능</span>
+      </div>
+      <div class="cmd-desc">에셋의 메타데이터(타입, 패키지명, 디스크 경로 등)를 반환합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">asset move</span>
+          <span class="req-arg"> --from /Game/... --to /Game/...</span>
+          <span class="opt-arg"> [--force]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">에셋을 새 경로로 이동합니다. 대상이 이미 존재하면 --force 필요.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">asset rename</span>
+          <span class="req-arg"> --path /Game/... --name &lt;newName&gt;</span>
+          <span class="opt-arg"> [--force]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">에셋 이름을 변경합니다. 동일한 이름이 존재하면 --force 필요.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">asset delete</span>
+          <span class="req-arg"> --path /Game/...</span>
+          <span class="flag"> --force</span>
+        </div>
+        <span class="tag tag-destroy">파괴적 작업</span>
+      </div>
+      <div class="cmd-desc">에셋을 삭제합니다. 항상 --force가 필요합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">asset create</span>
+          <span class="req-arg"> --type &lt;kind&gt; --path /Game/...</span>
+          <span class="opt-arg"> [--force]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">새 에셋을 생성합니다. 대상이 이미 존재하면 --force 필요.</div>
+      <div class="cmd-note">지원 타입: material, texture, staticmesh, blueprint, dataasset, curve, soundcue</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">asset mkdir</span>
+          <span class="req-arg"> --path /Game/...</span>
+        </div>
+      </div>
+      <div class="cmd-desc">Content 폴더를 생성합니다. 중간 경로도 함께 생성됩니다.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Level Workflows ── -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon color-level">🗺️</div>
+    <span class="section-title">레벨 워크플로</span>
+    <span class="section-count">9개</span>
+  </div>
+  <div class="cmd-list">
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">level open</span>
+          <span class="req-arg"> --path /Game/...</span>
+          <span class="opt-arg"> [--force]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">레벨을 엽니다. 저장되지 않은 변경이 있으면 --force로 무시.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">level inspect</span>
+          <span class="opt-arg"> [--path /Game/...] [--with-values] [--max-depth N]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">레벨의 액터 계층 구조를 반환합니다. --path 생략 시 현재 열린 레벨 대상.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">level add-actor</span>
+          <span class="req-arg"> --class &lt;ClassName&gt;</span>
+          <span class="opt-arg"> [--name &lt;label&gt;] [--location x,y,z] [--rotation p,y,r] [--scale x,y,z]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">현재 레벨에 액터를 스폰합니다.</div>
+      <div class="cmd-note">자주 쓰는 클래스: StaticMeshActor, PointLight, DirectionalLight, CameraActor, TriggerBox</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">level set-transform</span>
+          <span class="req-arg"> --actor &lt;label&gt;</span>
+          <span class="opt-arg"> [--location x,y,z] [--rotation p,y,r] [--scale x,y,z]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">액터의 Transform을 설정합니다. location·rotation·scale 중 하나 이상 필요.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">level delete-actor</span>
+          <span class="req-arg"> --actor &lt;label&gt;</span>
+          <span class="flag"> --force</span>
+        </div>
+        <span class="tag tag-destroy">파괴적 작업</span>
+      </div>
+      <div class="cmd-desc">레벨에서 액터를 삭제합니다. 항상 --force 필요.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">level list-components</span>
+          <span class="req-arg"> --actor &lt;label&gt;</span>
+        </div>
+        <span class="tag tag-busy">언제든 가능</span>
+      </div>
+      <div class="cmd-desc">액터에 붙어있는 모든 컴포넌트 목록을 반환합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">level add-component</span>
+          <span class="req-arg"> --actor &lt;label&gt; --type &lt;ComponentType&gt;</span>
+          <span class="opt-arg"> [--values &lt;json&gt;]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">액터에 컴포넌트를 추가합니다. --values로 초기 프로퍼티 JSON 지정 가능.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">level remove-component</span>
+          <span class="req-arg"> --actor &lt;label&gt; --type &lt;ComponentType&gt;</span>
+          <span class="opt-arg"> [--index N]</span>
+          <span class="flag"> --force</span>
+        </div>
+        <span class="tag tag-destroy">파괴적 작업</span>
+      </div>
+      <div class="cmd-desc">액터에서 컴포넌트를 제거합니다. 항상 --force 필요.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">level assign-material</span>
+          <span class="req-arg"> --actor &lt;label&gt; --material /Game/...</span>
+          <span class="opt-arg"> [--slot N]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">액터의 메시 컴포넌트에 머티리얼을 할당합니다.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Blueprint Workflows ── -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon color-blueprint">🔵</div>
+    <span class="section-title">블루프린트 워크플로</span>
+    <span class="section-count">2개</span>
+  </div>
+  <div class="cmd-list">
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">blueprint inspect</span>
+          <span class="req-arg"> --path /Game/...</span>
+          <span class="opt-arg"> [--with-values] [--max-depth N]</span>
+        </div>
+        <span class="tag tag-busy">언제든 가능</span>
+      </div>
+      <div class="cmd-desc">Blueprint의 컴포넌트 계층 및 CDO 기본값을 조회합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">blueprint set-property</span>
+          <span class="req-arg"> --path /Game/... --property &lt;name&gt; --value &lt;json&gt;</span>
+        </div>
+      </div>
+      <div class="cmd-desc">Blueprint CDO(Class Default Object)의 프로퍼티 값을 설정하고 재컴파일합니다.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Animation Workflows ── -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon color-anim">🎬</div>
+    <span class="section-title">애니메이션 워크플로</span>
+    <span class="section-count">5개</span>
+  </div>
+  <div class="cmd-list">
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">anim create-abp</span>
+          <span class="req-arg"> --skeleton /Game/... --path /Game/...</span>
+          <span class="opt-arg"> [--force]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">지정한 Skeleton으로 Animation Blueprint 에셋을 생성합니다. 대상이 존재하면 --force 필요.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">anim assign-abp</span>
+          <span class="req-arg"> --bp /Game/... --anim-bp /Game/...</span>
+          <span class="opt-arg"> [--component &lt;name&gt;]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">Blueprint의 SkeletalMeshComponent에 Animation Blueprint를 연결하고 재컴파일합니다.</div>
+      <div class="cmd-note">--component로 대상 컴포넌트 이름을 지정할 수 있습니다. 생략 시 첫 번째 SkeletalMesh가 대상.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">anim list-states</span>
+          <span class="req-arg"> --path /Game/...</span>
+        </div>
+        <span class="tag tag-busy">언제든 가능</span>
+      </div>
+      <div class="cmd-desc">Animation Blueprint의 상태머신 목록, 각 상태 이름, 정의된 변수 목록을 반환합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">anim add-variable</span>
+          <span class="req-arg"> --path /Game/... --name &lt;varName&gt; --type float|bool|int</span>
+        </div>
+      </div>
+      <div class="cmd-desc">Animation Blueprint에 변수를 추가하고 자동으로 재컴파일합니다.</div>
+      <div class="cmd-note">지원 타입: float, bool, int</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">anim play-montage</span>
+          <span class="req-arg"> --actor &lt;label&gt; --montage /Game/...</span>
+          <span class="opt-arg"> [--rate &lt;float&gt;]</span>
+        </div>
+        <span class="tag tag-pie">PIE 필요</span>
+      </div>
+      <div class="cmd-desc">PIE 세션 중 지정한 액터에서 Animation Montage를 재생합니다.</div>
+      <div class="cmd-note">활성 PIE 세션이 필요합니다. --rate 기본값은 1.0.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Plugin Management ── -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon color-plugin">🔌</div>
+    <span class="section-title">플러그인 관리</span>
+    <span class="section-count">3개</span>
+  </div>
+  <div class="cmd-list">
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax"><span class="cmd-name">plugin list</span></div>
+        <span class="tag tag-busy">언제든 가능</span>
+      </div>
+      <div class="cmd-desc">현재 프로젝트의 모든 플러그인(활성·비활성 포함) 목록을 반환합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">plugin enable</span>
+          <span class="req-arg"> --name &lt;PluginName&gt;</span>
+        </div>
+      </div>
+      <div class="cmd-desc">플러그인을 활성화합니다. 에디터 재시작 후 적용됩니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">plugin disable</span>
+          <span class="req-arg"> --name &lt;PluginName&gt;</span>
+          <span class="flag"> --force</span>
+        </div>
+        <span class="tag tag-destroy">파괴적 작업</span>
+      </div>
+      <div class="cmd-desc">플러그인을 비활성화합니다. 항상 --force 필요. 에디터 재시작 후 적용됩니다.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Instance Management & Diagnostics ── -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon color-instance">⚙️</div>
+    <span class="section-title">인스턴스 관리 &amp; 진단</span>
+    <span class="section-count">4개</span>
+  </div>
+  <div class="cmd-list">
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax"><span class="cmd-name">instances list</span></div>
+      </div>
+      <div class="cmd-desc">알려진 Unreal 프로젝트 인스턴스와 현재 활성 선택 항목을 반환합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">instances use</span>
+          <span class="req-arg"> &lt;projectHash|projectPath&gt;</span>
+        </div>
+      </div>
+      <div class="cmd-desc">해시 또는 프로젝트 경로로 활성 대상 프로젝트를 고정합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax"><span class="cmd-name">doctor</span></div>
+      </div>
+      <div class="cmd-desc">레지스트리, 프로젝트 감지, 라이브 도달 가능성 진단 정보를 출력합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">raw</span>
+          <span class="req-arg"> --json '{"command":"..."}'</span>
+          <span class="opt-arg"> [--force]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">로우 프로토콜 JSON 봉투를 직접 전송합니다. 저수준 디버깅 전용.</div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <span>unreal-cli · UnrealCliBridge Plugin for UE 5.3</span>
+  <span>총 38개 커맨드 · 2026-06-20</span>
+</footer>
+
+</body>
+</html>

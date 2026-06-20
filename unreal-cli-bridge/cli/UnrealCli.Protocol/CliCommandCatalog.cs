@@ -10,6 +10,7 @@ public enum CliCommandGroup
     AssetWorkflows,
     LevelWorkflows,
     BlueprintWorkflows,
+    AnimationWorkflows,
     InstanceManagement,
     Diagnostics,
     PluginManagement,
@@ -280,6 +281,44 @@ public static class CliCommandCatalog
             CliCommandGroup.BlueprintWorkflows,
             ProtocolConstants.CommandBlueprintSetProperty,
             canUseLocal: false, canUseLive: true, isAllowedWhileBusy: false),
+
+        // Animation workflows
+        new("anim create-abp",
+            "anim create-abp --skeleton /Game/... --path /Game/... [--force]",
+            "Creates an Animation Blueprint asset for the given Skeleton.",
+            CliCommandGroup.AnimationWorkflows,
+            ProtocolConstants.CommandAnimCreateAbp,
+            canUseLocal: false, canUseLive: true, isAllowedWhileBusy: false,
+            forceRule: ForceRule.OnOverwrite),
+
+        new("anim assign-abp",
+            "anim assign-abp --bp /Game/... --anim-bp /Game/... [--component <name>]",
+            "Assigns an Animation Blueprint to the SkeletalMeshComponent of a Blueprint.",
+            CliCommandGroup.AnimationWorkflows,
+            ProtocolConstants.CommandAnimAssignAbp,
+            canUseLocal: false, canUseLive: true, isAllowedWhileBusy: false),
+
+        new("anim list-states",
+            "anim list-states --path /Game/...",
+            "Lists state machines, states, and variables of an Animation Blueprint.",
+            CliCommandGroup.AnimationWorkflows,
+            ProtocolConstants.CommandAnimListStates,
+            canUseLocal: false, canUseLive: true, isAllowedWhileBusy: true),
+
+        new("anim add-variable",
+            "anim add-variable --path /Game/... --name <varName> --type float|bool|int",
+            "Adds a variable to an Animation Blueprint and recompiles it.",
+            CliCommandGroup.AnimationWorkflows,
+            ProtocolConstants.CommandAnimAddVariable,
+            canUseLocal: false, canUseLive: true, isAllowedWhileBusy: false),
+
+        new("anim play-montage",
+            "anim play-montage --actor <label> --montage /Game/... [--rate <float>]",
+            "Plays an Animation Montage on a live PIE actor.",
+            CliCommandGroup.AnimationWorkflows,
+            ProtocolConstants.CommandAnimPlayMontage,
+            canUseLocal: false, canUseLive: true, isAllowedWhileBusy: false,
+            notes: ["Requires an active PIE session."]),
 
         // Plugin management (equivalent to Package in Unity)
         new("plugin list",
