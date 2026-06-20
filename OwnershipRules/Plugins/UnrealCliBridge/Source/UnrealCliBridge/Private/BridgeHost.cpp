@@ -8,6 +8,7 @@
 #include "Handlers/BlueprintCommandHandler.h"
 #include "Handlers/ExecuteCommandHandler.h"
 #include "Handlers/PluginCommandHandler.h"
+#include "Handlers/AnimCommandHandler.h"
 #include "Misc/Paths.h"
 #include "Misc/SecureHash.h"
 
@@ -93,6 +94,9 @@ void FBridgeHost::RegisterHandlers()
 
 	// Plugin management
 	FPluginCommandHandler::RegisterAll(D);
+
+	// Animation workflows
+	FAnimCommandHandler::RegisterAll(D);
 }
 
 FString FBridgeHost::ComputeProjectHash(const FString& InProjectRoot) const
