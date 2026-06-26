@@ -1,13 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "9RXpDWlxgRY=",
+  "dgSpecHash": "NGYpKZe6j7o=",
   "success": true,
-  "projectFilePath": "C:\\Codes\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Protocol\\UnrealCli.Protocol.csproj",
-  "expectedPackageFiles": [
-    "C:\\Users\\kio71\\.nuget\\packages\\microsoft.net.illink.tasks\\9.0.17\\microsoft.net.illink.tasks.9.0.17.nupkg.sha512",
-    "C:\\Users\\kio71\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\9.0.17\\microsoft.netcore.app.runtime.win-x64.9.0.17.nupkg.sha512",
-    "C:\\Users\\kio71\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\9.0.17\\microsoft.windowsdesktop.app.runtime.win-x64.9.0.17.nupkg.sha512",
-    "C:\\Users\\kio71\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\9.0.17\\microsoft.aspnetcore.app.runtime.win-x64.9.0.17.nupkg.sha512"
-  ],
+  "projectFilePath": "F:\\GitFiles\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Protocol\\UnrealCli.Protocol.csproj",
+  "expectedPackageFiles": [],
   "logs": []
 }

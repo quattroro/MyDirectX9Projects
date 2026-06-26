@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "SVhM4UFdaaY=",
+  "dgSpecHash": "OHBRD4TASio=",
   "success": true,
-  "projectFilePath": "C:\\Codes\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Cli\\UnrealCli.Cli.csproj",
+  "projectFilePath": "F:\\GitFiles\\MyDirectX9Projects\\unreal-cli-bridge\\cli\\UnrealCli.Cli\\UnrealCli.Cli.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\kio71\\.nuget\\packages\\microsoft.net.illink.tasks\\9.0.17\\microsoft.net.illink.tasks.9.0.17.nupkg.sha512",
-    "C:\\Users\\kio71\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\9.0.17\\microsoft.netcore.app.runtime.win-x64.9.0.17.nupkg.sha512",
-    "C:\\Users\\kio71\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\9.0.17\\microsoft.windowsdesktop.app.runtime.win-x64.9.0.17.nupkg.sha512",
-    "C:\\Users\\kio71\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\9.0.17\\microsoft.aspnetcore.app.runtime.win-x64.9.0.17.nupkg.sha512"
+    "C:\\Users\\kio71\\.nuget\\packages\\microsoft.net.illink.tasks\\9.0.9\\microsoft.net.illink.tasks.9.0.9.nupkg.sha512",
+    "C:\\Users\\kio71\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\9.0.9\\microsoft.netcore.app.runtime.win-x64.9.0.9.nupkg.sha512",
+    "C:\\Users\\kio71\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\9.0.9\\microsoft.windowsdesktop.app.runtime.win-x64.9.0.9.nupkg.sha512",
+    "C:\\Users\\kio71\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\9.0.9\\microsoft.aspnetcore.app.runtime.win-x64.9.0.9.nupkg.sha512"
   ],
   "logs": []
 }
