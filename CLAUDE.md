@@ -93,3 +93,34 @@ unreal-cli.exe status
 
 - **OwnershipRules** — Main UE5 project (`OwnershipRules\OwnershipRules.uproject`)
 - **unreal-cli-bridge** — CLI tool + UE5 plugin source (`unreal-cli-bridge\`)
+
+## UnrealCliBridge Plugin — Dual-Location Sync Rule
+
+The plugin exists in two locations:
+
+| Role | Path |
+|------|------|
+| **Canonical source** (원본) | `unreal-cli-bridge\unreal-plugin\UnrealCliBridge\` |
+| **Project copy** (프로젝트 내 사본) | `OwnershipRules\Plugins\UnrealCliBridge\` |
+
+**IMPORTANT: Whenever you modify any plugin source file in either location, you MUST apply the identical change to the corresponding file in the other location.**
+
+### Files to keep in sync
+
+- `UnrealCliBridge.uplugin`
+- `Source\UnrealCliBridge\UnrealCliBridge.Build.cs`
+- `Source\UnrealCliBridge\Private\*.cpp` / `*.h`
+- `Source\UnrealCliBridge\Private\Handlers\*.cpp` / `*.h`
+- `Source\UnrealCliBridge\Public\*.h`
+
+### Files to NOT sync (build artifacts — project-local only)
+
+- `Binaries\`
+- `Intermediate\`
+
+### Workflow
+
+1. Edit the file in whichever location is relevant to the task.
+2. Immediately apply the same edit to the corresponding file in the other location.
+3. If a file exists in one location but not the other, create it in both.
+4. After any plugin source change, remind the user to recompile (`unreal-cli.exe compile --wait`) so the editor picks up the new code.
