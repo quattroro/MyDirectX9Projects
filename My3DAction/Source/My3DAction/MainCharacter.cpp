@@ -11,6 +11,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Animation/AnimInstance.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -66,6 +67,10 @@ void AMainCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	AttackCount = 0;
+	IsBattleMode = false;
+	Defence = false;
 }
 
 
@@ -86,6 +91,15 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMainCharacter::Look);
+
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Started, this, &AMainCharacter::BeginRunning);
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &AMainCharacter::StopRunning);
+
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &AMainCharacter::Attack);
+
+
+		EnhancedInputComponent->BindAction(DefenceAction, ETriggerEvent::Started, this, &AMainCharacter::BeginDefence);
+		EnhancedInputComponent->BindAction(DefenceAction, ETriggerEvent::Completed, this, &AMainCharacter::StopDefence);
 	}
 	else
 	{
@@ -93,12 +107,63 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	}
 }
 
+bool AMainCharacter::Attacking()
+{
+	bool bIsMontagePlaying = GetMesh()->GetAnimInstance()->Montage_IsPlaying(Attack1_Montage);
+	bIsMontagePlaying |= GetMesh()->GetAnimInstance()->Montage_IsPlaying(Attack2_Montage);
+	return bIsMontagePlaying;
+}
+
+void AMainCharacter::Attack()
+{
+	UE_LOG(LogTemp, Log, TEXT("Attack %d"), AttackCount);
+
+	if (Attacking())
+		return;
+
+	if (AttackCount == 0)
+	{
+		GetMesh()->GetAnimInstance()->Montage_Play(Attack1_Montage, 1.0f);
+	}
+	else if (AttackCount == 1)
+	{
+		GetMesh()->GetAnimInstance()->Montage_Play(Attack2_Montage, 1.0f);
+	}
+	
+	AttackCount = (AttackCount + 1) % 2;
+}
+
+void AMainCharacter::BeginRunning()
+{
+	if(!Defence)
+		GetCharacterMovement()->MaxWalkSpeed = 800.f;
+}
+
+void AMainCharacter::StopRunning()
+{
+	if (!Defence)
+		GetCharacterMovement()->MaxWalkSpeed = 500.f;
+}
+
+void AMainCharacter::BeginDefence()
+{
+	Defence = true;
+	GetCharacterMovement()->MaxWalkSpeed = 200.f;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+}
+void AMainCharacter::StopDefence()
+{
+	Defence = false;
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+}
+
 void AMainCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr)
+	if (Controller != nullptr/* && !Defence*/ && !Attacking())
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();

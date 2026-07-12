@@ -41,6 +41,37 @@ class MY3DACTION_API AMainCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+	/** Look Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* RunAction;
+
+	/** Look Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* AttackAction;
+
+	/** Look Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* DefenceAction;
+
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* Attack1_Montage;
+
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* Attack2_Montage;
+
+
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* Defence_Montage;
+
+
+	int AttackCount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool Defence;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool IsBattleMode;
+
 public:
 	// Sets default values for this character's properties
 	AMainCharacter();
@@ -53,6 +84,16 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+	void Attack();
+
+	void BeginRunning();
+	void StopRunning();
+
+
+	void BeginDefence();
+	void StopDefence();
+
+	bool Attacking();
 
 protected:
 	// APawn interface
