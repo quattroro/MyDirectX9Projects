@@ -4,11 +4,15 @@
 #pragma comment(lib, "winmm.lib")
 #include <d3dx9.h>
 #include <d3d9.h>
+#include <DirectXMath.h>
 
 
 static float lasttime;
 //전역변수로 저장
 extern float DeltaTime;
+
+extern LPDIRECT3D9         g_pD3D;
+extern LPDIRECT3DDEVICE9   g_pd3dDevice;
 
 //Init,  render, release, delete
 HRESULT InitD3D(HINSTANCE hInstance, int nCmdShow, float width, float height, LPDIRECT3D9& g_pD3D, LPDIRECT3DDEVICE9&   g_pd3dDevice);

@@ -17,13 +17,6 @@ Camera::Camera(LPDIRECT3DDEVICE9 m_pd3dDevice, D3DXVECTOR3 vEyePt, D3DXVECTOR3 v
 {
 
 	this->m_pd3dDevice = m_pd3dDevice;
-	/*this->vEyePt = vEyePt;
-	this->vLookatPt = vLookatPt;
-	this->vUpVec = vUpVec;
-
-	this->First_vEyePt = vEyePt;
-	this->First_vLookatPt = vLookatPt;
-	this->First_vUpVec = vUpVec;*/
 
 	this->Axis[E_Axis_Up] = vUpVec;
 	this->pos = vEyePt;
@@ -32,13 +25,6 @@ Camera::Camera(LPDIRECT3DDEVICE9 m_pd3dDevice, D3DXVECTOR3 vEyePt, D3DXVECTOR3 v
 	this->Axis[E_Axis_Forward] = temp;
 
 	D3DXVec3Cross(&this->Axis[E_Axis_Right], &this->Axis[E_Axis_Up], &this->Axis[E_Axis_Forward]);
-	/*vUpVec = this->Axis[E_Axis_Up];
-	 = ;*/
-	//vLookatPt = (this->pos + this->Axis[E_Axis_Forward]) * LookDistance;
-
-
-	/*this->pos = vEyePt;
-	LookAt3D(vLookatPt);*/
 
 }
 
@@ -54,14 +40,6 @@ void Camera::Init(D3DXVECTOR3 vEyePt, D3DXVECTOR3 vLookatPt, D3DXVECTOR3 vUpVec)
 	this->First_vUpVec = vUpVec;
 }
 
-////À§Ä¡¿Í lookatÀÌ °°ÀÌ ¿òÁ÷¿©¾ß ÇÑ´Ù.
-//void Camera::Translation(float x, float y, float z)
-//{
-//
-//	direction = D3DXVECTOR3(x, y, z);
-//	vEyePt += direction;
-//	vLookatPt += direction;
-//}
 
 ////²ô´ö²ô´ö
 //void Camera::PitchRotation(float fAngle)

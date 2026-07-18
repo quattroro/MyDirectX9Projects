@@ -3,8 +3,8 @@
 #include "Plane.h"
 #include "Camera.h"
 
-LPDIRECT3D9         g_pD3D = NULL; // Used to create the D3DDevice
-LPDIRECT3DDEVICE9   g_pd3dDevice = NULL; // Our rendering device
+//LPDIRECT3D9         g_pD3D = NULL; // Used to create the D3DDevice
+//LPDIRECT3DDEVICE9   g_pd3dDevice = NULL; // Our rendering device
 
 LPD3DXMESH          g_pMesh = NULL; // Our mesh object in sysmem
 D3DMATERIAL9* g_pMeshMaterials = NULL; // Materials for our mesh
@@ -189,9 +189,9 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             MoveMousePos = D3DXVECTOR2(LOWORD(lParam), HIWORD(lParam));
 
-            ChangeRotVal.x = (MoveMousePos.y - StartMousePos.y) * -1.0f;
+            ChangeRotVal.x = (MoveMousePos.y - StartMousePos.y) * -0.1f;
 
-            ChangeRotVal.y = (MoveMousePos.x - StartMousePos.x) * -1.0f;
+            ChangeRotVal.y = (MoveMousePos.x - StartMousePos.x) * 0.1f;
 
             StartMousePos = MoveMousePos;
 

@@ -1,5 +1,9 @@
 #include "Utility.h"
 
+LPDIRECT3D9         g_pD3D = NULL;
+LPDIRECT3DDEVICE9   g_pd3dDevice = NULL;
+
+
 HRESULT InitD3D(HINSTANCE hInstance, int nCmdShow , float width, float height, LPDIRECT3D9& g_pD3D, LPDIRECT3DDEVICE9&   g_pd3dDevice)
 {
     //UNREFERENCED_PARAMETER(hInstance);
