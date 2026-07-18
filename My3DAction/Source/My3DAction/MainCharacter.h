@@ -108,4 +108,8 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+
+	// 런타임에 제어할 다이내믹 머티리얼 인스턴스 포인터
+	UPROPERTY(EditAnywhere)
+	class UMaterialInstanceDynamic* DynamicMaterialInst;
 };
