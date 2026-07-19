@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("UnrealCli.Protocol")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ed55644ce3d986ccd40e1a535249e8a567c5f240")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f01e3788a8866ca5ffa6b9ba6a3b2fe10e81c490")]
 [assembly: System.Reflection.AssemblyProductAttribute("UnrealCli.Protocol")]
 [assembly: System.Reflection.AssemblyTitleAttribute("UnrealCli.Protocol")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

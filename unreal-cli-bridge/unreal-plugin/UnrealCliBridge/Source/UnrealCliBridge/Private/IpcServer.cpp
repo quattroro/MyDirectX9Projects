@@ -50,9 +50,14 @@ void FIpcServer::Stop()
 #endif
 	if (Thread)
 	{
-		Thread->WaitForCompletion();
-		delete Thread;
+		// FRunnableThread's destructor calls Kill(true), which calls Runnable->Stop()
+		// again (i.e. re-enters this function). Clear Thread before deleting so the
+		// re-entrant call sees Thread == nullptr and returns immediately instead of
+		// recursing into WaitForCompletion()/delete forever (stack overflow).
+		FRunnableThread* ThreadToDelete = Thread;
 		Thread = nullptr;
+		ThreadToDelete->WaitForCompletion();
+		delete ThreadToDelete;
 	}
 }
 
