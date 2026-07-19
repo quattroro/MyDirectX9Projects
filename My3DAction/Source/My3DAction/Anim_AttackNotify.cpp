@@ -5,5 +5,5 @@
 
 void UAnim_AttackNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
-	UE_LOG(LogTemp, Log, TEXT("Attack2"));
+	//UE_LOG(LogTemp, Log, TEXT("Attack2"));
 }

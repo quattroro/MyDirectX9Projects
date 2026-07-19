@@ -12,6 +12,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Animation/AnimInstance.h"
+#include "Monster_Usurper.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -68,11 +70,52 @@ void AMainCharacter::BeginPlay()
 		}
 	}
 
+
+	if (!TestMonster)
+	{
+		TestMonster = Cast<AMonster_Usurper>(UGameplayStatics::GetActorOfClass(GetWorld(), AMonster_Usurper::StaticClass()));
+		UE_LOG(LogTemp, Log, TEXT("Find Monster"));
+	}
+
 	AttackCount = 0;
 	IsBattleMode = false;
 	Defence = false;
+
+
+
+	// Sword컴포넌트를 이름으로 찾아 Overlap 충돌 이벤트를 바인딩
+	TArray<UStaticMeshComponent*> MeshComps;
+	GetComponents<UStaticMeshComponent>(MeshComps);
+	for (UStaticMeshComponent* Comp : MeshComps)
+	{
+		if (Comp->GetName() == TEXT("Sword"))
+		{
+			SwordMeshComp = Comp;
+			SwordMeshComp->OnComponentBeginOverlap.AddDynamic(this, &AMainCharacter::OnSwordBeinOverlap);
+			break;
+		}
+	}
 }
 
+
+void AMainCharacter::EnableWeaponCollision()
+{
+	bWeaponCollisionEnable = true;
+	bWeaponHasHitThisSwing = false;
+}
+
+void AMainCharacter::DisableWeaponCollision()
+{
+	bWeaponCollisionEnable = false;
+}
+
+void AMainCharacter::OnSwordBeinOverlap(UPrimitiveComponent* OverlappedComp, AActor* OthreActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!bWeaponCollisionEnable || bWeaponHasHitThisSwing)
+		return;
+
+
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Input
@@ -116,7 +159,7 @@ bool AMainCharacter::Attacking()
 
 void AMainCharacter::Attack()
 {
-	UE_LOG(LogTemp, Log, TEXT("Attack %d"), AttackCount);
+	//UE_LOG(LogTemp, Log, TEXT("Attack %d"), AttackCount);
 
 	if (Attacking())
 		return;
@@ -131,6 +174,15 @@ void AMainCharacter::Attack()
 	}
 	
 	AttackCount = (AttackCount + 1) % 2;
+
+	AMonster_Usurper* monster = Cast<AMonster_Usurper>(TestMonster);
+	if (monster)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Player Monster Attack"));
+		monster->Hit();
+	}
+
+	
 }
 
 void AMainCharacter::BeginRunning()

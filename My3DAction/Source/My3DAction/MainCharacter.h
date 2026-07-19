@@ -11,6 +11,7 @@ class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
+class AMonster_Usurper;
 
 UCLASS()
 class MY3DACTION_API AMainCharacter : public ACharacter
@@ -72,6 +73,19 @@ class MY3DACTION_API AMainCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool IsBattleMode;
 
+	UPROPERTY(EditAnywhere)
+	AMonster_Usurper* TestMonster;
+
+	UPROPERTY()
+	class UStaticMeshComponent* SwordMeshComp;
+	bool bWeaponCollisionEnable = false;
+	bool bWeaponHasHitThisSwing = false;
+
+	void EnableWeaponCollision();
+	void DisableWeaponCollision();
+	
+	UFUNCTION()
+	void OnSwordBeinOverlap(UPrimitiveComponent* OverlappedComp, AActor* OthreActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 public:
 	// Sets default values for this character's properties
 	AMainCharacter();
