@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -81,15 +81,14 @@ class MY3DACTION_API AMainCharacter : public ACharacter
 	bool bWeaponCollisionEnable = false;
 	bool bWeaponHasHitThisSwing = false;
 
-	void EnableWeaponCollision();
-	void DisableWeaponCollision();
+	
 	
 	UFUNCTION()
 	void OnSwordBeinOverlap(UPrimitiveComponent* OverlappedComp, AActor* OthreActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 public:
 	// Sets default values for this character's properties
 	AMainCharacter();
-
+	
 protected:
 
 	/** Called for movement input */
@@ -122,8 +121,10 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+	void EnableWeaponCollision();
+	void DisableWeaponCollision();
 
-	// ·±Å¸ÀÓ¿¡ Á¦¾îÇÒ ´ÙÀÌ³»¹Í ¸ÓÆ¼¸®¾ó ÀÎ½ºÅÏ½º Æ÷ÀÎÅÍ
+	// ëŸ°íƒ€ì„ì— ìƒì„±í•œ ë‹¤ì´ë‚˜ë¯¹ ë¨¸í‹°ë¦¬ì–¼ ì¸ìŠ¤í„´ìŠ¤ ì €ì¥ìš©
 	UPROPERTY(EditAnywhere)
 	class UMaterialInstanceDynamic* DynamicMaterialInst;
 };

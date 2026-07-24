@@ -1,10 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "MainCharacter.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/PrimitiveComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
@@ -83,13 +84,14 @@ void AMainCharacter::BeginPlay()
 
 
 
-	// Sword������Ʈ�� �̸����� ã�� Overlap �浹 �̺�Ʈ�� ���ε�
+	// Sword 컴포넌트를 이름으로 찾아 Overlap 충돌 이벤트를 바인딩
 	TArray<UStaticMeshComponent*> MeshComps;
 	GetComponents<UStaticMeshComponent>(MeshComps);
 	for (UStaticMeshComponent* Comp : MeshComps)
 	{
 		if (Comp->GetName() == TEXT("Sword"))
 		{
+			UE_LOG(LogTemp, Log, TEXT("Find Sword"));
 			SwordMeshComp = Comp;
 			SwordMeshComp->OnComponentBeginOverlap.AddDynamic(this, &AMainCharacter::OnSwordBeinOverlap);
 			break;
@@ -100,21 +102,43 @@ void AMainCharacter::BeginPlay()
 
 void AMainCharacter::EnableWeaponCollision()
 {
+	//UE_LOG(LogTemp, Log, TEXT("EnableWeaponCollision"));
 	bWeaponCollisionEnable = true;
 	bWeaponHasHitThisSwing = false;
 }
 
 void AMainCharacter::DisableWeaponCollision()
 {
+	//UE_LOG(LogTemp, Log, TEXT("DisableWeaponCollision"));
 	bWeaponCollisionEnable = false;
 }
 
+// OverlappedComp -> 이벤트가 발생한 자기 자신의 컴포넌트
+// OtherActor -> 자기 자신의 컴포넌트와 겹치게 된 상대 액터
+// OthreComp -> 자기 자신의 컴포넌트와 겹치게 된 상대의 특정 컴포넌트
+// OtherBodyIndex -> 상대 컴포넌트 내부에 여러 개의 특정 바디나 뼈대가 있을 경우의 인덱스(그런 구조의 컴포넌트가 아닌 경우 보통 0 또는 -1 값을 가진다.)
+// bFromSweep -> 이동 중에 충돌이 발생하여 오버랩이 감지된 경우에는 true를 가지며 실제 스윕 충돌이고, false는 단순히 두 컴포넌트가 겹친 채로 스폰되었거나 텔레포트하여 겹친 경우
+// SweepResult -> 충돌이 스윕 방식으로 감지된 경우에 한해 실제 충돌 지점의 위치, 표면 법선 등 상세한 충돌 데이터를 포함한다. bFromSweep이 false일때는 기본값 BlockingHit = false로 채워진다.
 void AMainCharacter::OnSwordBeinOverlap(UPrimitiveComponent* OverlappedComp, AActor* OthreActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (!bWeaponCollisionEnable || bWeaponHasHitThisSwing)
 		return;
 
 
+	AMonster_Usurper* monster = Cast<AMonster_Usurper>(OthreActor);
+	if (monster)
+	{
+		// bFromSweep이 false인 순간 이동성 오버랩이라 SweepResult가 비어있으므로,
+		// OtherComp(몬스터의 스켈레탈 메시)에서 검 위치와 가장 가까운 표면 지점을 직접 구한다.
+		FVector SwordLocation = SwordMeshComp->GetComponentLocation();
+		FVector ImpactPoint = SwordLocation;
+		OtherComp->GetClosestPointOnCollision(SwordLocation, ImpactPoint);
+		FVector ImpactNormal = (SwordLocation - ImpactPoint).GetSafeNormal();
+
+		monster->Hit(ImpactPoint, ImpactNormal);
+		bWeaponHasHitThisSwing = true;
+		UE_LOG(LogTemp, Log, TEXT("ImpactPoint = %s, ImpactNormal = %s"), *ImpactPoint.ToString(), *ImpactNormal.ToString());
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -175,12 +199,12 @@ void AMainCharacter::Attack()
 	
 	AttackCount = (AttackCount + 1) % 2;
 
-	AMonster_Usurper* monster = Cast<AMonster_Usurper>(TestMonster);
+	/*AMonster_Usurper* monster = Cast<AMonster_Usurper>(TestMonster);
 	if (monster)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Player Monster Attack"));
 		monster->Hit();
-	}
+	}*/
 
 	
 }

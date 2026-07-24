@@ -33,9 +33,9 @@ protected:
 
 public:	
 	UFUNCTION(BlueprintCallable)
-	void Hit();
+	void Hit(FVector pos, FVector dir);
 
-	void TestTrigger();
+	//void TestTrigger();
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

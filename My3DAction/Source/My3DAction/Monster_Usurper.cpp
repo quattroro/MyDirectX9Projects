@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Monster_Usurper.h"
@@ -25,8 +25,8 @@ void AMonster_Usurper::BeginPlay()
 
 	UE_LOG(LogTemp, Log, TEXT("enter Hear?"));
 
-	// APlayerController´Â DefaultPawnClass·Î ¼³Á¤µÇ¾îÀÖ´Â APawnÀ» PlayerController°¡ PossessÇØ¾ß È£Ãâ °¡´ÉÇÏ´Ù Player°¡ ¾Æ´Ñ ´Ù¸¥ APawn °´Ã¼µéÀº
-	// ÀÚµ¿À¸·Î AAIController°¡ ºùÀÇÇÑ´Ù.
+	// APlayerControllerì˜ DefaultPawnClassë¡œ ì§€ì •ë˜ì–´ ìˆëŠ” APawnì€ PlayerControllerê°€ Possessí•´ì•¼ í˜¸ì¶œ ê°€ëŠ¥í•˜ì§€ë§Œ, Playerê°€ ì•„ë‹Œ ë‹¤ë¥¸ APawn ê°ì²´ë“¤ì€
+	// ìë™ìœ¼ë¡œ AAIControllerê°€ ë¹™ì˜í•œë‹¤.
 
 	/*if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
@@ -39,24 +39,29 @@ void AMonster_Usurper::BeginPlay()
 	}*/
 }
 
-void AMonster_Usurper::Hit()
+void AMonster_Usurper::Hit(FVector pos, FVector dir)
 {
 	if (DynamicMaterialInst)
 	{
 		float T = GetWorld()->GetTimeSeconds();
 		DynamicMaterialInst->SetScalarParameterValue(TEXT("HitTime"), T);
+		DynamicMaterialInst->SetVectorParameterValue(TEXT("HitPos"), pos);
+
 
 		float Check;
+		FLinearColor CurrentColor;
 		bool bFound = DynamicMaterialInst->GetScalarParameterValue(FName("HitTime"), Check);
 		UE_LOG(LogTemp, Log, TEXT("HitTime set : found = %d, value = %f"), bFound, Check);
+		bFound = DynamicMaterialInst->GetVectorParameterValue(FName("HitPos"), CurrentColor);
+		UE_LOG(LogTemp, Log, TEXT("HitTime set : found = %d, value = %s"), bFound, *CurrentColor.ToString());
 	}
 }
 
-void AMonster_Usurper::TestTrigger()
-{
-	UE_LOG(LogTemp, Log, TEXT("MonsterTrigger"));
-	Hit();
-}
+//void AMonster_Usurper::TestTrigger()
+//{
+//	UE_LOG(LogTemp, Log, TEXT("MonsterTrigger"));
+//	Hit();
+//}
 
 // Called every frame
 void AMonster_Usurper::Tick(float DeltaTime)
@@ -66,7 +71,7 @@ void AMonster_Usurper::Tick(float DeltaTime)
 }
 
 //
-// ÇØ´ç ÇÔ¼ö´Â PlayerController°¡ Player¸¦ possessÇÒ ¶§ È£ÃâµÇ´Â ÇÔ¼öÀÌ±â ¶§¹®¿¡ ¿©±â¼­´Â È£ÃâµÇÁö ¾Ê´Â´Ù.
+// í•´ë‹¹ í•¨ìˆ˜ëŠ” PlayerControllerê°€ Playerë¥¼ possessí•  ë•Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ì´ê¸° ë•Œë¬¸ì— ì—¬ê¸°ì„œëŠ” í˜¸ì¶œë˜ì§€ ì•ŠëŠ”ë‹¤.
 //void AMonster_Usurper::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 //{
 //	UE_LOG(LogTemp, Log, TEXT("Binding?"));
