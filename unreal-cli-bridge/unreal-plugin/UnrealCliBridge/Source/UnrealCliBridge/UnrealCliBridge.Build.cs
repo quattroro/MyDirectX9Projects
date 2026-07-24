@@ -33,6 +33,9 @@ public class UnrealCliBridge : ModuleRules
 			"Kismet",
 			"KismetCompiler",
 			"HotReload",
+			"AnimGraphRuntime",
+			"AnimGraph",
+			"MaterialEditor",
 		});
 
 		// Python Script Plugin is optional — only link if available in this engine build

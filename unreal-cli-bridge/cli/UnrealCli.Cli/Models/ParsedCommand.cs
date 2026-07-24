@@ -41,6 +41,19 @@ public enum CommandKind
     AnimAddVariable,
     AnimPlayMontage,
     AnimSetupStateMachine,
+    MaterialCreate,
+    MaterialInspect,
+    MaterialListNodeTypes,
+    MaterialAddNode,
+    MaterialSetNode,
+    MaterialConnect,
+    MaterialDisconnect,
+    MaterialDeleteNode,
+    MaterialSetProperty,
+    MaterialApplyGraph,
+    MaterialCompile,
+    MaterialCreateInstance,
+    MaterialSetInstanceParam,
     PluginList,
     PluginEnable,
     PluginDisable,
@@ -132,6 +145,35 @@ public sealed class ParsedCommand
     public string? AnimIdleAnimPath { get; set; }
     public string? AnimWalkAnimPath { get; set; }
     public double? AnimWalkThreshold { get; set; }
+
+    // material
+    public string? MatPath { get; set; }
+    public string? MatNodeType { get; set; }
+    public string? MatNodeId { get; set; }
+    public string? MatPos { get; set; }
+    public string? MatValuesJson { get; set; }
+    public string? MatFrom { get; set; }
+    public string? MatFromOutput { get; set; }
+    public string? MatTo { get; set; }
+    public string? MatToInput { get; set; }
+    public string? MatProperty { get; set; }
+    public string? MatValue { get; set; }
+    public string? MatGraphJson { get; set; }
+    public string? MatGraphFile { get; set; }
+    public string? MatFilter { get; set; }
+    public int? MatLimit { get; set; }
+    public string? MatDomain { get; set; }
+    public string? MatBlend { get; set; }
+    public string? MatShading { get; set; }
+    public string? MatParent { get; set; }
+    public string? MatParamName { get; set; }
+    public string? MatParamType { get; set; }
+    public bool MatTwoSided { get; set; }
+    public bool MatWithValues { get; set; }
+    public bool MatClear { get; set; }
+    public bool MatLayout { get; set; }
+    public bool MatSave { get; set; }
+    public bool MatNoCompile { get; set; }
 
     // plugin
     public string? PluginName { get; set; }

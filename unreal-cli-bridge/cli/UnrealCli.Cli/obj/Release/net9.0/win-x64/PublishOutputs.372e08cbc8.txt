@@ -1,0 +1,3 @@
+F:\GitFiles\MyDirectX9Projects\unreal-cli-bridge\dist\unreal-cli\unreal-cli.pdb
+F:\GitFiles\MyDirectX9Projects\unreal-cli-bridge\dist\unreal-cli\UnrealCli.Protocol.pdb
+F:\GitFiles\MyDirectX9Projects\unreal-cli-bridge\dist\unreal-cli\unreal-cli.exe

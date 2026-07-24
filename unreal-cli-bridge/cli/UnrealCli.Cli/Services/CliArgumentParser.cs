@@ -45,6 +45,7 @@ public static class CliArgumentParser
             "level" => ParseLevel(tokens),
             "blueprint" => ParseBlueprint(tokens),
             "anim" => ParseAnim(tokens),
+            "material" => ParseMaterial(tokens),
             "plugin" => ParsePlugin(tokens),
             "instances" => ParseInstances(tokens),
             "doctor" => new ParsedCommand(CommandKind.Doctor),
@@ -107,11 +108,31 @@ public static class CliArgumentParser
         CommandKind.AnimAddVariable      => ProtocolConstants.CommandAnimAddVariable,
         CommandKind.AnimPlayMontage      => ProtocolConstants.CommandAnimPlayMontage,
         CommandKind.AnimSetupStateMachine => ProtocolConstants.CommandAnimSetupStateMachine,
+        CommandKind.MaterialCreate           => ProtocolConstants.CommandMaterialCreate,
+        CommandKind.MaterialInspect          => ProtocolConstants.CommandMaterialInspect,
+        CommandKind.MaterialListNodeTypes    => ProtocolConstants.CommandMaterialListNodeTypes,
+        CommandKind.MaterialAddNode          => ProtocolConstants.CommandMaterialAddNode,
+        CommandKind.MaterialSetNode          => ProtocolConstants.CommandMaterialSetNode,
+        CommandKind.MaterialConnect          => ProtocolConstants.CommandMaterialConnect,
+        CommandKind.MaterialDisconnect       => ProtocolConstants.CommandMaterialDisconnect,
+        CommandKind.MaterialDeleteNode       => ProtocolConstants.CommandMaterialDeleteNode,
+        CommandKind.MaterialSetProperty      => ProtocolConstants.CommandMaterialSetProperty,
+        CommandKind.MaterialApplyGraph       => ProtocolConstants.CommandMaterialApplyGraph,
+        CommandKind.MaterialCompile          => ProtocolConstants.CommandMaterialCompile,
+        CommandKind.MaterialCreateInstance   => ProtocolConstants.CommandMaterialCreateInstance,
+        CommandKind.MaterialSetInstanceParam => ProtocolConstants.CommandMaterialSetInstanceParam,
         CommandKind.PluginList => ProtocolConstants.CommandPluginList,
         CommandKind.PluginEnable => ProtocolConstants.CommandPluginEnable,
         CommandKind.PluginDisable => ProtocolConstants.CommandPluginDisable,
         _ => null,
     };
+
+    private static bool IsMaterialCommand(CommandKind kind) => kind is
+        CommandKind.MaterialCreate or CommandKind.MaterialInspect or CommandKind.MaterialListNodeTypes or
+        CommandKind.MaterialAddNode or CommandKind.MaterialSetNode or CommandKind.MaterialConnect or
+        CommandKind.MaterialDisconnect or CommandKind.MaterialDeleteNode or CommandKind.MaterialSetProperty or
+        CommandKind.MaterialApplyGraph or CommandKind.MaterialCompile or CommandKind.MaterialCreateInstance or
+        CommandKind.MaterialSetInstanceParam;
 
     private static ParsedCommand ParseAsset(Queue<string> tokens)
     {
@@ -173,6 +194,28 @@ public static class CliArgumentParser
         };
     }
 
+    private static ParsedCommand ParseMaterial(Queue<string> tokens)
+    {
+        string sub = RequireSubcommand(tokens, "material");
+        return sub switch
+        {
+            "create"             => new ParsedCommand(CommandKind.MaterialCreate),
+            "inspect"            => new ParsedCommand(CommandKind.MaterialInspect),
+            "list-node-types"    => new ParsedCommand(CommandKind.MaterialListNodeTypes),
+            "add-node"           => new ParsedCommand(CommandKind.MaterialAddNode),
+            "set-node"           => new ParsedCommand(CommandKind.MaterialSetNode),
+            "connect"            => new ParsedCommand(CommandKind.MaterialConnect),
+            "disconnect"         => new ParsedCommand(CommandKind.MaterialDisconnect),
+            "delete-node"        => new ParsedCommand(CommandKind.MaterialDeleteNode),
+            "set-property"       => new ParsedCommand(CommandKind.MaterialSetProperty),
+            "apply-graph"        => new ParsedCommand(CommandKind.MaterialApplyGraph),
+            "compile"            => new ParsedCommand(CommandKind.MaterialCompile),
+            "create-instance"    => new ParsedCommand(CommandKind.MaterialCreateInstance),
+            "set-instance-param" => new ParsedCommand(CommandKind.MaterialSetInstanceParam),
+            _ => throw new CliUsageException($"알 수 없는 material 하위 명령: {sub}"),
+        };
+    }
+
     private static ParsedCommand ParsePlugin(Queue<string> tokens)
     {
         string sub = RequireSubcommand(tokens, "plugin");
@@ -210,6 +253,14 @@ public static class CliArgumentParser
             if (token == "--json" && parsed.Kind != CommandKind.Raw) { parsed.OutputMode = OutputMode.Json; continue; }
             if (token == "--force") { parsed.Force = true; continue; }
             if (token == "--wait") { parsed.Wait = true; continue; }
+
+            // Shared across every material subcommand.
+            if (IsMaterialCommand(parsed.Kind))
+            {
+                if (token == "--save") { parsed.MatSave = true; continue; }
+                if (token == "--no-compile") { parsed.MatNoCompile = true; continue; }
+                if (token == "--path") { parsed.MatPath = RequireValue(tokens, "--path"); continue; }
+            }
 
             switch (parsed.Kind)
             {
@@ -393,6 +444,84 @@ public static class CliArgumentParser
                 case CommandKind.BlueprintSetProperty when token == "--value":
                     parsed.BlueprintValue = RequireValue(tokens, "--value"); break;
 
+                // material create / set-property presets
+                case CommandKind.MaterialCreate when token == "--domain":
+                case CommandKind.MaterialSetProperty when token == "--domain":
+                    parsed.MatDomain = RequireValue(tokens, "--domain"); break;
+                case CommandKind.MaterialCreate when token == "--blend":
+                case CommandKind.MaterialSetProperty when token == "--blend":
+                    parsed.MatBlend = RequireValue(tokens, "--blend"); break;
+                case CommandKind.MaterialCreate when token == "--shading":
+                case CommandKind.MaterialSetProperty when token == "--shading":
+                    parsed.MatShading = RequireValue(tokens, "--shading"); break;
+                case CommandKind.MaterialCreate when token == "--two-sided":
+                case CommandKind.MaterialSetProperty when token == "--two-sided":
+                    parsed.MatTwoSided = true; break;
+
+                // material inspect
+                case CommandKind.MaterialInspect when token == "--with-values":
+                    parsed.MatWithValues = true; break;
+
+                // material list-node-types
+                case CommandKind.MaterialListNodeTypes when token == "--filter":
+                    parsed.MatFilter = RequireValue(tokens, "--filter"); break;
+                case CommandKind.MaterialListNodeTypes when token == "--limit":
+                    parsed.MatLimit = RequireInt(tokens, "--limit"); break;
+
+                // material add-node / set-node / delete-node
+                case CommandKind.MaterialAddNode when token == "--type":
+                    parsed.MatNodeType = RequireValue(tokens, "--type"); break;
+                case CommandKind.MaterialAddNode when token == "--name":
+                case CommandKind.MaterialAddNode when token == "--node":
+                case CommandKind.MaterialSetNode when token == "--node":
+                case CommandKind.MaterialDeleteNode when token == "--node":
+                    parsed.MatNodeId = RequireValue(tokens, token); break;
+                case CommandKind.MaterialAddNode when token == "--pos":
+                case CommandKind.MaterialSetNode when token == "--pos":
+                    parsed.MatPos = RequireValue(tokens, "--pos"); break;
+                case CommandKind.MaterialAddNode when token == "--values":
+                case CommandKind.MaterialSetNode when token == "--values":
+                case CommandKind.MaterialSetProperty when token == "--values":
+                    parsed.MatValuesJson = RequireValue(tokens, "--values"); break;
+
+                // material connect / disconnect
+                case CommandKind.MaterialConnect when token == "--from":
+                    parsed.MatFrom = RequireValue(tokens, "--from"); break;
+                case CommandKind.MaterialConnect when token == "--from-output":
+                    parsed.MatFromOutput = RequireValue(tokens, "--from-output"); break;
+                case CommandKind.MaterialConnect when token == "--to":
+                case CommandKind.MaterialDisconnect when token == "--to":
+                    parsed.MatTo = RequireValue(tokens, "--to"); break;
+                case CommandKind.MaterialConnect when token == "--to-input":
+                case CommandKind.MaterialDisconnect when token == "--to-input":
+                    parsed.MatToInput = RequireValue(tokens, "--to-input"); break;
+                case CommandKind.MaterialConnect when token == "--property":
+                case CommandKind.MaterialDisconnect when token == "--property":
+                case CommandKind.MaterialSetProperty when token == "--property":
+                    parsed.MatProperty = RequireValue(tokens, "--property"); break;
+                case CommandKind.MaterialSetProperty when token == "--value":
+                case CommandKind.MaterialSetInstanceParam when token == "--value":
+                    parsed.MatValue = RequireValue(tokens, "--value"); break;
+
+                // material apply-graph
+                case CommandKind.MaterialApplyGraph when token == "--graph":
+                    parsed.MatGraphJson = RequireValue(tokens, "--graph"); break;
+                case CommandKind.MaterialApplyGraph when token == "--graph-file":
+                    parsed.MatGraphFile = RequireValue(tokens, "--graph-file"); break;
+                case CommandKind.MaterialApplyGraph when token == "--clear":
+                    parsed.MatClear = true; break;
+                case CommandKind.MaterialApplyGraph when token == "--layout":
+                case CommandKind.MaterialCompile when token == "--layout":
+                    parsed.MatLayout = true; break;
+
+                // material create-instance / set-instance-param
+                case CommandKind.MaterialCreateInstance when token == "--parent":
+                    parsed.MatParent = RequireValue(tokens, "--parent"); break;
+                case CommandKind.MaterialSetInstanceParam when token == "--name":
+                    parsed.MatParamName = RequireValue(tokens, "--name"); break;
+                case CommandKind.MaterialSetInstanceParam when token == "--type":
+                    parsed.MatParamType = RequireValue(tokens, "--type"); break;
+
                 // plugin
                 case CommandKind.PluginEnable when token == "--name":
                 case CommandKind.PluginDisable when token == "--name":
@@ -466,6 +595,44 @@ public static class CliArgumentParser
                 throw new CliUsageException("blueprint inspect에는 --path가 필요합니다.");
             case CommandKind.BlueprintSetProperty when parsed.BlueprintPath == null || parsed.BlueprintProperty == null || parsed.BlueprintValue == null:
                 throw new CliUsageException("blueprint set-property에는 --path, --property, --value가 모두 필요합니다.");
+            case CommandKind.MaterialCreate when parsed.MatPath == null:
+            case CommandKind.MaterialInspect when parsed.MatPath == null:
+            case CommandKind.MaterialAddNode when parsed.MatPath == null:
+            case CommandKind.MaterialSetNode when parsed.MatPath == null:
+            case CommandKind.MaterialConnect when parsed.MatPath == null:
+            case CommandKind.MaterialDisconnect when parsed.MatPath == null:
+            case CommandKind.MaterialDeleteNode when parsed.MatPath == null:
+            case CommandKind.MaterialSetProperty when parsed.MatPath == null:
+            case CommandKind.MaterialApplyGraph when parsed.MatPath == null:
+            case CommandKind.MaterialCompile when parsed.MatPath == null:
+            case CommandKind.MaterialCreateInstance when parsed.MatPath == null:
+            case CommandKind.MaterialSetInstanceParam when parsed.MatPath == null:
+                throw new CliUsageException("material 명령에는 --path가 필요합니다.");
+            case CommandKind.MaterialAddNode when parsed.MatNodeType == null:
+                throw new CliUsageException("material add-node에는 --type이 필요합니다.");
+            case CommandKind.MaterialSetNode when parsed.MatNodeId == null || parsed.MatValuesJson == null:
+                throw new CliUsageException("material set-node에는 --node와 --values가 필요합니다.");
+            case CommandKind.MaterialDeleteNode when parsed.MatNodeId == null:
+                throw new CliUsageException("material delete-node에는 --node가 필요합니다.");
+            case CommandKind.MaterialDeleteNode when !parsed.Force:
+                throw new CliUsageException("material delete-node는 항상 --force가 필요합니다.");
+            case CommandKind.MaterialConnect when parsed.MatFrom == null:
+                throw new CliUsageException("material connect에는 --from이 필요합니다.");
+            case CommandKind.MaterialConnect when parsed.MatTo == null && parsed.MatProperty == null:
+                throw new CliUsageException("material connect에는 --to 또는 --property가 필요합니다.");
+            case CommandKind.MaterialDisconnect when parsed.MatTo == null && parsed.MatProperty == null:
+                throw new CliUsageException("material disconnect에는 --to 또는 --property가 필요합니다.");
+            case CommandKind.MaterialSetProperty when parsed.MatProperty != null && parsed.MatValue == null:
+                throw new CliUsageException("material set-property에서 --property를 쓰면 --value도 필요합니다.");
+            case CommandKind.MaterialSetProperty when parsed.MatProperty == null && parsed.MatValuesJson == null
+                && parsed.MatDomain == null && parsed.MatBlend == null && parsed.MatShading == null && !parsed.MatTwoSided:
+                throw new CliUsageException("material set-property에는 --property/--value, --values, 또는 --domain/--blend/--shading/--two-sided 중 하나가 필요합니다.");
+            case CommandKind.MaterialApplyGraph when parsed.MatGraphJson == null && parsed.MatGraphFile == null:
+                throw new CliUsageException("material apply-graph에는 --graph 또는 --graph-file이 필요합니다.");
+            case CommandKind.MaterialCreateInstance when parsed.MatParent == null:
+                throw new CliUsageException("material create-instance에는 --parent가 필요합니다.");
+            case CommandKind.MaterialSetInstanceParam when parsed.MatParamName == null || parsed.MatParamType == null || parsed.MatValue == null:
+                throw new CliUsageException("material set-instance-param에는 --name, --type, --value가 필요합니다.");
             case CommandKind.PluginEnable when parsed.PluginName == null:
                 throw new CliUsageException("plugin enable에는 --name이 필요합니다.");
             case CommandKind.PluginDisable when parsed.PluginName == null:

@@ -172,6 +172,7 @@
     .color-level     { background: #3d2f1e; }
     .color-blueprint { background: #2f1e3d; }
     .color-anim      { background: #1e3d3d; }
+    .color-material  { background: #3d1e2f; }
     .color-plugin    { background: #3d3d1e; }
     .color-instance  { background: #2e2e2e; }
 
@@ -194,7 +195,7 @@
 
 <header>
   <h1><span>unreal-cli</span> 커맨드 레퍼런스</h1>
-  <p>Unreal Editor 5.3 · UnrealCliBridge Plugin · 총 38개 커맨드</p>
+  <p>Unreal Editor 5.3 · UnrealCliBridge Plugin · 총 52개 커맨드</p>
 </header>
 
 <!-- Global Options -->
@@ -574,7 +575,7 @@
   <div class="section-header">
     <div class="section-icon color-anim">🎬</div>
     <span class="section-title">애니메이션 워크플로</span>
-    <span class="section-count">5개</span>
+    <span class="section-count">6개</span>
   </div>
   <div class="cmd-list">
 
@@ -634,6 +635,183 @@
       </div>
       <div class="cmd-desc">PIE 세션 중 지정한 액터에서 Animation Montage를 재생합니다.</div>
       <div class="cmd-note">활성 PIE 세션이 필요합니다. --rate 기본값은 1.0.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">anim setup-statemachine</span>
+          <span class="req-arg"> --path /Game/... --idle-anim /Game/... --walk-anim /Game/...</span>
+          <span class="opt-arg"> [--walk-threshold &lt;float&gt;] [--force]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">Animation Blueprint에 Idle/Walk 상태머신을 만들고 Speed 변수 기준 전이까지 연결한 뒤 재컴파일합니다.</div>
+      <div class="cmd-note">Speed(float) 변수가 없으면 자동으로 추가합니다. --walk-threshold 기본값은 10. 이미 상태머신이 있으면 --force 필요.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Material / Shader Workflows ── -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-icon color-material">🎨</div>
+    <span class="section-title">머티리얼 · 셰이더 워크플로</span>
+    <span class="section-count">13개</span>
+  </div>
+  <div class="cmd-list">
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">material create</span>
+          <span class="req-arg"> --path /Game/...</span>
+          <span class="opt-arg"> [--domain &lt;d&gt;] [--blend &lt;b&gt;] [--shading &lt;s&gt;] [--two-sided] [--force] [--save]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">Material 에셋을 생성하면서 도메인 · 블렌드 모드 · 셰이딩 모델을 한 번에 지정합니다.</div>
+      <div class="cmd-note">--domain: surface, deferreddecal, lightfunction, volume, postprocess, ui · --blend: opaque, masked, translucent, additive, modulate, alphacomposite, alphaholdout · --shading: unlit, defaultlit, subsurface, clearcoat, hair, cloth, eye, thintranslucent 등</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">material inspect</span>
+          <span class="req-arg"> --path /Game/...</span>
+          <span class="opt-arg"> [--with-values]</span>
+        </div>
+        <span class="tag tag-busy">언제든 가능</span>
+      </div>
+      <div class="cmd-desc">머티리얼 그래프 전체를 덤프합니다: 노드 목록, 각 핀의 연결 상태, 머티리얼 출력 핀(BaseColor 등) 연결.</div>
+      <div class="cmd-note">여기서 나오는 노드 id를 connect · set-node · delete-node의 --node / --from / --to 값으로 그대로 사용합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">material list-node-types</span>
+          <span class="opt-arg"> [--filter &lt;term&gt;] [--limit N]</span>
+        </div>
+        <span class="tag tag-busy">언제든 가능</span>
+      </div>
+      <div class="cmd-desc">현재 엔진 빌드에서 사용 가능한 머티리얼 표현식(노드) 타입을 검색합니다.</div>
+      <div class="cmd-note">예: --filter panner, --filter fresnel, --filter parameter</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">material add-node</span>
+          <span class="req-arg"> --path /Game/... --type &lt;NodeType&gt;</span>
+          <span class="opt-arg"> [--name &lt;id&gt;] [--pos x,y] [--values &lt;json&gt;] [--no-compile] [--save]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">그래프에 노드 하나를 추가합니다. --name은 이후 명령에서 쓰는 노드 id가 되며 그래프에 주석으로 표시됩니다.</div>
+      <div class="cmd-note">--values로 노드 프로퍼티를 바로 지정: {"Texture":"/Game/T_Rock"}, {"ParameterName":"Tint","DefaultValue":[1,0.5,0.2,1]}</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">material set-node</span>
+          <span class="req-arg"> --path /Game/... --node &lt;id&gt; --values &lt;json&gt;</span>
+          <span class="opt-arg"> [--pos x,y] [--no-compile] [--save]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">기존 노드의 프로퍼티 값(상수, 파라미터 이름, 텍스처 등)을 수정합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">material connect</span>
+          <span class="req-arg"> --path /Game/... --from &lt;id&gt;</span>
+          <span class="opt-arg"> [--from-output &lt;pin&gt;] (--to &lt;id&gt; [--to-input &lt;pin&gt;] | --property &lt;출력핀&gt;) [--no-compile] [--save]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">노드 출력을 다른 노드의 입력 또는 머티리얼 출력 핀에 연결합니다.</div>
+      <div class="cmd-note">--property: BaseColor, Metallic, Specular, Roughness, EmissiveColor, Opacity, OpacityMask, Normal, WorldPositionOffset, AmbientOcclusion, Refraction</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">material disconnect</span>
+          <span class="req-arg"> --path /Game/...</span>
+          <span class="opt-arg"> (--to &lt;id&gt; [--to-input &lt;pin&gt;] | --property &lt;출력핀&gt;) [--no-compile] [--save]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">노드 입력 핀 또는 머티리얼 출력 핀의 연결을 끊습니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">material delete-node</span>
+          <span class="req-arg"> --path /Game/... --node &lt;id&gt; --force</span>
+          <span class="opt-arg"> [--no-compile] [--save]</span>
+        </div>
+        <span class="tag tag-force">--force 필수</span>
+      </div>
+      <div class="cmd-desc">그래프에서 노드를 삭제합니다. 연결도 함께 해제됩니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">material set-property</span>
+          <span class="req-arg"> --path /Game/...</span>
+          <span class="opt-arg"> (--property &lt;name&gt; --value &lt;v&gt; | --values &lt;json&gt; | --domain/--blend/--shading/--two-sided) [--save]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">머티리얼 자체 설정을 변경합니다. 친숙한 별칭(--blend translucent) 또는 UMaterial 프로퍼티 이름으로 직접 지정할 수 있습니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">material apply-graph</span>
+          <span class="req-arg"> --path /Game/... (--graph &lt;json&gt; | --graph-file &lt;path.json&gt;)</span>
+          <span class="opt-arg"> [--clear] [--layout] [--force] [--save]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">노드 · 연결 · 출력을 담은 JSON 하나로 머티리얼 그래프 전체를 한 번에 구성합니다. 자연어로 설명한 셰이더를 구현할 때 주로 쓰는 명령입니다.</div>
+      <div class="cmd-note">{"settings":{"blend":"translucent"}, "nodes":[{"id":"tex","type":"TextureSample","values":{...}}], "connections":[{"from":"tex","fromOutput":"RGB","to":"mul","toInput":"A"}], "outputs":[{"from":"mul","property":"BaseColor"}]} · --clear는 기존 그래프를 지우고 새로 만듭니다. 좌표를 지정하지 않으면 자동 정렬됩니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">material compile</span>
+          <span class="req-arg"> --path /Game/...</span>
+          <span class="opt-arg"> [--layout] [--save]</span>
+        </div>
+        <span class="tag tag-wait">최대 120초</span>
+      </div>
+      <div class="cmd-desc">머티리얼을 재컴파일하고, --layout이면 그래프 노드를 자동 정렬합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">material create-instance</span>
+          <span class="req-arg"> --path /Game/... --parent /Game/...</span>
+          <span class="opt-arg"> [--force] [--save]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">지정한 부모 머티리얼로 Material Instance Constant 에셋을 생성합니다.</div>
+    </div>
+
+    <div class="cmd-card">
+      <div class="cmd-top">
+        <div class="cmd-syntax">
+          <span class="cmd-name">material set-instance-param</span>
+          <span class="req-arg"> --path /Game/... --name &lt;param&gt; --type scalar|vector|texture|switch --value &lt;v&gt;</span>
+          <span class="opt-arg"> [--save]</span>
+        </div>
+      </div>
+      <div class="cmd-desc">머티리얼 인스턴스의 파라미터 값을 오버라이드합니다.</div>
+      <div class="cmd-note">vector는 [r,g,b,a] 배열, texture는 콘텐츠 경로를 넘깁니다.</div>
     </div>
 
   </div>
@@ -730,7 +908,7 @@
 
 <footer>
   <span>unreal-cli · UnrealCliBridge Plugin for UE 5.3</span>
-  <span>총 38개 커맨드 · 2026-06-20</span>
+  <span>총 52개 커맨드 · 2026-07-22</span>
 </footer>
 
 </body>

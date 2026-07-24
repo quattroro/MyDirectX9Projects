@@ -22,3 +22,15 @@ C:\Codes\Git\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Protocol\obj\Rel
 C:\Codes\Git\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Protocol\obj\Release\net9.0\refint\UnrealCli.Protocol.dll
 C:\Codes\Git\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Protocol\obj\Release\net9.0\UnrealCli.Protocol.pdb
 C:\Codes\Git\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Protocol\obj\Release\net9.0\ref\UnrealCli.Protocol.dll
+F:\GitFiles\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Protocol\bin\Release\net9.0\UnrealCli.Protocol.deps.json
+F:\GitFiles\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Protocol\bin\Release\net9.0\UnrealCli.Protocol.dll
+F:\GitFiles\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Protocol\bin\Release\net9.0\UnrealCli.Protocol.pdb
+F:\GitFiles\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Protocol\obj\Release\net9.0\UnrealCli.Protocol.GeneratedMSBuildEditorConfig.editorconfig
+F:\GitFiles\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Protocol\obj\Release\net9.0\UnrealCli.Protocol.AssemblyInfoInputs.cache
+F:\GitFiles\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Protocol\obj\Release\net9.0\UnrealCli.Protocol.AssemblyInfo.cs
+F:\GitFiles\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Protocol\obj\Release\net9.0\UnrealCli.Protocol.csproj.CoreCompileInputs.cache
+F:\GitFiles\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Protocol\obj\Release\net9.0\UnrealCli.Protocol.sourcelink.json
+F:\GitFiles\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Protocol\obj\Release\net9.0\UnrealCli.Protocol.dll
+F:\GitFiles\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Protocol\obj\Release\net9.0\refint\UnrealCli.Protocol.dll
+F:\GitFiles\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Protocol\obj\Release\net9.0\UnrealCli.Protocol.pdb
+F:\GitFiles\MyDirectX9Projects\unreal-cli-bridge\cli\UnrealCli.Protocol\obj\Release\net9.0\ref\UnrealCli.Protocol.dll

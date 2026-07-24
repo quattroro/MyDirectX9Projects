@@ -59,6 +59,21 @@ public static class ProtocolConstants
     public const string CommandAnimPlayMontage      = "anim.play-montage";
     public const string CommandAnimSetupStateMachine = "anim.setup-statemachine";
 
+    // Material / shader commands
+    public const string CommandMaterialCreate           = "material.create";
+    public const string CommandMaterialInspect          = "material.inspect";
+    public const string CommandMaterialListNodeTypes    = "material.list-node-types";
+    public const string CommandMaterialAddNode          = "material.add-node";
+    public const string CommandMaterialSetNode          = "material.set-node";
+    public const string CommandMaterialConnect          = "material.connect";
+    public const string CommandMaterialDisconnect       = "material.disconnect";
+    public const string CommandMaterialDeleteNode       = "material.delete-node";
+    public const string CommandMaterialSetProperty      = "material.set-property";
+    public const string CommandMaterialApplyGraph       = "material.apply-graph";
+    public const string CommandMaterialCompile          = "material.compile";
+    public const string CommandMaterialCreateInstance   = "material.create-instance";
+    public const string CommandMaterialSetInstanceParam = "material.set-instance-param";
+
     // Error codes
     public const string ErrorProtocolMismatch = "PROTOCOL_MISMATCH";
     public const string ErrorCliUsage = "CLI_USAGE";

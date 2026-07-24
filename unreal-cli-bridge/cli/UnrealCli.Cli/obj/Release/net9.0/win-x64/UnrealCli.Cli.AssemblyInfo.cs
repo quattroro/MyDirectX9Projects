@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("unreal-cli")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f01e3788a8866ca5ffa6b9ba6a3b2fe10e81c490")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8f1d302131199eada37f1ece3214a85fe32646cf")]
 [assembly: System.Reflection.AssemblyProductAttribute("unreal-cli")]
 [assembly: System.Reflection.AssemblyTitleAttribute("unreal-cli")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

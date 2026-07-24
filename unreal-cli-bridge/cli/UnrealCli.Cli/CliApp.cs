@@ -76,7 +76,17 @@ public static class CliApp
             return 1;
         }
 
-        CommandEnvelope envelope = BuildEnvelope(parsed);
+        CommandEnvelope envelope;
+        try
+        {
+            envelope = BuildEnvelope(parsed);
+        }
+        catch (Exception ex) when (ex is CliUsageException or JsonException or IOException)
+        {
+            Console.Error.WriteLine(ResponseFormatter.FormatError(ProtocolConstants.ErrorCliUsage, ex.Message, parsed.OutputMode));
+            return 1;
+        }
+
         var client = new LocalIpcClient();
 
         ResponseEnvelope response;
@@ -241,6 +251,76 @@ public static class CliApp
                 args["walkAnim"] = parsed.AnimWalkAnimPath ?? "";
                 if (parsed.AnimWalkThreshold.HasValue) args["walkThreshold"] = parsed.AnimWalkThreshold.Value;
                 break;
+            case CommandKind.MaterialCreate:
+                args["path"] = parsed.MatPath ?? "";
+                AddMaterialPreset(args, parsed);
+                break;
+            case CommandKind.MaterialInspect:
+                args["path"] = parsed.MatPath ?? "";
+                if (parsed.MatWithValues) args["withValues"] = true;
+                break;
+            case CommandKind.MaterialListNodeTypes:
+                if (parsed.MatFilter != null) args["filter"] = parsed.MatFilter;
+                if (parsed.MatLimit.HasValue) args["limit"] = parsed.MatLimit.Value;
+                break;
+            case CommandKind.MaterialAddNode:
+                args["path"] = parsed.MatPath ?? "";
+                args["type"] = parsed.MatNodeType ?? "";
+                if (parsed.MatNodeId != null) args["name"] = parsed.MatNodeId;
+                AddMaterialPos(args, parsed.MatPos);
+                AddMaterialValues(args, parsed.MatValuesJson);
+                break;
+            case CommandKind.MaterialSetNode:
+                args["path"] = parsed.MatPath ?? "";
+                args["node"] = parsed.MatNodeId ?? "";
+                AddMaterialPos(args, parsed.MatPos);
+                AddMaterialValues(args, parsed.MatValuesJson);
+                break;
+            case CommandKind.MaterialConnect:
+                args["path"] = parsed.MatPath ?? "";
+                args["from"] = parsed.MatFrom ?? "";
+                if (parsed.MatFromOutput != null) args["fromOutput"] = parsed.MatFromOutput;
+                if (parsed.MatTo != null) args["to"] = parsed.MatTo;
+                if (parsed.MatToInput != null) args["toInput"] = parsed.MatToInput;
+                if (parsed.MatProperty != null) args["property"] = parsed.MatProperty;
+                break;
+            case CommandKind.MaterialDisconnect:
+                args["path"] = parsed.MatPath ?? "";
+                if (parsed.MatTo != null) args["to"] = parsed.MatTo;
+                if (parsed.MatToInput != null) args["toInput"] = parsed.MatToInput;
+                if (parsed.MatProperty != null) args["property"] = parsed.MatProperty;
+                break;
+            case CommandKind.MaterialDeleteNode:
+                args["path"] = parsed.MatPath ?? "";
+                args["node"] = parsed.MatNodeId ?? "";
+                break;
+            case CommandKind.MaterialSetProperty:
+                args["path"] = parsed.MatPath ?? "";
+                if (parsed.MatProperty != null) args["property"] = parsed.MatProperty;
+                if (parsed.MatValue != null) args["value"] = parsed.MatValue;
+                AddMaterialValues(args, parsed.MatValuesJson);
+                AddMaterialPreset(args, parsed);
+                break;
+            case CommandKind.MaterialApplyGraph:
+                args["path"] = parsed.MatPath ?? "";
+                args["graph"] = ReadGraphJson(parsed);
+                if (parsed.MatClear) args["clear"] = true;
+                if (parsed.MatLayout) args["layout"] = true;
+                break;
+            case CommandKind.MaterialCompile:
+                args["path"] = parsed.MatPath ?? "";
+                if (parsed.MatLayout) args["layout"] = true;
+                break;
+            case CommandKind.MaterialCreateInstance:
+                args["path"] = parsed.MatPath ?? "";
+                args["parent"] = parsed.MatParent ?? "";
+                break;
+            case CommandKind.MaterialSetInstanceParam:
+                args["path"] = parsed.MatPath ?? "";
+                args["name"] = parsed.MatParamName ?? "";
+                args["type"] = parsed.MatParamType ?? "";
+                args["value"] = ParseScalarOrJson(parsed.MatValue ?? "");
+                break;
             case CommandKind.PluginEnable:
                 args["name"] = parsed.PluginName ?? "";
                 break;
@@ -253,12 +333,84 @@ public static class CliApp
                 return rawEnv;
         }
 
+        // Material commands share these two switches.
+        if (parsed.MatSave) args["save"] = true;
+        if (parsed.MatNoCompile) args["noCompile"] = true;
+
         return new CommandEnvelope
         {
             command = GetProtocolCommand(parsed.Kind),
             arguments = args.Count > 0 ? args : null,
             force = parsed.Force,
         };
+    }
+
+    private static void AddMaterialPreset(Dictionary<string, object?> args, ParsedCommand parsed)
+    {
+        if (parsed.MatDomain != null) args["domain"] = parsed.MatDomain;
+        if (parsed.MatBlend != null) args["blend"] = parsed.MatBlend;
+        if (parsed.MatShading != null) args["shading"] = parsed.MatShading;
+        if (parsed.MatTwoSided) args["twoSided"] = true;
+    }
+
+    // "--pos -600,120" -> [-600, 120]
+    private static void AddMaterialPos(Dictionary<string, object?> args, string? pos)
+    {
+        if (pos == null) return;
+        var parts = pos.Split(',', StringSplitOptions.TrimEntries);
+        if (parts.Length != 2 || !int.TryParse(parts[0], out int x) || !int.TryParse(parts[1], out int y))
+            throw new CliUsageException($"`--pos`는 `x,y` 형식이어야 합니다. 입력값: {pos}");
+        args["pos"] = new[] { x, y };
+    }
+
+    private static void AddMaterialValues(Dictionary<string, object?> args, string? valuesJson)
+    {
+        if (valuesJson == null) return;
+        try
+        {
+            args["values"] = JsonSerializer.Deserialize<JsonElement>(valuesJson);
+        }
+        catch (JsonException ex)
+        {
+            throw new CliUsageException($"`--values` JSON을 읽을 수 없습니다: {ex.Message}");
+        }
+    }
+
+    private static JsonElement ReadGraphJson(ParsedCommand parsed)
+    {
+        string json;
+        if (parsed.MatGraphFile != null)
+        {
+            if (!File.Exists(parsed.MatGraphFile))
+                throw new CliUsageException($"그래프 파일을 찾을 수 없습니다: {parsed.MatGraphFile}");
+            json = File.ReadAllText(parsed.MatGraphFile);
+        }
+        else
+        {
+            json = parsed.MatGraphJson ?? "";
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<JsonElement>(json);
+        }
+        catch (JsonException ex)
+        {
+            throw new CliUsageException($"그래프 JSON을 읽을 수 없습니다: {ex.Message}");
+        }
+    }
+
+    // Numbers/bools/arrays are sent as JSON; anything else (asset paths, names) as a string.
+    private static object ParseScalarOrJson(string value)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<JsonElement>(value);
+        }
+        catch (JsonException)
+        {
+            return value;
+        }
     }
 
     private static string GetProtocolCommand(CommandKind kind) => kind switch
@@ -297,6 +449,19 @@ public static class CliApp
         CommandKind.AnimAddVariable      => ProtocolConstants.CommandAnimAddVariable,
         CommandKind.AnimPlayMontage      => ProtocolConstants.CommandAnimPlayMontage,
         CommandKind.AnimSetupStateMachine => ProtocolConstants.CommandAnimSetupStateMachine,
+        CommandKind.MaterialCreate           => ProtocolConstants.CommandMaterialCreate,
+        CommandKind.MaterialInspect          => ProtocolConstants.CommandMaterialInspect,
+        CommandKind.MaterialListNodeTypes    => ProtocolConstants.CommandMaterialListNodeTypes,
+        CommandKind.MaterialAddNode          => ProtocolConstants.CommandMaterialAddNode,
+        CommandKind.MaterialSetNode          => ProtocolConstants.CommandMaterialSetNode,
+        CommandKind.MaterialConnect          => ProtocolConstants.CommandMaterialConnect,
+        CommandKind.MaterialDisconnect       => ProtocolConstants.CommandMaterialDisconnect,
+        CommandKind.MaterialDeleteNode       => ProtocolConstants.CommandMaterialDeleteNode,
+        CommandKind.MaterialSetProperty      => ProtocolConstants.CommandMaterialSetProperty,
+        CommandKind.MaterialApplyGraph       => ProtocolConstants.CommandMaterialApplyGraph,
+        CommandKind.MaterialCompile          => ProtocolConstants.CommandMaterialCompile,
+        CommandKind.MaterialCreateInstance   => ProtocolConstants.CommandMaterialCreateInstance,
+        CommandKind.MaterialSetInstanceParam => ProtocolConstants.CommandMaterialSetInstanceParam,
         CommandKind.PluginList => ProtocolConstants.CommandPluginList,
         CommandKind.PluginEnable => ProtocolConstants.CommandPluginEnable,
         CommandKind.PluginDisable => ProtocolConstants.CommandPluginDisable,
