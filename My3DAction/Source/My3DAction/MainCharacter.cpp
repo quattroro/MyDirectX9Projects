@@ -132,8 +132,26 @@ void AMainCharacter::OnSwordBeinOverlap(UPrimitiveComponent* OverlappedComp, AAc
 		// OtherComp(몬스터의 스켈레탈 메시)에서 검 위치와 가장 가까운 표면 지점을 직접 구한다.
 		FVector SwordLocation = SwordMeshComp->GetComponentLocation();
 		FVector ImpactPoint = SwordLocation;
-		OtherComp->GetClosestPointOnCollision(SwordLocation, ImpactPoint);
-		FVector ImpactNormal = (SwordLocation - ImpactPoint).GetSafeNormal();
+		FVector ImpactNormal = FVector::UpVector;
+
+		// UPrimitiveComponent::GetClosestPointOnCollision(Point, OutPoint)는 BoneName을 안 넘기면
+		// PhysicsAsset의 '루트 바디' 하나(예: 골반)만 검사한다 (엔진 주석: "A name of NAME_None indicates 'root body'").
+		// 그래서 머리를 때리든 다리를 때리든 항상 같은 body의 표면점을 반환했었다.
+		// PhysicsAsset의 모든 바디를 대상으로 진짜 가장 가까운 지점을 찾으려면 GetClosestPointOnPhysicsAsset을 써야 한다.
+		if (USkeletalMeshComponent* MonsterMesh = Cast<USkeletalMeshComponent>(OtherComp))
+		{
+			FClosestPointOnPhysicsAsset ClosestPoint;
+			if (MonsterMesh->GetClosestPointOnPhysicsAsset(SwordLocation, ClosestPoint, true))
+			{
+				ImpactPoint = ClosestPoint.ClosestWorldPosition;
+				ImpactNormal = ClosestPoint.Normal;
+			}
+		}
+		else
+		{
+			OtherComp->GetClosestPointOnCollision(SwordLocation, ImpactPoint);
+			ImpactNormal = (SwordLocation - ImpactPoint).GetSafeNormal();
+		}
 
 		monster->Hit(ImpactPoint, ImpactNormal);
 		bWeaponHasHitThisSwing = true;
