@@ -1,0 +1,49 @@
+> 일단 T 상처를 따라가는 방향을 구하는 부분부터 확인해보자 (Worldpos - Hitpos) - HitDir *
+  dot(HitDir, Worldpos - Hitpos) 이게 T인거야?
+
+● 아니요, 그건 T가 아니라 TangentOffset 입니다. 둘은 역할이 완전히 다릅니다. 헷갈리기 쉬운
+  부분이니 구분해서 설명할게요.
+
+  당신이 쓴 식의 정체
+
+  (WorldPos - HitPos) - HitDir * dot(HitDir, WorldPos - HitPos)
+  = ToHit - N * dot(N, ToHit)
+
+  이건 그래프에서 TangentOffset 노드입니다 (ToHit → AlongN/NAlongN → TangentOffset 경로).
+  의미는:
+
+  ▎ "맞은 점에서 이 픽셀까지의 벡터(ToHit)를, 표면 접평면 위로 납작하게 눌러 투영한 것"
+
+  N * dot(N, ToHit)가 ToHit 중 법선 방향 성분이고, 그걸 빼면 법선에 수직인 성분, 즉 표면에 붙은
+  방향의 offset만 남습니다. 이건 방향(축)이 아니라 위치 벡터예요 — 픽셀마다 값이 다릅니다.
+
+  T는 별개로 계산됨
+
+  T는 WorldPos와 무관한, 타격 한 번당 고정된 축입니다:
+
+  T = Normalize( Cross(N, RefAxis) )
+
+  - N(법선)과 RefAxis(기준축)의 외적 → 둘 다에 수직인 벡터
+  - 외적 결과는 자동으로 표면 접평면 안에 놓입니다 (N에 수직이니까)
+  - 이게 "상처를 따라가는 길이 방향" 역할
+
+  RefAxis는 보통 월드업(0,0,1)인데, 법선이 거의 수직이면 외적이 0에 가까워져 터지므로 If로
+  (1,0,0)으로 바꿔주는 안전장치가 붙어 있습니다.
+
+  그래서 셋의 관계
+
+  TangentOffset(당신 식)과 T(축)는 재료고, 실제로 쓰는 건 이 둘을 내적한 스칼라 좌표입니다:
+
+  AlongCut  = dot(TangentOffset, T)    ← 상처 길이축 방향으로 얼마나 떨어졌나
+  AcrossCut = dot(TangentOffset, Bt)   ← 상처 폭축 방향으로 얼마나 떨어졌나
+
+  비유하자면:
+  - TangentOffset = "출발점 기준 이 픽셀의 (평면상) 위치"
+  - T, Bt = "그 평면에 깔아둔 x축, y축"
+  - AlongCut, AcrossCut = "그 좌표계에서 읽은 (x, y) 값"
+
+  정리하면 — 당신 식은 T가 아니라 접평면에 투영한 offset 벡터(TangentOffset)이고, T는 Cross(N,
+  RefAxis)로 따로 만든 길이축입니다.
+
+  혹시 헷갈린 지점이 "왜 T를 Cross(N, RefAxis)로 만드는가"인가요, 아니면 "왜 offset을 접평면에
+  투영해야 하는가"인가요? 원하는 쪽을 더 파고들어 설명할게요.

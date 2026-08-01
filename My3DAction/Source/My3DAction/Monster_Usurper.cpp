@@ -46,6 +46,7 @@ void AMonster_Usurper::Hit(FVector pos, FVector dir)
 		float T = GetWorld()->GetTimeSeconds();
 		DynamicMaterialInst->SetScalarParameterValue(TEXT("HitTime"), T);
 		DynamicMaterialInst->SetVectorParameterValue(TEXT("HitPos"), pos);
+		DynamicMaterialInst->SetVectorParameterValue(TEXT("HitDir"), dir);
 
 
 		float Check;
