@@ -31,9 +31,25 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UMaterialInstanceDynamic* DynamicMaterialInst;
 
-public:	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
+	float MaxHealth = 1000.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
+	float Health;
+
+public:
 	UFUNCTION(BlueprintCallable)
 	void Hit(FVector pos, FVector dir);
+
+	// 실제 게임플레이 데미지 처리. Hit()과는 분리되어 있음 (Hit()은 VFX 전용).
+	UFUNCTION(BlueprintCallable, Category = Health)
+	void ApplyDamage(float DamageAmount);
+
+	UFUNCTION(BlueprintCallable, Category = Health)
+	float GetHealthPercent() const { return MaxHealth > 0.f ? Health / MaxHealth : 0.f; }
+
+	UFUNCTION(BlueprintCallable, Category = Health)
+	bool IsDead() const { return Health <= 0.f; }
 
 	//void TestTrigger();
 

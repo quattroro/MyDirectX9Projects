@@ -154,6 +154,7 @@ void AMainCharacter::OnSwordBeinOverlap(UPrimitiveComponent* OverlappedComp, AAc
 		}
 
 		monster->Hit(ImpactPoint, ImpactNormal);
+		monster->ApplyDamage(50.f); // TODO: 무기 데미지 스탯 시스템이 생기면 고정값을 대체
 		bWeaponHasHitThisSwing = true;
 		UE_LOG(LogTemp, Log, TEXT("ImpactPoint = %s, ImpactNormal = %s"), *ImpactPoint.ToString(), *ImpactNormal.ToString());
 	}

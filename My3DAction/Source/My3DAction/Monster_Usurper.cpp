@@ -23,6 +23,8 @@ void AMonster_Usurper::BeginPlay()
 	DynamicMaterialInst = UMaterialInstanceDynamic::Create(BaseMat, this);
 	GetMesh()->SetMaterial(0, DynamicMaterialInst);
 
+	Health = MaxHealth;
+
 	UE_LOG(LogTemp, Log, TEXT("enter Hear?"));
 
 	// APlayerController의 DefaultPawnClass로 지정되어 있는 APawn은 PlayerController가 Possess해야 호출 가능하지만, Player가 아닌 다른 APawn 객체들은
@@ -56,6 +58,12 @@ void AMonster_Usurper::Hit(FVector pos, FVector dir)
 		bFound = DynamicMaterialInst->GetVectorParameterValue(FName("HitPos"), CurrentColor);
 		UE_LOG(LogTemp, Log, TEXT("HitTime set : found = %d, value = %s"), bFound, *CurrentColor.ToString());
 	}
+}
+
+void AMonster_Usurper::ApplyDamage(float DamageAmount)
+{
+	Health = FMath::Clamp(Health - DamageAmount, 0.f, MaxHealth);
+	UE_LOG(LogTemp, Log, TEXT("ApplyDamage: -%f, Health = %f / %f"), DamageAmount, Health, MaxHealth);
 }
 
 //void AMonster_Usurper::TestTrigger()
