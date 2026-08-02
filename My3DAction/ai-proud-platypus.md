@@ -301,3 +301,13 @@ Root
 - `Content/My3DAction/Monster/Animation/AMP_Monster.uasset`
 - `Content/My3DAction/Monster/BP_Monster.uasset`
 - `Content/My3DAction/Monster/Animation/BT_Monster_Usurper.uasset` (기존 고아 에셋 — 먼저 정리)
+
+
+ 1. AMP_Monster 그래프 정리: 에디터로 열어서 "New State Machine"(구, Idle만)과 "New State Machine_1"(신규,
+  Idle/Walk) 둘 중 안 쓰는 걸 지우고 Result 핀에 연결이 하나만 남도록 확인해주세요. 이후 Run 상태와
+  DefaultSlot 몽타주 슬롯 추가도 필요합니다 (Python/CLI로는 AnimGraph 노드 조작이 지원되지 않아 자동화 불가).
+  2. BT_Monster_Usurper 트리 구조: Behavior Tree의 합성 노드(Selector/Sequence)·태스크·데코레이터 클래스들이
+  Python에 전혀 노출되어 있지 않아서 (BTComposite_*, BTTask_MoveTo, BTDecorator_Blackboard 등 전부), 안전하게
+  자동화할 방법이 없었습니다. 계획서(ai-proud-platypus.md) 4번 섹션의 트리 구조를 참고해서 직접 구성해주시면
+  됩니다 — 이미 만드신 방식대로 계속 이어가시면 됩니다.
+
