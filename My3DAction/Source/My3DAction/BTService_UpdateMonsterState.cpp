@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "BTService_UpdateMonsterState.h"
@@ -15,12 +15,18 @@ UBTService_UpdateMonsterState::UBTService_UpdateMonsterState()
 	RandomDeviation = 0.1f;
 
 	//블랙보드 키가 특정 클래스 또는 그 하위 클래스의 오브젝트만 값으로 가질 수 있도록 제한하는 헬퍼 함수
+	//비헤이비어 트리 노드(Task, Decorator, Service 등)에서 블랙보드 키(Blackboard Key)를 선택할 때, 드롭다운 메뉴에 'Float' 타입의 변수만 표시되도록 제한(필터링)하는 함수
 	TargetActorKey.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTService_UpdateMonsterState, TargetActorKey), AActor::StaticClass());
 	CombatStateKey.AddEnumFilter(this, GET_MEMBER_NAME_CHECKED(UBTService_UpdateMonsterState, CombatStateKey), StaticEnum<EMonsterCombatState>());
 	DistanceToTargetKey.AddFloatFilter(this, GET_MEMBER_NAME_CHECKED(UBTService_UpdateMonsterState, DistanceToTargetKey));
 	HealthPctKey.AddFloatFilter(this, GET_MEMBER_NAME_CHECKED(UBTService_UpdateMonsterState, HealthPctKey));
 }
 
+
+
+///
+// TickNode 함수는 서비스가 포함된 노드가 활성화 되어있는 동안, 개발자가 설정한 인정 주기(Interval)마다 반복 실행된다.
+/// 
 // 1. 몬스터 폰의 GetHealthPercent() -> HealthPctKey에 기록
 // 2. TargetActorKey는 이미 컨트롤러가 써둔 값을 읽기만 함(Perception 소유권은 컨트롤러에 유지)
 // 3. 상태 계산 : 
@@ -48,8 +54,10 @@ void UBTService_UpdateMonsterState::TickNode(UBehaviorTreeComponent& OwnerComp, 
 		return;
 	}
 
+	// 몬스터의 현재 체력을 받아와서 블랙보드에 기록한다.
 	const float HealthPct = Monster->GetHealthPercent();
 	BlackboardComp->SetValueAsFloat(HealthPctKey.SelectedKeyName, HealthPct);
+
 
 	AActor* Target = Cast<AActor>(BlackboardComp->GetValueAsObject(TargetActorKey.SelectedKeyName));
 

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "MonsterAIController.h"
@@ -9,23 +9,23 @@
 #include "Perception/AISenseConfig_Sight.h"
 
 
-// »ı¼ºÀÚ¿¡¼­ AIPerceptionComp + SightConfig(Sight, Pawn°¨Áö) ±¸¼º
-// OnPossess : Super::OnPossess -> ºí·¢º¸µå ÃÊ±âÈ­(UseBlackboard) -> HomeLocation Ä³½Ì -> RunBehaciorTree(BehaviorTreeAsset).
-// OnTargetPerceptionUpdated : ÇÃ·¹ÀÌ¾î¸¦ °¨ÁöÇÏ¸é TargetActor ºí·¢º¸µå Å°¸¸ ±â·Ï, »óÅÂ ÀüÀÌ ·ÎÁ÷(Passive->Alert->Combat)Àº ¿©±â¼­ ÇÏÁö ¾Ê°í Service°¡ Àü´ã
-// BehaviorTreeAssetÀº EditDefaultsOnly·Î ºñ¿öµÎ°í ½ÇÁ¦ BT¿¡¼ÂÀº ÀÌ ÄÁÆ®·Ñ·¯ÀÇ ºí·çÇÁ¸°Æ® ÀÚ½Ä(BP_MonsterAIControlle)¿¡¼­ ÁöÁ¤ - BP_Monster°¡ AMonster_Usurper¸¦ °¨½Î´Â ±âÁ¸ ÆĞÅÏ°ú µ¿ÀÏÇÑ ¹æ½Ä.
+// ìƒì„±ìì—ì„œ AIPerceptionComp + SightConfig(Sight, Pawnê°ì§€) êµ¬ì„±
+// OnPossess : Super::OnPossess -> ë¸”ë™ë³´ë“œ ì´ˆê¸°í™”(UseBlackboard) -> HomeLocation ìºì‹± -> RunBehaciorTree(BehaviorTreeAsset).
+// OnTargetPerceptionUpdated : í”Œë ˆì´ì–´ë¥¼ ê°ì§€í•˜ë©´ TargetActor ë¸”ë™ë³´ë“œ í‚¤ë§Œ ê¸°ë¡, ìƒíƒœ ì „ì´ ë¡œì§(Passive->Alert->Combat)ì€ ì—¬ê¸°ì„œ í•˜ì§€ ì•Šê³  Serviceê°€ ì „ë‹´
+// BehaviorTreeAssetì€ EditDefaultsOnlyë¡œ ë¹„ì›Œë‘ê³  ì‹¤ì œ BTì—ì…‹ì€ ì´ ì»¨íŠ¸ë¡¤ëŸ¬ì˜ ë¸”ë£¨í”„ë¦°íŠ¸ ìì‹(BP_MonsterAIControlle)ì—ì„œ ì§€ì • - BP_Monsterê°€ AMonster_Usurperë¥¼ ê°ì‹¸ëŠ” ê¸°ì¡´ íŒ¨í„´ê³¼ ë™ì¼í•œ ë°©ì‹.
 AMonsterAIController::AMonsterAIController()
 {
 	AIPerceptionComp = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerceptionComp"));
 	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SightConfig"));
 
-	SightConfig->SightRadius = 1500.f;// ÀÎÁö ¹İ°æ 1500
-	SightConfig->LoseSightRadius = 1800.f;// ½Ã¾ß »ó½Ç ¹İ°æ 1800.f
-	SightConfig->PeripheralVisionAngleDegrees = 90.f;// ½Ã¾ß°¢ 90µµ (ÁÂ¿ì 45µµ)
-	SightConfig->SetMaxAge(5.f); // AI°¡ ´ë»óÀ» ½Ã¾ß¿¡¼­ ³õÄ¡°Å³ª ¼Ò¸®°¡ ²÷°åÀ» ¶§, "¹æ±İ °Å±â¼­ ¹«¾ğ°¡¸¦ ÀÎÁöÇß´Ù"¶ó´Â »ç½ÇÀ» ¸î ÃÊ µ¿¾È ±â¾ïÇÒÁö °áÁ¤.
-	SightConfig->AutoSuccessRangeFromLastSeenLocation = 900.f; //AI°¡ ´ë»óÀ» ½Ã¾ß¿¡¼­ ³õÄ£ ÈÄ, ´ë»óÀÇ '¸¶Áö¸· ¸ñ°İ À§Ä¡'¸¦ ±âÁØÀ¸·Î ¼³Á¤µÈ ¹İÁö¸§ ³»¿¡ ´ë»óÀÌ ¸Ó¹°·¯ ÀÖ´Ù¸é ½Ã¾ß¿¡ º¸ÀÌÁö ¾Ê´õ¶óµµ °¨Áö¸¦ ¼º°ø(Success) »óÅÂ·Î À¯ÁöÇÏ´Â ÀÚµ¿ ¼º°ø ¹İ°æÀÔ´Ï´Ù.
-	SightConfig->DetectionByAffiliation.bDetectEnemies = true; // ÀûÀ» °¨ÁöÇÒ°ÍÀÎÁö
-	SightConfig->DetectionByAffiliation.bDetectNeutrals = true; // Áß¸³À» °¨ÁöÇÒ°ÍÀÎÁö
-	SightConfig->DetectionByAffiliation.bDetectFriendlies = true; // ¾Æ±ºÀº °¨ÁöÇÒ°ÍÀÎÁö
+	SightConfig->SightRadius = 1500.f;// ì¸ì§€ ë°˜ê²½ 1500
+	SightConfig->LoseSightRadius = 1800.f;// ì‹œì•¼ ìƒì‹¤ ë°˜ê²½ 1800.f
+	SightConfig->PeripheralVisionAngleDegrees = 90.f;// ì‹œì•¼ê° 90ë„ (ì¢Œìš° 45ë„)
+	SightConfig->SetMaxAge(5.f); // AIê°€ ëŒ€ìƒì„ ì‹œì•¼ì—ì„œ ë†“ì¹˜ê±°ë‚˜ ì†Œë¦¬ê°€ ëŠê²¼ì„ ë•Œ, "ë°©ê¸ˆ ê±°ê¸°ì„œ ë¬´ì–¸ê°€ë¥¼ ì¸ì§€í–ˆë‹¤"ë¼ëŠ” ì‚¬ì‹¤ì„ ëª‡ ì´ˆ ë™ì•ˆ ê¸°ì–µí• ì§€ ê²°ì •.
+	SightConfig->AutoSuccessRangeFromLastSeenLocation = 900.f; //AIê°€ ëŒ€ìƒì„ ì‹œì•¼ì—ì„œ ë†“ì¹œ í›„, ëŒ€ìƒì˜ 'ë§ˆì§€ë§‰ ëª©ê²© ìœ„ì¹˜'ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì„¤ì •ëœ ë°˜ì§€ë¦„ ë‚´ì— ëŒ€ìƒì´ ë¨¸ë¬¼ëŸ¬ ìˆë‹¤ë©´ ì‹œì•¼ì— ë³´ì´ì§€ ì•Šë”ë¼ë„ ê°ì§€ë¥¼ ì„±ê³µ(Success) ìƒíƒœë¡œ ìœ ì§€í•˜ëŠ” ìë™ ì„±ê³µ ë°˜ê²½ì…ë‹ˆë‹¤.
+	SightConfig->DetectionByAffiliation.bDetectEnemies = true; // ì ì„ ê°ì§€í• ê²ƒì¸ì§€
+	SightConfig->DetectionByAffiliation.bDetectNeutrals = true; // ì¤‘ë¦½ì„ ê°ì§€í• ê²ƒì¸ì§€
+	SightConfig->DetectionByAffiliation.bDetectFriendlies = true; // ì•„êµ°ì€ ê°ì§€í• ê²ƒì¸ì§€
 
 	AIPerceptionComp->ConfigureSense(*SightConfig);
 	AIPerceptionComp->SetDominantSense(SightConfig->GetSenseImplementation());
@@ -53,11 +53,13 @@ void AMonsterAIController::OnPossess(APawn* InPawn)
 			BlackboardComp->SetValueAsVector(TEXT("HomeLocation"), HomeLocation);
 		}
 
+		UE_LOG(LogTemp, Log, TEXT("Monster Behavior Tree Is Run"));
+
 		RunBehaviorTree(BehaviorTreeAsset);
 	}
 }
 
-// OnTargetPerceptionUpdated : ÇÃ·¹ÀÌ¾î¸¦ °¨ÁöÇÏ¸é TargetActor ºí·¢º¸µå Å°¸¸ ±â·Ï, »óÅÂ ÀüÀÌ ·ÎÁ÷(Passive->Alert->Combat)Àº ¿©±â¼­ ÇÏÁö ¾Ê°í Service°¡ Àü´ã
+// OnTargetPerceptionUpdated : í”Œë ˆì´ì–´ë¥¼ ê°ì§€í•˜ë©´ TargetActor ë¸”ë™ë³´ë“œ í‚¤ë§Œ ê¸°ë¡, ìƒíƒœ ì „ì´ ë¡œì§(Passive->Alert->Combat)ì€ ì—¬ê¸°ì„œ í•˜ì§€ ì•Šê³  Serviceê°€ ì „ë‹´
 void AMonsterAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
 	if (!Actor || !GetBlackboardComponent())
