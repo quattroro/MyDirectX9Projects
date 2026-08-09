@@ -37,7 +37,7 @@ AMonsterAIController::AMonsterAIController()
 void AMonsterAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-
+	UE_LOG(LogTemp, Log, TEXT("Monster AI Onpossess Enter"));
 	if (InPawn)
 	{
 		HomeLocation = InPawn->GetActorLocation();
