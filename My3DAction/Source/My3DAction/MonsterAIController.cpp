@@ -69,6 +69,7 @@ void AMonsterAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus 
 
 	if (Stimulus.WasSuccessfullySensed())
 	{
+		UE_LOG(LogTemp, Log, TEXT("Detect Player"));
 		GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), Actor);
 	}
 }

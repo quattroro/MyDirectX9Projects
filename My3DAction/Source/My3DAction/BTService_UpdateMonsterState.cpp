@@ -54,11 +54,13 @@ void UBTService_UpdateMonsterState::TickNode(UBehaviorTreeComponent& OwnerComp, 
 		return;
 	}
 
+	//UE_LOG(LogTemp, Log, TEXT("TickNode"));
+
 	// 몬스터의 현재 체력을 받아와서 블랙보드에 기록한다.
 	const float HealthPct = Monster->GetHealthPercent();
 	BlackboardComp->SetValueAsFloat(HealthPctKey.SelectedKeyName, HealthPct);
 
-
+	//TargetActor는  AMonsterAIController::OnTargetPerceptionUpdated 함수에서 세팅된다.
 	AActor* Target = Cast<AActor>(BlackboardComp->GetValueAsObject(TargetActorKey.SelectedKeyName));
 
 	float DistanceToTarget = 0.f;

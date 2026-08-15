@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "BTTask_PlayMontageAndWait.h"
@@ -24,6 +24,8 @@ EBTNodeResult::Type UBTTask_PlayMontageAndWait::ExecuteTask(UBehaviorTreeCompone
 	{
 		return EBTNodeResult::Failed;
 	}
+
+	UE_LOG(LogTemp, Log, TEXT("PlayMontage: Montage=%s Rate=%.2f"), *GetNameSafe(MontageToPlay), PlayRate);
 
 	AnimInstance->Montage_Play(MontageToPlay, PlayRate);
 
