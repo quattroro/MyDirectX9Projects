@@ -2,6 +2,7 @@
 
 
 #include "MonsterAIController.h"
+#include "Monster_Usurper.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BlackboardData.h"
@@ -60,6 +61,7 @@ void AMonsterAIController::OnPossess(APawn* InPawn)
 }
 
 // OnTargetPerceptionUpdated : 플레이어를 감지하면 TargetActor 블랙보드 키만 기록, 상태 전이 로직(Passive->Alert->Combat)은 여기서 하지 않고 Service가 전담
+// 추가로, 폰에게 "이 액터를 쳐다봐라"만 알려준다. 실제 머리 회전은 폰의 Tick + AnimBP LookAt 노드가 처리한다.
 void AMonsterAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
 	if (!Actor || !GetBlackboardComponent())
@@ -67,9 +69,28 @@ void AMonsterAIController::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus 
 		return;
 	}
 
+	AMonster_Usurper* Monster = Cast<AMonster_Usurper>(GetPawn());
+
 	if (Stimulus.WasSuccessfullySensed())
 	{
-		UE_LOG(LogTemp, Log, TEXT("Detect Player"));
+		UE_LOG(LogTemp, Log, TEXT("Detect Player2222"));
 		GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"), Actor);
+
+		if (Monster)
+		{
+			UE_LOG(LogTemp, Log, TEXT("SetLookAtTarget"));
+			Monster->SetLookAtTarget(Actor);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("Can't Find Monster"));
+		}
+	}
+	// 시야에서 놓쳤을 때: 전투 상태(TargetActor 블랙보드 키)는 의도적으로 유지하고,
+	// 머리만 정면으로 돌려놓는다. 지금 보고 있던 그 대상을 놓쳤을 때만 해제해야
+	// 다른 액터를 놓친 이벤트가 현재 응시 대상을 지우지 않는다.
+	else if (Monster && Monster->GetLookAtTarget() == Actor)
+	{
+		Monster->SetLookAtTarget(nullptr);
 	}
 }
