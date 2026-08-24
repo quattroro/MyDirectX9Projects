@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "EngineUtils.h"
 
 // Sets default values
 AMonster_Usurper::AMonster_Usurper()
@@ -40,6 +41,34 @@ void AMonster_Usurper::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}*/
+
+
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	// 찾고자 하는 월드 아웃라이너 상의 이름 (정확히 일치해야 합니다)
+	FString TargetName = TEXT("TestCube");
+	//AActor* FoundActor = nullptr;
+
+	// 월드의 모든 액터를 순회하는 이터레이터(TActorIterator) 사용
+	for (TActorIterator<AActor> ActorItr(World); ActorItr; ++ActorItr)
+	{
+		AActor* Actor = *ActorItr;
+
+		// 에디터 상의 이름(Actor Label)이 우리가 찾는 이름과 같은지 확인
+		if (Actor && Actor->GetActorLabel() == TargetName)
+		{
+			TestBox = Actor;
+		}
+		else if (Actor && Actor->GetActorLabel() == TEXT("TestCube2"))
+		{
+			TestBox2 = Actor;
+		}
+		else if (Actor && Actor->GetActorLabel() == TEXT("TestCube3"))
+		{
+			TestBox3 = Actor;
+		}
+	}
 }
 
 void AMonster_Usurper::Hit(FVector pos, FVector dir)
@@ -97,11 +126,23 @@ void AMonster_Usurper::UpdateLookAt(float DeltaTime)
 		return;
 	}
 
+	// LookAtBoneName = "Head" 초기값
 	const FVector HeadWorldLocation = MeshComp->DoesSocketExist(LookAtBoneName)
 		? MeshComp->GetSocketLocation(LookAtBoneName)
 		: GetActorLocation();
 
-	const FRotator ActorRotation = GetActorRotation();
+	// GetActorRotation() -> AActor의 RootComponent의 현재 회전값을 리턴한다.
+	FRotator ActorRotation = GetActorRotation();
+	
+	// 스켈레탈 메쉬의 회전값
+	//USkeletalMeshComponent* MeshComp2 = FindComponentByClass<USkeletalMeshComponent>();
+	if (MeshComp)
+	{
+		//ActorRotation = ActorRotation + MeshComp->GetComponentRotation();
+		//UE_LOG(LogTemp, Log, TEXT("MeshRot = (%f, %f, %f)"), MeshComp->GetComponentRotation().Roll, MeshComp->GetComponentRotation().Pitch, MeshComp->GetComponentRotation().Yaw);
+	}
+	
+	//UE_LOG(LogTemp, Log, TEXT("ActorRotation = (%f, %f, %f)"), GetActorRotation().Roll, GetActorRotation().Pitch, GetActorRotation().Yaw);
 
 	// 타겟이 없을 때의 기본값: 정면을 본다(= Alpha가 0으로 빠지므로 실제로는 원본 포즈).
 	FVector DesiredWorldLocation = HeadWorldLocation + ActorRotation.Vector() * 500.f;
@@ -111,19 +152,32 @@ void AMonster_Usurper::UpdateLookAt(float DeltaTime)
 	if (Target && !IsDead())
 	{
 		// 타겟의 위치
-		const FVector TargetWorldLocation = Target->GetActorLocation() + FVector(0.f, 0.f, LookAtTargetZOffset);
-		// 
+		const FVector TargetWorldLocation = Target->GetActorLocation() + FVector(0.f, LookAtTargetZOffset, 0.0f);
+		//  머리에서 타겟으로 향하는 방향
 		const FVector ToTarget = TargetWorldLocation - HeadWorldLocation;
+
+		/*if (TestBox3)
+		{
+			TestBox3->SetActorLocation(Target->GetActorLocation() + FVector(0.f, LookAtTargetZOffset, 0.0f));
+		}*/
 
 		if (!ToTarget.IsNearlyZero())
 		{
 			// 액터 정면 기준 상대 각도
 			const FRotator DeltaRotation = (ToTarget.Rotation() - ActorRotation).GetNormalized();
 
+			
+
 			const FRotator ClampedDelta(
 				FMath::Clamp(DeltaRotation.Pitch, -LookAtMaxPitch, LookAtMaxPitch),
 				FMath::Clamp(DeltaRotation.Yaw, -LookAtMaxYaw, LookAtMaxYaw),
 				0.f);
+
+			FRotator ResulRotation = (ActorRotation + ClampedDelta);
+
+			//UE_LOG(LogTemp, Log, TEXT("DeltaRotation = (%f, %f, %f)"), DeltaRotation.Roll, DeltaRotation.Pitch, DeltaRotation.Yaw);
+			//UE_LOG(LogTemp, Log, TEXT("ClampedDelta = (%f, %f, %f)"), ClampedDelta.Roll, ClampedDelta.Pitch, ClampedDelta.Yaw);
+			//UE_LOG(LogTemp, Log, TEXT("ResulRotation = (%f, %f, %f)"), ResulRotation.Roll, ResulRotation.Pitch, ResulRotation.Yaw);
 
 			DesiredWorldLocation = HeadWorldLocation + (ActorRotation + ClampedDelta).Vector() * ToTarget.Size();
 
@@ -136,7 +190,21 @@ void AMonster_Usurper::UpdateLookAt(float DeltaTime)
 	}
 
 	LookAtAlpha = FMath::FInterpTo(LookAtAlpha, DesiredAlpha, DeltaTime, LookAtBlendSpeed);
-	LookAtLocation = MeshComp->GetComponentTransform().InverseTransformPosition(DesiredWorldLocation);
+	// LookAtLocation은 어떻게 사용되는가.
+	//LookAtLocation = MeshComp->GetComponentTransform().InverseTransformPosition(DesiredWorldLocation);
+
+	LookAtLocation = DesiredWorldLocation;
+
+	if (TestBox)
+	{
+		TestBox->SetActorLocation(DesiredWorldLocation);
+	}
+
+	/*if (TestBox2)
+	{
+		TestBox2->SetActorLocation(HeadWorldLocation);
+	}*/
+
 }
 
 // Called every frame

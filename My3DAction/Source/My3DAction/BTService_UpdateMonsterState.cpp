@@ -75,20 +75,20 @@ void UBTService_UpdateMonsterState::TickNode(UBehaviorTreeComponent& OwnerComp, 
 
 	if (HealthPct <= EnrageHealthPctThreshold && Target)
 	{
-		NewState = EMonsterCombatState::Enrage;
+		//NewState = EMonsterCombatState::Enrage;
 	}
 	else if (Target && CurrentState == EMonsterCombatState::Passive)
 	{
-		NewState = EMonsterCombatState::Alert;
-		TimeInAlertState = 0.f;
+		//NewState = EMonsterCombatState::Alert;
+		//TimeInAlertState = 0.f;
 	}
 	else if (CurrentState == EMonsterCombatState::Alert)
 	{
-		TimeInAlertState += Interval;
-		if (TimeInAlertState >= AlertToCombatDelay)
-		{
-			NewState = EMonsterCombatState::Combat;
-		}
+		//TimeInAlertState += Interval;
+		//if (TimeInAlertState >= AlertToCombatDelay)
+		//{
+		//	NewState = EMonsterCombatState::Combat;
+		//}
 	}
 	// Combat/Enrage에서 타겟 소실/체력 회복 시 하향 전이는 이번 범위에서 의도적으로 미구현.
 

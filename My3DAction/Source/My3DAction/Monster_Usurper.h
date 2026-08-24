@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -82,6 +82,11 @@ protected:
 	TWeakObjectPtr<AActor> LookAtTarget;
 
 	void UpdateLookAt(float DeltaTime);
+
+
+	AActor* TestBox = nullptr;
+	AActor* TestBox2 = nullptr;
+	AActor* TestBox3 = nullptr;
 
 public:
 	// AIController가 타겟을 감지/소실했을 때 호출. nullptr을 넣으면 정면으로 복귀한다.
