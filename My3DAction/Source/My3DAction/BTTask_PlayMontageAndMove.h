@@ -34,6 +34,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	bool bWaitForCompletion = true;
 
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	float WiatTime;
+
 private:
 	// 컴포넌트 참조 저장용 (델리게이트 바인딩 해제 시 사용)
 	UPROPERTY()

@@ -11,6 +11,7 @@
 UBTTask_PlayMontageAndWait::UBTTask_PlayMontageAndWait()
 {
 	NodeName = TEXT("Play Montage And Wait");
+	// TickTask를 사용하려면 해당 변수를 true로 해야한다
 	bNotifyTick = true;
 }
 

@@ -39,6 +39,8 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Monster AI")
 	float AlertToCombatDelay = 1.5f;
 
+
+
 private:
 	float TimeInAlertState = 0.f;
 };

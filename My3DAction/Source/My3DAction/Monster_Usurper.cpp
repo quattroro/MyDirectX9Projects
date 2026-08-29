@@ -197,7 +197,7 @@ void AMonster_Usurper::UpdateLookAt(float DeltaTime)
 
 	if (TestBox)
 	{
-		TestBox->SetActorLocation(DesiredWorldLocation);
+		//TestBox->SetActorLocation(DesiredWorldLocation);
 	}
 
 	/*if (TestBox2)
