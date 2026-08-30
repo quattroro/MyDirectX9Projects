@@ -24,12 +24,14 @@ void UUBTService_AttackSelect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (!BlackboardComp || !AIController)
 	{
+		UE_LOG(LogTemp, Log, TEXT("return1"));
 		return;
 	}
 
 	AMonster_Usurper* Monster = Cast<AMonster_Usurper>(AIController->GetPawn());
 	if (!Monster)
 	{
+		UE_LOG(LogTemp, Log, TEXT("return2"));
 		return;
 	}
 
@@ -47,20 +49,32 @@ void UUBTService_AttackSelect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8
 	}
 
 	// 타깃과 몬스터의 위치에 따라서 AttackType을 세팅한다.
+	EMonsterAttackType CurrentType = static_cast<EMonsterAttackType>(BlackboardComp->GetValueAsEnum(AttackTypeKey.SelectedKeyName));
 	EMonsterAttackType AttackType = EMonsterAttackType::AK_None;
 
-	int Rand = FMath::RandRange(0, 2);
+	UE_LOG(LogTemp, Log, TEXT("Enter Service 1"));
 
-	if (Rand == 0)
+	if (CurrentType == EMonsterAttackType::AK_None)
 	{
-		AttackType == EMonsterAttackType::AK_Mouth;
-	}
-	else if (Rand == 1)
-	{
-		AttackType == EMonsterAttackType::AK_Crow;
-	}
-	else
-	{
-		AttackType == EMonsterAttackType::AK_Flame;
+		int Rand = FMath::RandRange(0, 2);
+
+		if (Rand == 0)
+		{
+			AttackType = EMonsterAttackType::AK_Mouth;
+		}
+		else if (Rand == 1)
+		{
+			AttackType = EMonsterAttackType::AK_Crow;
+		}
+		else
+		{
+			AttackType = EMonsterAttackType::AK_Flame;
+		}
+
+		if (CurrentType != AttackType)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Monster Attack Type: %d -> %d"), (int32)CurrentType, (int32)AttackType);
+			BlackboardComp->SetValueAsEnum(AttackTypeKey.SelectedKeyName, static_cast<uint8>(AttackType));
+		}
 	}
 }

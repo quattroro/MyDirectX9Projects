@@ -24,7 +24,7 @@ public:
 
 
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
-	FBlackboardKeySelector AttackType;
+	FBlackboardKeySelector AttackTypeKey;
 protected:
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 };
