@@ -54,6 +54,19 @@ public enum CommandKind
     MaterialCompile,
     MaterialCreateInstance,
     MaterialSetInstanceParam,
+    BtCreate,
+    BtInspect,
+    BtListNodeTypes,
+    BtAddNode,
+    BtAddDecorator,
+    BtAddService,
+    BtSetNode,
+    BtConnect,
+    BtDisconnect,
+    BtDeleteNode,
+    BtApplyGraph,
+    BtCompile,
+    BtSetBlackboard,
     PluginList,
     PluginEnable,
     PluginDisable,
@@ -174,6 +187,32 @@ public sealed class ParsedCommand
     public bool MatLayout { get; set; }
     public bool MatSave { get; set; }
     public bool MatNoCompile { get; set; }
+
+    // bt
+    public string? BtPath { get; set; }
+    public string? BtNodeType { get; set; }
+    public string? BtNodeId { get; set; }
+    public string? BtNodeRef { get; set; }
+    public string? BtParent { get; set; }
+    public string? BtFrom { get; set; }
+    public string? BtTo { get; set; }
+    public string? BtAs { get; set; }
+    public string? BtPos { get; set; }
+    public string? BtComment { get; set; }
+    public string? BtValuesJson { get; set; }
+    public string? BtGraphJson { get; set; }
+    public string? BtGraphFile { get; set; }
+    public string? BtBlackboard { get; set; }
+    public string? BtKind { get; set; }
+    public string? BtFilter { get; set; }
+    public int? BtIndex { get; set; }
+    public int? BtLimit { get; set; }
+    public bool BtWithValues { get; set; }
+    public bool BtKeepChildren { get; set; }
+    public bool BtClear { get; set; }
+    public bool BtLayout { get; set; }
+    public bool BtSave { get; set; }
+    public bool BtNoUpdate { get; set; }
 
     // plugin
     public string? PluginName { get; set; }

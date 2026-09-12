@@ -46,6 +46,7 @@ public static class CliArgumentParser
             "blueprint" => ParseBlueprint(tokens),
             "anim" => ParseAnim(tokens),
             "material" => ParseMaterial(tokens),
+            "bt" => ParseBt(tokens),
             "plugin" => ParsePlugin(tokens),
             "instances" => ParseInstances(tokens),
             "doctor" => new ParsedCommand(CommandKind.Doctor),
@@ -121,6 +122,19 @@ public static class CliArgumentParser
         CommandKind.MaterialCompile          => ProtocolConstants.CommandMaterialCompile,
         CommandKind.MaterialCreateInstance   => ProtocolConstants.CommandMaterialCreateInstance,
         CommandKind.MaterialSetInstanceParam => ProtocolConstants.CommandMaterialSetInstanceParam,
+        CommandKind.BtCreate        => ProtocolConstants.CommandBtCreate,
+        CommandKind.BtInspect       => ProtocolConstants.CommandBtInspect,
+        CommandKind.BtListNodeTypes => ProtocolConstants.CommandBtListNodeTypes,
+        CommandKind.BtAddNode       => ProtocolConstants.CommandBtAddNode,
+        CommandKind.BtAddDecorator  => ProtocolConstants.CommandBtAddDecorator,
+        CommandKind.BtAddService    => ProtocolConstants.CommandBtAddService,
+        CommandKind.BtSetNode       => ProtocolConstants.CommandBtSetNode,
+        CommandKind.BtConnect       => ProtocolConstants.CommandBtConnect,
+        CommandKind.BtDisconnect    => ProtocolConstants.CommandBtDisconnect,
+        CommandKind.BtDeleteNode    => ProtocolConstants.CommandBtDeleteNode,
+        CommandKind.BtApplyGraph    => ProtocolConstants.CommandBtApplyGraph,
+        CommandKind.BtCompile       => ProtocolConstants.CommandBtCompile,
+        CommandKind.BtSetBlackboard => ProtocolConstants.CommandBtSetBlackboard,
         CommandKind.PluginList => ProtocolConstants.CommandPluginList,
         CommandKind.PluginEnable => ProtocolConstants.CommandPluginEnable,
         CommandKind.PluginDisable => ProtocolConstants.CommandPluginDisable,
@@ -133,6 +147,13 @@ public static class CliArgumentParser
         CommandKind.MaterialDisconnect or CommandKind.MaterialDeleteNode or CommandKind.MaterialSetProperty or
         CommandKind.MaterialApplyGraph or CommandKind.MaterialCompile or CommandKind.MaterialCreateInstance or
         CommandKind.MaterialSetInstanceParam;
+
+    private static bool IsBtCommand(CommandKind kind) => kind is
+        CommandKind.BtCreate or CommandKind.BtInspect or CommandKind.BtListNodeTypes or
+        CommandKind.BtAddNode or CommandKind.BtAddDecorator or CommandKind.BtAddService or
+        CommandKind.BtSetNode or CommandKind.BtConnect or CommandKind.BtDisconnect or
+        CommandKind.BtDeleteNode or CommandKind.BtApplyGraph or CommandKind.BtCompile or
+        CommandKind.BtSetBlackboard;
 
     private static ParsedCommand ParseAsset(Queue<string> tokens)
     {
@@ -216,6 +237,28 @@ public static class CliArgumentParser
         };
     }
 
+
+    private static ParsedCommand ParseBt(Queue<string> tokens)
+    {
+        string sub = RequireSubcommand(tokens, "bt");
+        return sub switch
+        {
+            "create" => new ParsedCommand(CommandKind.BtCreate),
+            "inspect" => new ParsedCommand(CommandKind.BtInspect),
+            "list-node-types" => new ParsedCommand(CommandKind.BtListNodeTypes),
+            "add-node" => new ParsedCommand(CommandKind.BtAddNode),
+            "add-decorator" => new ParsedCommand(CommandKind.BtAddDecorator),
+            "add-service" => new ParsedCommand(CommandKind.BtAddService),
+            "set-node" => new ParsedCommand(CommandKind.BtSetNode),
+            "connect" => new ParsedCommand(CommandKind.BtConnect),
+            "disconnect" => new ParsedCommand(CommandKind.BtDisconnect),
+            "delete-node" => new ParsedCommand(CommandKind.BtDeleteNode),
+            "apply-graph" => new ParsedCommand(CommandKind.BtApplyGraph),
+            "compile" => new ParsedCommand(CommandKind.BtCompile),
+            "set-blackboard" => new ParsedCommand(CommandKind.BtSetBlackboard),
+            _ => throw new CliUsageException($"알 수 없는 bt 하위 명령: {sub}"),
+        };
+    }
     private static ParsedCommand ParsePlugin(Queue<string> tokens)
     {
         string sub = RequireSubcommand(tokens, "plugin");
@@ -260,6 +303,15 @@ public static class CliArgumentParser
                 if (token == "--save") { parsed.MatSave = true; continue; }
                 if (token == "--no-compile") { parsed.MatNoCompile = true; continue; }
                 if (token == "--path") { parsed.MatPath = RequireValue(tokens, "--path"); continue; }
+            }
+
+            // Shared across every bt subcommand.
+            if (IsBtCommand(parsed.Kind))
+            {
+                if (token == "--save") { parsed.BtSave = true; continue; }
+                if (token == "--no-update") { parsed.BtNoUpdate = true; continue; }
+                if (token == "--layout") { parsed.BtLayout = true; continue; }
+                if (token == "--path") { parsed.BtPath = RequireValue(tokens, "--path"); continue; }
             }
 
             switch (parsed.Kind)
@@ -531,6 +583,71 @@ public static class CliArgumentParser
                 case CommandKind.Raw when token == "--json":
                     parsed.RawJson = RequireValue(tokens, "--json"); break;
 
+
+                // bt: node creation and editing
+                case CommandKind.BtAddNode when token == "--type":
+                case CommandKind.BtAddDecorator when token == "--type":
+                case CommandKind.BtAddService when token == "--type":
+                    parsed.BtNodeType = RequireValue(tokens, "--type"); break;
+                case CommandKind.BtAddNode when token == "--id":
+                case CommandKind.BtAddDecorator when token == "--id":
+                case CommandKind.BtAddService when token == "--id":
+                case CommandKind.BtSetNode when token == "--id":
+                    parsed.BtNodeId = RequireValue(tokens, "--id"); break;
+                case CommandKind.BtAddDecorator when token == "--node":
+                case CommandKind.BtAddService when token == "--node":
+                case CommandKind.BtSetNode when token == "--node":
+                case CommandKind.BtDeleteNode when token == "--node":
+                    parsed.BtNodeRef = RequireValue(tokens, "--node"); break;
+                case CommandKind.BtAddNode when token == "--parent":
+                    parsed.BtParent = RequireValue(tokens, "--parent"); break;
+                case CommandKind.BtAddNode when token == "--index":
+                case CommandKind.BtAddDecorator when token == "--index":
+                case CommandKind.BtAddService when token == "--index":
+                case CommandKind.BtConnect when token == "--index":
+                    parsed.BtIndex = RequireInt(tokens, "--index"); break;
+                case CommandKind.BtAddNode when token == "--values":
+                case CommandKind.BtAddDecorator when token == "--values":
+                case CommandKind.BtAddService when token == "--values":
+                case CommandKind.BtSetNode when token == "--values":
+                    parsed.BtValuesJson = RequireValue(tokens, "--values"); break;
+                case CommandKind.BtAddNode when token == "--pos":
+                case CommandKind.BtSetNode when token == "--pos":
+                    parsed.BtPos = RequireValue(tokens, "--pos"); break;
+                case CommandKind.BtAddNode when token == "--comment":
+                case CommandKind.BtSetNode when token == "--comment":
+                    parsed.BtComment = RequireValue(tokens, "--comment"); break;
+
+                // bt: wiring
+                case CommandKind.BtConnect when token == "--from":
+                    parsed.BtFrom = RequireValue(tokens, "--from"); break;
+                case CommandKind.BtConnect when token == "--to":
+                case CommandKind.BtDisconnect when token == "--to":
+                    parsed.BtTo = RequireValue(tokens, "--to"); break;
+                case CommandKind.BtAddNode when token == "--as":
+                case CommandKind.BtConnect when token == "--as":
+                    parsed.BtAs = RequireValue(tokens, "--as"); break;
+                case CommandKind.BtDeleteNode when token == "--keep-children":
+                    parsed.BtKeepChildren = true; break;
+
+                // bt: whole-graph and asset level
+                case CommandKind.BtApplyGraph when token == "--graph":
+                    parsed.BtGraphJson = RequireValue(tokens, "--graph"); break;
+                case CommandKind.BtApplyGraph when token == "--graph-file":
+                    parsed.BtGraphFile = RequireValue(tokens, "--graph-file"); break;
+                case CommandKind.BtApplyGraph when token == "--clear":
+                    parsed.BtClear = true; break;
+                case CommandKind.BtCreate when token == "--blackboard":
+                case CommandKind.BtSetBlackboard when token == "--blackboard":
+                    parsed.BtBlackboard = RequireValue(tokens, "--blackboard"); break;
+                case CommandKind.BtInspect when token == "--with-values":
+                    parsed.BtWithValues = true; break;
+                case CommandKind.BtListNodeTypes when token == "--kind":
+                    parsed.BtKind = RequireValue(tokens, "--kind"); break;
+                case CommandKind.BtListNodeTypes when token == "--filter":
+                    parsed.BtFilter = RequireValue(tokens, "--filter"); break;
+                case CommandKind.BtListNodeTypes when token == "--limit":
+                    parsed.BtLimit = RequireInt(tokens, "--limit"); break;
                 default:
                     throw new CliUsageException($"지원하지 않는 옵션: {token}");
             }
@@ -633,6 +750,43 @@ public static class CliArgumentParser
                 throw new CliUsageException("material create-instance에는 --parent가 필요합니다.");
             case CommandKind.MaterialSetInstanceParam when parsed.MatParamName == null || parsed.MatParamType == null || parsed.MatValue == null:
                 throw new CliUsageException("material set-instance-param에는 --name, --type, --value가 필요합니다.");
+
+            case CommandKind.BtCreate when parsed.BtPath == null:
+            case CommandKind.BtInspect when parsed.BtPath == null:
+            case CommandKind.BtAddNode when parsed.BtPath == null:
+            case CommandKind.BtAddDecorator when parsed.BtPath == null:
+            case CommandKind.BtAddService when parsed.BtPath == null:
+            case CommandKind.BtSetNode when parsed.BtPath == null:
+            case CommandKind.BtConnect when parsed.BtPath == null:
+            case CommandKind.BtDisconnect when parsed.BtPath == null:
+            case CommandKind.BtDeleteNode when parsed.BtPath == null:
+            case CommandKind.BtApplyGraph when parsed.BtPath == null:
+            case CommandKind.BtCompile when parsed.BtPath == null:
+            case CommandKind.BtSetBlackboard when parsed.BtPath == null:
+                throw new CliUsageException("bt 명령에는 --path가 필요합니다.");
+            case CommandKind.BtAddNode when parsed.BtNodeType == null:
+                throw new CliUsageException("bt add-node에는 --type이 필요합니다.");
+            case CommandKind.BtAddDecorator when parsed.BtNodeType == null || parsed.BtNodeRef == null:
+                throw new CliUsageException("bt add-decorator에는 --type과 --node가 필요합니다.");
+            case CommandKind.BtAddService when parsed.BtNodeType == null || parsed.BtNodeRef == null:
+                throw new CliUsageException("bt add-service에는 --type과 --node가 필요합니다.");
+            case CommandKind.BtSetNode when parsed.BtNodeRef == null:
+                throw new CliUsageException("bt set-node에는 --node가 필요합니다.");
+            case CommandKind.BtSetNode when parsed.BtValuesJson == null && parsed.BtNodeId == null
+                && parsed.BtPos == null && parsed.BtComment == null:
+                throw new CliUsageException("bt set-node에는 --values, --id, --pos, --comment 중 하나가 필요합니다.");
+            case CommandKind.BtConnect when parsed.BtFrom == null || parsed.BtTo == null:
+                throw new CliUsageException("bt connect에는 --from과 --to가 필요합니다.");
+            case CommandKind.BtDisconnect when parsed.BtTo == null:
+                throw new CliUsageException("bt disconnect에는 --to가 필요합니다.");
+            case CommandKind.BtDeleteNode when parsed.BtNodeRef == null:
+                throw new CliUsageException("bt delete-node에는 --node가 필요합니다.");
+            case CommandKind.BtDeleteNode when !parsed.Force:
+                throw new CliUsageException("bt delete-node는 항상 --force가 필요합니다.");
+            case CommandKind.BtApplyGraph when parsed.BtGraphJson == null && parsed.BtGraphFile == null:
+                throw new CliUsageException("bt apply-graph에는 --graph 또는 --graph-file이 필요합니다.");
+            case CommandKind.BtSetBlackboard when parsed.BtBlackboard == null:
+                throw new CliUsageException("bt set-blackboard에는 --blackboard가 필요합니다.");
             case CommandKind.PluginEnable when parsed.PluginName == null:
                 throw new CliUsageException("plugin enable에는 --name이 필요합니다.");
             case CommandKind.PluginDisable when parsed.PluginName == null:

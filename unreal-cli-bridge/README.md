@@ -100,6 +100,33 @@ unreal-cli blueprint set-property --path /Game/Blueprints/BP_Player \
   --property MaxHealth --value 200
 ```
 
+### Behavior Trees
+
+```bash
+# Read a tree as nested JSON (nodes, decorators, services, children in execution order)
+unreal-cli bt inspect --path /Game/AI/BT_Guard --json
+
+# Find node types, Blueprint-derived ones included
+unreal-cli bt list-node-types --kind task --filter Move
+
+# Build a tree one node at a time
+unreal-cli bt create --path /Game/AI/BT_Guard --blackboard /Game/AI/BB_Guard --save
+unreal-cli bt add-node --path /Game/AI/BT_Guard --type Selector --id Brain --parent Root
+unreal-cli bt add-node --path /Game/AI/BT_Guard --type Wait --id Idle --parent Brain \
+  --values '{"WaitTime":2.0}'
+unreal-cli bt add-decorator --path /Game/AI/BT_Guard --node Idle --type Blackboard \
+  --id HasTarget --values '{"BlackboardKey":"TargetActor"}'
+
+# Or build the whole thing from one description
+unreal-cli bt apply-graph --path /Game/AI/BT_Guard --graph-file tree.json --clear --save
+```
+
+`bt inspect` output has the same shape `bt apply-graph` takes, so a tree can be dumped, edited as
+JSON, and replayed onto another asset. Children are listed in execution order, and that order is
+what apply-graph encodes back into node positions.
+
+There is no undo for these commands, so run `bt inspect --json` before anything destructive.
+
 ### Plugins (equivalent to Unity Packages)
 
 ```bash

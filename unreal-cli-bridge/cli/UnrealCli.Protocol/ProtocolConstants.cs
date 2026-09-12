@@ -74,6 +74,21 @@ public static class ProtocolConstants
     public const string CommandMaterialCreateInstance   = "material.create-instance";
     public const string CommandMaterialSetInstanceParam = "material.set-instance-param";
 
+    // Behavior tree commands
+    public const string CommandBtCreate        = "bt.create";
+    public const string CommandBtInspect       = "bt.inspect";
+    public const string CommandBtListNodeTypes = "bt.list-node-types";
+    public const string CommandBtAddNode       = "bt.add-node";
+    public const string CommandBtAddDecorator  = "bt.add-decorator";
+    public const string CommandBtAddService    = "bt.add-service";
+    public const string CommandBtSetNode       = "bt.set-node";
+    public const string CommandBtConnect       = "bt.connect";
+    public const string CommandBtDisconnect    = "bt.disconnect";
+    public const string CommandBtDeleteNode    = "bt.delete-node";
+    public const string CommandBtApplyGraph    = "bt.apply-graph";
+    public const string CommandBtCompile       = "bt.compile";
+    public const string CommandBtSetBlackboard = "bt.set-blackboard";
+
     // Error codes
     public const string ErrorProtocolMismatch = "PROTOCOL_MISMATCH";
     public const string ErrorCliUsage = "CLI_USAGE";

@@ -10,6 +10,7 @@
 #include "Handlers/PluginCommandHandler.h"
 #include "Handlers/AnimCommandHandler.h"
 #include "Handlers/MaterialCommandHandler.h"
+#include "Handlers/BtCommandHandler.h"
 #include "Misc/Paths.h"
 #include "Misc/SecureHash.h"
 
@@ -101,6 +102,9 @@ void FBridgeHost::RegisterHandlers()
 
 	// Material / shader workflows
 	FMaterialCommandHandler::RegisterAll(D);
+
+	// Behavior tree workflows
+	FBtCommandHandler::RegisterAll(D);
 }
 
 FString FBridgeHost::ComputeProjectHash(const FString& InProjectRoot) const

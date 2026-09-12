@@ -267,14 +267,14 @@ public static class CliApp
                 args["path"] = parsed.MatPath ?? "";
                 args["type"] = parsed.MatNodeType ?? "";
                 if (parsed.MatNodeId != null) args["name"] = parsed.MatNodeId;
-                AddMaterialPos(args, parsed.MatPos);
-                AddMaterialValues(args, parsed.MatValuesJson);
+                AddPosArg(args, parsed.MatPos);
+                AddValuesArg(args, parsed.MatValuesJson);
                 break;
             case CommandKind.MaterialSetNode:
                 args["path"] = parsed.MatPath ?? "";
                 args["node"] = parsed.MatNodeId ?? "";
-                AddMaterialPos(args, parsed.MatPos);
-                AddMaterialValues(args, parsed.MatValuesJson);
+                AddPosArg(args, parsed.MatPos);
+                AddValuesArg(args, parsed.MatValuesJson);
                 break;
             case CommandKind.MaterialConnect:
                 args["path"] = parsed.MatPath ?? "";
@@ -298,12 +298,12 @@ public static class CliApp
                 args["path"] = parsed.MatPath ?? "";
                 if (parsed.MatProperty != null) args["property"] = parsed.MatProperty;
                 if (parsed.MatValue != null) args["value"] = parsed.MatValue;
-                AddMaterialValues(args, parsed.MatValuesJson);
+                AddValuesArg(args, parsed.MatValuesJson);
                 AddMaterialPreset(args, parsed);
                 break;
             case CommandKind.MaterialApplyGraph:
                 args["path"] = parsed.MatPath ?? "";
-                args["graph"] = ReadGraphJson(parsed);
+                args["graph"] = ReadGraphJson(parsed.MatGraphFile, parsed.MatGraphJson);
                 if (parsed.MatClear) args["clear"] = true;
                 if (parsed.MatLayout) args["layout"] = true;
                 break;
@@ -321,6 +321,75 @@ public static class CliApp
                 args["type"] = parsed.MatParamType ?? "";
                 args["value"] = ParseScalarOrJson(parsed.MatValue ?? "");
                 break;
+            case CommandKind.BtCreate:
+                args["path"] = parsed.BtPath ?? "";
+                if (parsed.BtBlackboard != null) args["blackboard"] = parsed.BtBlackboard;
+                break;
+            case CommandKind.BtInspect:
+                args["path"] = parsed.BtPath ?? "";
+                if (parsed.BtWithValues) args["withValues"] = true;
+                break;
+            case CommandKind.BtListNodeTypes:
+                if (parsed.BtKind != null) args["kind"] = parsed.BtKind;
+                if (parsed.BtFilter != null) args["filter"] = parsed.BtFilter;
+                if (parsed.BtLimit.HasValue) args["limit"] = parsed.BtLimit.Value;
+                break;
+            case CommandKind.BtAddNode:
+                args["path"] = parsed.BtPath ?? "";
+                args["type"] = parsed.BtNodeType ?? "";
+                if (parsed.BtNodeId != null) args["id"] = parsed.BtNodeId;
+                if (parsed.BtParent != null) args["parent"] = parsed.BtParent;
+                if (parsed.BtIndex.HasValue) args["index"] = parsed.BtIndex.Value;
+                if (parsed.BtAs != null) args["as"] = parsed.BtAs;
+                if (parsed.BtComment != null) args["comment"] = parsed.BtComment;
+                AddPosArg(args, parsed.BtPos);
+                AddValuesArg(args, parsed.BtValuesJson);
+                break;
+            case CommandKind.BtAddDecorator:
+            case CommandKind.BtAddService:
+                args["path"] = parsed.BtPath ?? "";
+                args["type"] = parsed.BtNodeType ?? "";
+                args["node"] = parsed.BtNodeRef ?? "";
+                if (parsed.BtNodeId != null) args["id"] = parsed.BtNodeId;
+                if (parsed.BtIndex.HasValue) args["index"] = parsed.BtIndex.Value;
+                AddValuesArg(args, parsed.BtValuesJson);
+                break;
+            case CommandKind.BtSetNode:
+                args["path"] = parsed.BtPath ?? "";
+                args["node"] = parsed.BtNodeRef ?? "";
+                if (parsed.BtNodeId != null) args["id"] = parsed.BtNodeId;
+                if (parsed.BtComment != null) args["comment"] = parsed.BtComment;
+                AddPosArg(args, parsed.BtPos);
+                AddValuesArg(args, parsed.BtValuesJson);
+                break;
+            case CommandKind.BtConnect:
+                args["path"] = parsed.BtPath ?? "";
+                args["from"] = parsed.BtFrom ?? "";
+                args["to"] = parsed.BtTo ?? "";
+                if (parsed.BtIndex.HasValue) args["index"] = parsed.BtIndex.Value;
+                if (parsed.BtAs != null) args["as"] = parsed.BtAs;
+                break;
+            case CommandKind.BtDisconnect:
+                args["path"] = parsed.BtPath ?? "";
+                args["to"] = parsed.BtTo ?? "";
+                break;
+            case CommandKind.BtDeleteNode:
+                args["path"] = parsed.BtPath ?? "";
+                args["node"] = parsed.BtNodeRef ?? "";
+                if (parsed.BtKeepChildren) args["keepChildren"] = true;
+                break;
+            case CommandKind.BtApplyGraph:
+                args["path"] = parsed.BtPath ?? "";
+                args["graph"] = ReadGraphJson(parsed.BtGraphFile, parsed.BtGraphJson);
+                if (parsed.BtClear) args["clear"] = true;
+                break;
+            case CommandKind.BtCompile:
+                args["path"] = parsed.BtPath ?? "";
+                break;
+            case CommandKind.BtSetBlackboard:
+                args["path"] = parsed.BtPath ?? "";
+                args["blackboard"] = parsed.BtBlackboard ?? "";
+                break;
             case CommandKind.PluginEnable:
                 args["name"] = parsed.PluginName ?? "";
                 break;
@@ -336,6 +405,11 @@ public static class CliApp
         // Material commands share these two switches.
         if (parsed.MatSave) args["save"] = true;
         if (parsed.MatNoCompile) args["noCompile"] = true;
+
+        // Behavior tree commands share these.
+        if (parsed.BtSave) args["save"] = true;
+        if (parsed.BtNoUpdate) args["noUpdate"] = true;
+        if (parsed.BtLayout) args["layout"] = true;
 
         return new CommandEnvelope
         {
@@ -354,7 +428,7 @@ public static class CliApp
     }
 
     // "--pos -600,120" -> [-600, 120]
-    private static void AddMaterialPos(Dictionary<string, object?> args, string? pos)
+    private static void AddPosArg(Dictionary<string, object?> args, string? pos)
     {
         if (pos == null) return;
         var parts = pos.Split(',', StringSplitOptions.TrimEntries);
@@ -363,7 +437,7 @@ public static class CliApp
         args["pos"] = new[] { x, y };
     }
 
-    private static void AddMaterialValues(Dictionary<string, object?> args, string? valuesJson)
+    private static void AddValuesArg(Dictionary<string, object?> args, string? valuesJson)
     {
         if (valuesJson == null) return;
         try
@@ -376,18 +450,18 @@ public static class CliApp
         }
     }
 
-    private static JsonElement ReadGraphJson(ParsedCommand parsed)
+    private static JsonElement ReadGraphJson(string? graphFile, string? graphJson)
     {
         string json;
-        if (parsed.MatGraphFile != null)
+        if (graphFile != null)
         {
-            if (!File.Exists(parsed.MatGraphFile))
-                throw new CliUsageException($"그래프 파일을 찾을 수 없습니다: {parsed.MatGraphFile}");
-            json = File.ReadAllText(parsed.MatGraphFile);
+            if (!File.Exists(graphFile))
+                throw new CliUsageException($"그래프 파일을 찾을 수 없습니다: {graphFile}");
+            json = File.ReadAllText(graphFile);
         }
         else
         {
-            json = parsed.MatGraphJson ?? "";
+            json = graphJson ?? "";
         }
 
         try
@@ -462,6 +536,19 @@ public static class CliApp
         CommandKind.MaterialCompile          => ProtocolConstants.CommandMaterialCompile,
         CommandKind.MaterialCreateInstance   => ProtocolConstants.CommandMaterialCreateInstance,
         CommandKind.MaterialSetInstanceParam => ProtocolConstants.CommandMaterialSetInstanceParam,
+        CommandKind.BtCreate        => ProtocolConstants.CommandBtCreate,
+        CommandKind.BtInspect       => ProtocolConstants.CommandBtInspect,
+        CommandKind.BtListNodeTypes => ProtocolConstants.CommandBtListNodeTypes,
+        CommandKind.BtAddNode       => ProtocolConstants.CommandBtAddNode,
+        CommandKind.BtAddDecorator  => ProtocolConstants.CommandBtAddDecorator,
+        CommandKind.BtAddService    => ProtocolConstants.CommandBtAddService,
+        CommandKind.BtSetNode       => ProtocolConstants.CommandBtSetNode,
+        CommandKind.BtConnect       => ProtocolConstants.CommandBtConnect,
+        CommandKind.BtDisconnect    => ProtocolConstants.CommandBtDisconnect,
+        CommandKind.BtDeleteNode    => ProtocolConstants.CommandBtDeleteNode,
+        CommandKind.BtApplyGraph    => ProtocolConstants.CommandBtApplyGraph,
+        CommandKind.BtCompile       => ProtocolConstants.CommandBtCompile,
+        CommandKind.BtSetBlackboard => ProtocolConstants.CommandBtSetBlackboard,
         CommandKind.PluginList => ProtocolConstants.CommandPluginList,
         CommandKind.PluginEnable => ProtocolConstants.CommandPluginEnable,
         CommandKind.PluginDisable => ProtocolConstants.CommandPluginDisable,
