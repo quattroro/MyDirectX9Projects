@@ -41,6 +41,7 @@ void UBTTask_PlayMontageAndWait::TickTask(UBehaviorTreeComponent& OwnerComp, uin
 
 	if (!AnimInstance || !AnimInstance->Montage_IsPlaying(MontageToPlay))
 	{
+		UE_LOG(LogTemp, Log, TEXT("Montage End"));
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 }

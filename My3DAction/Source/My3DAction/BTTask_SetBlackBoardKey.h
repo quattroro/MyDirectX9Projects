@@ -13,5 +13,7 @@ UCLASS()
 class MY3DACTION_API UBTTask_SetBlackBoardKey : public UBTTaskNode
 {
 	GENERATED_BODY()
-	
+
+	UPROPERTY(EditAnywhere, Category = "Blackboard")
+	FBlackboardKeySelector TargetKey;
 };

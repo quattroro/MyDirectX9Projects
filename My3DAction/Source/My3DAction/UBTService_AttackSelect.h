@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -11,7 +11,7 @@
  */
 UCLASS()
 
-// °¢ »óÈ²¿¡ µû¶ó¼­ ¸ó½ºÅÍÀÇ °ø°İ ÆĞÅÏÀ» Á¤ÇØÁØ´Ù.
+// ê° ìƒí™©ì— ë”°ë¼ì„œ ëª¬ìŠ¤í„°ì˜ ê³µê²© íŒ¨í„´ì„ ì •í•´ì¤€ë‹¤.
 class MY3DACTION_API UUBTService_AttackSelect : public UBTService
 {
 	GENERATED_BODY()
@@ -25,6 +25,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
 	FBlackboardKeySelector AttackTypeKey;
+
+	UPROPERTY(EditAnywhere, Category = "Blackboard")
+	FBlackboardKeySelector LoopCountKey;
 protected:
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 };

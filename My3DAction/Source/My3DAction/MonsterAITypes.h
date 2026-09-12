@@ -24,3 +24,11 @@ enum class EMonsterAttackType : uint8
 	AK_Crow		UMETA(DisplayName = "AK_Crow"),		// 대쉬 할퀴기
 	AK_Flame	UMETA(DisplayName = "AK_Flame")		// 불 뿜기
 };
+
+// 후퇴 이동 방식. BTTask_MonsterRetreat의 MoveMode 프로퍼티로 사용된다.
+UENUM(BlueprintType)
+enum class ERetreatMoveMode : uint8
+{
+	Backstep	UMETA(DisplayName = "Backstep"),	// 네비메시를 따라 뒤로 걸어서 물러난다
+	BackJump	UMETA(DisplayName = "BackJump")		// LaunchCharacter 임펄스로 뒤로 도약한다
+};

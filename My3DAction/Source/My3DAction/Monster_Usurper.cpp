@@ -3,6 +3,7 @@
 
 #include "Monster_Usurper.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
@@ -14,6 +15,31 @@ AMonster_Usurper::AMonster_Usurper()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	//
+	// --- 회전 정책 ---
+	// bUseControllerRotationYaw는 쓰지 않는다. APawn::FaceRotation이 보간 없이 SetActorRotation을
+	// 호출해 컨트롤 로테이션으로 즉시 스냅해버리기 때문이다(RotationRate가 무시된다).
+	// 대신 CMC의 bUseControllerDesiredRotation을 쓰면 PhysicsRotation()이 RotationRate로 보간한다.
+	//
+	// bOrientRotationToMovement는 꺼둔다. 진행 방향으로 몸을 돌려버리면
+	// BTTask_MonsterRetreat의 "정면을 유지한 채 뒤로 물러나기"가 성립하지 않는다.
+	// 후퇴 중 몸통이 타겟을 향하는 것은 AIController의 SetFocus(..., Gameplay)가 만든
+	// ControlRotation을 CMC가 따라가면서 이루어진다.
+	//
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationRoll = false;
+
+	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+	MoveComp->bOrientRotationToMovement = false;
+	MoveComp->bUseControllerDesiredRotation = true;
+	MoveComp->RotationRate = FRotator(0.f, 180.f, 0.f);
+	MoveComp->MaxWalkSpeed = 400.f;
+
+	// 루트 모션이 있는 몽타주를 재생하는 동안에는 회전을 잠가 공격 방향을 커밋시킨다.
+	// 현재 Usurper 애니메이션 18종은 전부 Enable Root Motion이 꺼져 있어서 이 플래그는
+	// 사실상 동작하지 않는다. 나중에 루트 모션 공격을 넣을 때를 위한 사전 설정이다.
+	MoveComp->bAllowPhysicsRotationDuringAnimRootMotion = false;
 }
 
 // Called when the game starts or when spawned
