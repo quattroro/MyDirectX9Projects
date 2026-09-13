@@ -19,7 +19,7 @@ namespace
 {
 	// Montage_Play 직후 첫 프레임에는 Montage_IsPlaying이 아직 false일 수 있다.
 	// 이 시간이 지나기 전에는 몽타주가 끝났다고 판단하지 않는다.
-	constexpr float MontageStartGraceTime = 0.1f;
+	constexpr float MontageStartGraceTime2 = 0.1f;
 }
 
 UBTTask_MonsterRetreat::UBTTask_MonsterRetreat()
@@ -89,12 +89,22 @@ EBTNodeResult::Type UBTTask_MonsterRetreat::ExecuteTask(UBehaviorTreeComponent& 
 		return EBTNodeResult::Failed;
 	}
 
+
+	// 타겟 반대 방향의 수평 단위벡터를 구한다. RetreatSpreadAngle만큼 좌우로 흔들어준다.
 	const FVector AwayDir = ComputeAwayDirection(Character, TargetActor);
+
 
 	// 몸통이 타겟을 계속 향하게 만드는 핵심.
 	// PathFollowingComponent는 이동 중 매 프레임 SetFocalPoint(진행 방향, EAIFocusPriority::Move)를
 	// 호출한다. AAIController::GetFocalPoint()는 우선순위 배열을 높은 쪽부터 훑기 때문에
 	// Gameplay(2)로 건 포커스가 Move(1)를 항상 이긴다. 그래서 뒤로 이동하면서도 정면을 유지한다.
+	// 해당 캐릭터가 TargetActor를 따라 회전하도록 한다.
+	// AIFocusPriority는 우선순위다. 
+	// EAIFocusPriority::Default -> 기본 상태이거나 아무 지정도 없을 때의 시선
+	// EAIFocusPriority::Move -> AI가 길 찾기(Move To)로 이동할 때 이동 방향을 바라보도록
+	// EAIFocusPriority::Gameplay -> 개발자가 코드나 블루프린트(SetFocus)로 직접 적을 조준하거나 특정 대상을 보게 만들 때 쓴다. 
+	// (Move 보다 높기 때문에 옆으로 게걸음 하면서 적을 조준하는 행동이 가능해진다.)
+	// EAIFocusPriority::LastFocusPriority -> 엔진 내부용 혹은 가장 절대적인 우선순위 레이어
 	AIController->SetFocus(TargetActor, EAIFocusPriority::Gameplay);
 
 	const bool bStarted = (MoveMode == ERetreatMoveMode::Backstep)
@@ -234,6 +244,7 @@ bool UBTTask_MonsterRetreat::StartBackJump(AAIController* AIController, ACharact
 	return true;
 }
 
+// 타겟 반대 방향의 수평 단위벡터를 구한다. RetreatSpreadAngle만큼 좌우로 흔들어준다.
 FVector UBTTask_MonsterRetreat::ComputeAwayDirection(const ACharacter* Character, const AActor* Target) const
 {
 	FVector AwayDir = Character->GetActorLocation() - Target->GetActorLocation();
@@ -505,7 +516,7 @@ bool UBTTask_MonsterRetreat::IsMontageDone(UAnimInstance* AnimInstance) const
 	}
 
 	// Montage_Play 직후 첫 프레임에는 아직 재생 중으로 잡히지 않을 수 있다.
-	if (ElapsedTime < MontageStartGraceTime)
+	if (ElapsedTime < MontageStartGraceTime2)
 	{
 		return false;
 	}
@@ -521,3 +532,4 @@ UAnimInstance* UBTTask_MonsterRetreat::GetAnimInstance(UBehaviorTreeComponent& O
 
 	return MeshComp ? MeshComp->GetAnimInstance() : nullptr;
 }
+ 
