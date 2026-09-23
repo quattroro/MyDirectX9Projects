@@ -56,6 +56,7 @@ void UBTTask_MonsterRetreat::InitializeFromAsset(UBehaviorTree& Asset)
 	}
 }
 
+// ExcuteTask
 EBTNodeResult::Type UBTTask_MonsterRetreat::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	AAIController* AIController = OwnerComp.GetAIOwner();
@@ -157,7 +158,10 @@ bool UBTTask_MonsterRetreat::StartBackstep(AAIController* AIController, ACharact
 	MoveRequest.SetAcceptanceRadius(AcceptanceRadius);
 	// 짧은 후퇴에 경로 탐색을 쓰면 몬스터가 앞으로 우회해서 돌아가는 경로를 고를 수 있다.
 	MoveRequest.SetUsePathfinding(bUsePathfinding);
+	// AI가 이동할 목표 위치(Vector)를 단순히 3D 공간의 점으로 지정하는 것을 넘어, 네비게이션 메시(NavMesh) 위에 올바르게 투영(Project)된 위치로 설정합니다
+	// AI가 맵 바깥이나 공중에 떠 있는 위치로 이동하여 할 때 발생할 수 있는 경로 탐색 오류를 방지
 	MoveRequest.SetProjectGoalLocation(true);
+	//I가 목적지에 성공적으로 도달했는지 판정할 때, AI 캐릭터 자신의 크기(충돌 반경, Agent Radius)까지 포함해서 계산할 것인가를 결정
 	MoveRequest.SetReachTestIncludesAgentRadius(false);
 	// 정면 유지 자체는 위의 SetFocus(Gameplay)가 담당한다.
 	// bCanStrafe는 focal point를 끄는 것이 아니라 어느 지점으로 잡을지만 바꾸므로
@@ -232,10 +236,14 @@ bool UBTTask_MonsterRetreat::StartBackJump(AAIController* AIController, ACharact
 	// 착지 판정은 LandedDelegate로 한다. IsMovingOnGround() 폴링은 쓰면 안 된다.
 	// LaunchCharacter는 그 프레임에 아직 MOVE_Falling이 아니라서 같은 프레임 폴링이 true를
 	// 반환해 태스크가 즉시 오종료된다.
+	// 캐릭터가 공중에 떠 있다가 바닥에 착지(Landed)하는 순간을 감지하여 특정 함수를 실행할 수 있도록 연결해 주는 델리게이트
+	// 캐릭터의 이동 모드가 MOVE_Falling(공중 상태)에서 MOVE_Walking(걷기 상태)으로 전환되는 그 순간에 딱 한 번씩 실행된다
 	Character->LandedDelegate.AddDynamic(this, &UBTTask_MonsterRetreat::OnCharacterLanded);
 
 	// bXYOverride / bZOverride를 모두 true로 준다.
 	// 달려오던 전방 관성이 더해져 백점프를 상쇄하는 것을 막기 위해 속도를 덮어쓴다.
+	// 캐릭터에게 순간적인 폭발적 속도(Velocity)를 더해 공중으로 날려버릴 때(런치) 사용하는 함수입니다.
+	// 백(Knockback), 트램펄린(점프대), 대시(Dash), 공중 띄우기 기술 등을 구현할 때 필수적으로 사용
 	Character->LaunchCharacter(AwayDir * LaunchXY + FVector::UpVector * LaunchZSpeed, true, true);
 
 	UE_LOG(LogTemp, Log, TEXT("MonsterRetreat: BackJump XY=%.0f Z=%.0f 예상사거리=%.0f 실제=%.0f"),
@@ -269,9 +277,13 @@ FVector UBTTask_MonsterRetreat::ComputeAwayDirection(const ACharacter* Character
 	return AwayDir;
 }
 
+
+// 착지 예상 지점이 네비메시 밖이거나 중간이 막혀 있으면 도약 거리를 그만큼 줄인다.
 bool UBTTask_MonsterRetreat::ComputeRetreatLocation(AAIController* AIController, const FVector& FromLocation,
 	const FVector& AwayDir, float DesiredDistance, FVector& OutLocation)
 {
+	// 현재 월드에 활성화된 내비게이션 시스템(Navigation System) 인스턴스의 포인터를 가져오는 정적(Static) 함수
+	// 월드에 여러개의 내비메쉬가 있어도 모든 내비메시 데이터들을 통틀어 관리하는 '컨트롤 타워(매니저) 인스턴스' 단 하나가 리턴된다.
 	UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetCurrent(GetWorld());
 	if (!NavSystem)
 	{
@@ -285,6 +297,7 @@ bool UBTTask_MonsterRetreat::ComputeRetreatLocation(AAIController* AIController,
 	{
 		// 목표 지점이 네비메시 위에 없으면(허공, 절벽 아래 등) 거리를 줄여 다시 시도한다.
 		FNavLocation ProjectedLocation;
+		// 3D 공간상의 임의의 좌표(Point)를 가장 가까운 내비게이션 메시(NavMesh) 위의 유효한 좌표로 투영(Project)해주는 함수
 		if (!NavSystem->ProjectPointToNavigation(FromLocation + AwayDir * Distance, ProjectedLocation, NavProjectExtent))
 		{
 			continue;
@@ -294,6 +307,8 @@ bool UBTTask_MonsterRetreat::ComputeRetreatLocation(AAIController* AIController,
 		// NavigationRaycast는 막혔으면 true를 반환하고, 네비 데이터가 아예 없어도 true를 반환한다.
 		FVector CandidateLocation = ProjectedLocation.Location;
 		FVector HitLocation;
+
+		//UNavigationSystemV1::NavigationRaycast 복잡한 A 길찾기 알고리즘을 사용하지 않고, 두 지점(Start ~End) 사이에 내비게이션 메시(NavMesh)를 가로막는 장애물이나 끊어진 영역이 있는지 직선으로 빠르게 검사하는 경량 레이캐스트 함수
 		if (UNavigationSystemV1::NavigationRaycast(this, FromLocation, ProjectedLocation.Location, HitLocation, nullptr, AIController))
 		{
 			// 막힌 지점 직전까지만 물러난다.
@@ -345,6 +360,7 @@ bool UBTTask_MonsterRetreat::StartRetreatMontage(UAnimInstance* AnimInstance)
 	return bMontagePlayStarted;
 }
 
+// 움직임이 완료되면 호출될 델리게이트 함수
 void UBTTask_MonsterRetreat::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
 {
 	if (!CachedBTComp || bTaskFinished || bMoveFinished)
