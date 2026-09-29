@@ -27,4 +27,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Monster AI")
 	float WanderRadius = 1000.f;
+
+public:
+	// 디버그 시각화 전용 리더.
+	float GetWanderRadius() const { return WanderRadius; }
 };

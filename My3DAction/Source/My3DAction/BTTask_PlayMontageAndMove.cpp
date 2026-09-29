@@ -60,8 +60,7 @@ void UBTTask_PlayMontageAndMove::InitializeFromAsset(UBehaviorTree& Asset)
 }
 
 
-//UE_LOG(LogTemp, Log, TEXT("PlayMontage: Montage=%s Rate=%.2f"), *GetNameSafe(MontageToPlay), PlayRate);
-
+// 일단 지정된 위치로 움직이고 이후에 지정된 몽타주 재생
 EBTNodeResult::Type UBTTask_PlayMontageAndMove::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	AAIController* AIController = OwnerComp.GetAIOwner();
@@ -114,7 +113,7 @@ EBTNodeResult::Type UBTTask_PlayMontageAndMove::ExecuteTask(UBehaviorTreeCompone
 
 	// 이동 경로 탐색 실패 등의 이유로 시작조차 못 한 경우
 	if (RequestResult.Code == EPathFollowingRequestResult::Failed)
-	{
+	{ 
 		UE_LOG(LogTemp, Warning, TEXT("PlayMontageAndMove: MoveTo 요청 실패"));
 		CachedBTComp = nullptr;
 		return EBTNodeResult::Failed;

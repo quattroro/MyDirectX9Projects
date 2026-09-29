@@ -8,6 +8,7 @@
 
 class UInputAction;
 class UInputMappingContext;
+class UMonsterRangeDebugComponent;
 
 UCLASS()
 class MY3DACTION_API AMonster_Usurper : public ACharacter
@@ -87,6 +88,12 @@ protected:
 	AActor* TestBox = nullptr;
 	AActor* TestBox2 = nullptr;
 	AActor* TestBox3 = nullptr;
+
+	// 감지/후퇴/공격/배회 범위를 뷰포트에 그려주는 디버그 전용 컴포넌트.
+	// 값을 소유하지 않고 AIController와 BT 노드에서 매 프레임 읽어 그린다.
+	// 생성자에서 기본 서브오브젝트로 붙이므로 BP_Monster를 다시 저장할 필요가 없다.
+	UPROPERTY(VisibleAnywhere, Category = "Monster Debug")
+	TObjectPtr<UMonsterRangeDebugComponent> RangeDebugComp;
 
 public:
 	// AIController가 타겟을 감지/소실했을 때 호출. nullptr을 넣으면 정면으로 복귀한다.

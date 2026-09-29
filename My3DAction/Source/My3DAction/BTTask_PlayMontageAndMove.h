@@ -61,6 +61,11 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Move")
 	float AcceptanceRadius = 1000.0f;
 
+public:
+	// 디버그 시각화 전용 리더.
+	// 이 값은 공격 패턴 에셋마다 오버라이드되므로 CDO 기본값을 믿으면 안 된다.
+	float GetAcceptanceRadius() const { return AcceptanceRadius; }
+
 private:
 	// 태스크를 한 번만 종료시킨다. FinishLatentTask 중복 호출 방지.
 	void FinishTask(UBehaviorTreeComponent& OwnerComp, EBTNodeResult::Type Result);

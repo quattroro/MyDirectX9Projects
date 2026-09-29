@@ -2,6 +2,7 @@
 
 
 #include "Monster_Usurper.h"
+#include "MonsterRangeDebugComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "EnhancedInputComponent.h"
@@ -40,6 +41,10 @@ AMonster_Usurper::AMonster_Usurper()
 	// 현재 Usurper 애니메이션 18종은 전부 Enable Root Motion이 꺼져 있어서 이 플래그는
 	// 사실상 동작하지 않는다. 나중에 루트 모션 공격을 넣을 때를 위한 사전 설정이다.
 	MoveComp->bAllowPhysicsRotationDuringAnimRootMotion = false;
+
+	// 디버그 시각화. 그리기 전용이라 게임플레이에는 영향이 없고,
+	// Shipping 빌드에서는 ENABLE_DRAW_DEBUG가 꺼져 그리기 코드가 전부 빠진다.
+	RangeDebugComp = CreateDefaultSubobject<UMonsterRangeDebugComponent>(TEXT("RangeDebugComp"));
 }
 
 // Called when the game starts or when spawned

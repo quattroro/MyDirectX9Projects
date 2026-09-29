@@ -120,6 +120,27 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Animation", meta = (ClampMin = "0.0"))
 	float MontageBlendOutTime = 0.2f;
 
+public:
+	//
+	// 디버그 시각화 전용 리더. UMonsterRangeDebugComponent가 이 값들을 읽어서 그린다.
+	// 값을 복제하지 않고 여기서 읽어가게 해야 화면과 실제 동작이 갈라지지 않는다.
+	//
+	ERetreatMoveMode GetMoveMode() const { return MoveMode; }
+	float GetRetreatDistance() const { return RetreatDistance; }
+	float GetMinRetreatDistance() const { return MinRetreatDistance; }
+	float GetRetreatSpreadAngle() const { return RetreatSpreadAngle; }
+	float GetBackstepAcceptanceRadius() const { return AcceptanceRadius; }
+	float GetLaunchXYSpeed() const { return LaunchXYSpeed; }
+	float GetLaunchZSpeed() const { return LaunchZSpeed; }
+
+	// 백점프의 체공 시간(초). t = 2 * Vz / |g|.
+	// GravityZ에는 UCharacterMovementComponent::GetGravityZ() 값을 그대로 넘기면 된다.
+	static float PredictBackJumpAirTime(float InLaunchZSpeed, float GravityZ);
+
+	// 백점프의 예상 수평 사거리(cm). 사거리 = Vxy * 체공시간.
+	// StartBackJump과 디버그 시각화가 같은 함수를 쓰게 해서 두 값이 어긋나지 않게 한다.
+	static float PredictBackJumpRange(float InLaunchXYSpeed, float InLaunchZSpeed, float GravityZ);
+
 private:
 	// 타겟 반대 방향의 수평 단위벡터를 구한다. RetreatSpreadAngle만큼 좌우로 흔들어준다.
 	FVector ComputeAwayDirection(const ACharacter* Character, const AActor* Target) const;

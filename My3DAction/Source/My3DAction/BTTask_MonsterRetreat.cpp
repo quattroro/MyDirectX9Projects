@@ -197,6 +197,21 @@ bool UBTTask_MonsterRetreat::StartBackstep(AAIController* AIController, ACharact
 	return true;
 }
 
+// 백점프의 체공 시간(초). t = 2 * Vz / |g|.
+// 이 계산이 두 곳에 복사되면 디버그로 그린 착지 지점과 실제 착지 지점이 조용히 갈라진다.
+// 그래서 StartBackJump과 UMonsterRangeDebugComponent가 모두 이 함수만 쓴다.
+float UBTTask_MonsterRetreat::PredictBackJumpAirTime(float InLaunchZSpeed, float GravityZ)
+{
+	const float AbsGravityZ = FMath::Abs(GravityZ);
+	return (AbsGravityZ > KINDA_SMALL_NUMBER) ? (2.f * InLaunchZSpeed / AbsGravityZ) : 0.f;
+}
+
+// 백점프의 예상 수평 사거리(cm). 사거리 = Vxy * 체공시간.
+float UBTTask_MonsterRetreat::PredictBackJumpRange(float InLaunchXYSpeed, float InLaunchZSpeed, float GravityZ)
+{
+	return InLaunchXYSpeed * PredictBackJumpAirTime(InLaunchZSpeed, GravityZ);
+}
+
 bool UBTTask_MonsterRetreat::StartBackJump(AAIController* AIController, ACharacter* Character, const FVector& AwayDir)
 {
 	UCharacterMovementComponent* MoveComp = Character->GetCharacterMovement();
@@ -205,7 +220,7 @@ bool UBTTask_MonsterRetreat::StartBackJump(AAIController* AIController, ACharact
 		return false;
 	}
 
-	// 체공 시간 t = 2 * Vz / |g|, 수평 사거리 = Vxy * t.
+	// 체공 시간과 수평 사거리 계산은 PredictBackJumpRange가 전담한다.
 	// UCharacterMovementComponent::GetGravityZ()는 GravityScale이 곱해진 값을 돌려준다.
 	const float GravityZ = FMath::Abs(MoveComp->GetGravityZ());
 	if (GravityZ < KINDA_SMALL_NUMBER)
@@ -213,8 +228,7 @@ bool UBTTask_MonsterRetreat::StartBackJump(AAIController* AIController, ACharact
 		return false;
 	}
 
-	const float AirTime = 2.f * LaunchZSpeed / GravityZ;
-	const float PredictedRange = LaunchXYSpeed * AirTime;
+	const float PredictedRange = PredictBackJumpRange(LaunchXYSpeed, LaunchZSpeed, GravityZ);
 
 	// 착지 예상 지점이 네비메시 밖이거나 중간이 막혀 있으면 도약 거리를 그만큼 줄인다.
 	const FVector StartLocation = Character->GetActorLocation();
