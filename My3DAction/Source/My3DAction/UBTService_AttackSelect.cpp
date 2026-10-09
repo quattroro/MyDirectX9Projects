@@ -64,12 +64,10 @@ void UUBTService_AttackSelect::TickNode(UBehaviorTreeComponent& OwnerComp, uint8
 		if (Rand == 0)
 		{
 			AttackType = EMonsterAttackType::AK_Mouth;
-			//LoopCount = FMath::RandRange(0, 2);
 		}
 		else if (Rand == 1)
 		{
 			AttackType = EMonsterAttackType::AK_Crow;
-			//LoopCount = FMath::RandRange(0, 1);
 		}
 		else
 		{

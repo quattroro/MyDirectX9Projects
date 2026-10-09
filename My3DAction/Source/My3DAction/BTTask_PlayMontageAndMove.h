@@ -54,7 +54,7 @@ protected:
 	bool bWaitForCompletion = true;
 
 	UPROPERTY(EditAnywhere, Category = "Animation")
-	float WiatTime;
+	float WaitTime;
 
 	// 목표 도달 판정 반경(cm). goal actor 기준이라 타겟 캡슐 중심까지의 거리이므로
 	// 공격 사거리 수준으로 잡는다. 너무 작으면 몬스터가 타겟을 밀고 들어간다.
