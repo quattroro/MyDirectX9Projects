@@ -18,10 +18,10 @@ namespace
 {
 	// Montage_Play 직후 첫 프레임에는 Montage_IsPlaying이 아직 false일 수 있다.
 	// 이 시간이 지나기 전에는 몽타주가 끝났다고 판단하지 않는다.
-	constexpr float MontageStartGraceTime = 0.1f;
+	constexpr float MontageStartGraceTime3 = 0.1f;
 
 	// AbortTask에서 몽타주를 정지시킬 때의 블렌드 아웃 시간(초)
-	constexpr float AbortBlendOutTime = 0.2f;
+	constexpr float AbortBlendOutTime3 = 0.2f;
 }
 
 UBTTask_Move::UBTTask_Move()
@@ -252,7 +252,7 @@ void UBTTask_Move::TryFinish(UBehaviorTreeComponent& OwnerComp)
 //	}
 //
 //	// Montage_Play 직후 첫 프레임에는 아직 재생 중으로 잡히지 않을 수 있다.
-//	if (ElapsedTime < MontageStartGraceTime)
+//	if (ElapsedTime < MontageStartGraceTime3)
 //	{
 //		return false;
 //	}
@@ -286,7 +286,7 @@ EBTNodeResult::Type UBTTask_Move::AbortTask(UBehaviorTreeComponent& OwnerComp, u
 	{
 		if (MontageToPlay && AnimInstance->Montage_IsPlaying(MontageToPlay))
 		{
-			AnimInstance->Montage_Stop(AbortBlendOutTime, MontageToPlay);
+			AnimInstance->Montage_Stop(AbortBlendOutTime3, MontageToPlay);
 		}
 	}*/
 
