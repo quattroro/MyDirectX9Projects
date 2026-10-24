@@ -61,12 +61,25 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Move")
 	float AcceptanceRadius = 1000.0f;
 
+	// 타겟을 바라봤다고 인정하는 오차
+	UPROPERTY(EditAnywhere, Category = "FaceTo")
+	float FaceAngleTolerance = 10.0f;
+
+	bool bFaceTargetWhenAlreadyAtGoal = true;
+	bool bFacingTarget;
+	bool bFocusSet = false; // SetFocus를 걸었는지.정리할 때 ClearFocus가 필요한지 판단하는 데 씁니다.
+	AActor* TargetActor;
+
+	bool IsFacingTarget(const APawn* Pawn, const AActor* Target) const;
+	void ClearFaceFocus(AAIController* AIController);
+
 public:
 	// 디버그 시각화 전용 리더.
 	// 이 값은 공격 패턴 에셋마다 오버라이드되므로 CDO 기본값을 믿으면 안 된다.
 	float GetAcceptanceRadius() const { return AcceptanceRadius; }
 
 private:
+	
 	// 태스크를 한 번만 종료시킨다. FinishLatentTask 중복 호출 방지.
 	void FinishTask(UBehaviorTreeComponent& OwnerComp, EBTNodeResult::Type Result);
 	// OnRequestFinished 바인딩 해제. 모든 종료 경로에서 호출해야 한다.

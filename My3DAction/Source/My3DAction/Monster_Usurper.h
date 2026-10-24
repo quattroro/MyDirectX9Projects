@@ -79,6 +79,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Look At", meta = (AllowPrivateAccess = "true"))
 	float LookAtAlpha = 0.f;
 
+	UPROPERTY(EditAnywhere, Category = "Look At", meta = (AllowPrivateAccess = "true"))
+	bool EnableLookAt = true;
+
 	// 현재 쳐다보고 있는 대상. AIController가 Perception 이벤트로 넣어준다.
 	TWeakObjectPtr<AActor> LookAtTarget;
 

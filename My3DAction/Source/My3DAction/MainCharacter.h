@@ -54,6 +54,10 @@ class MY3DACTION_API AMainCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* DefenceAction;
 
+	/** Roll Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* RollAction;
+
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* Attack1_Montage;
 
@@ -63,6 +67,10 @@ class MY3DACTION_API AMainCharacter : public ACharacter
 
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* Defence_Montage;
+
+	// 루트 모션 구르기 몽타주. 이동 거리는 애니메이션이 결정한다.
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* Roll_Montage;
 
 
 	int AttackCount;
@@ -107,6 +115,12 @@ protected:
 	void StopDefence();
 
 	bool Attacking();
+
+	void Roll();
+	bool Rolling() const;
+
+	// 구르는 도중에는 점프할 수 없다.
+	virtual bool CanJumpInternal_Implementation() const override;
 
 protected:
 	// APawn interface

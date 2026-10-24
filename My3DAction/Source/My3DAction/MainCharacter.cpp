@@ -11,6 +11,7 @@
 #include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "EnhancedPlayerInput.h"
 #include "InputActionValue.h"
 #include "Animation/AnimInstance.h"
 #include "Monster_Usurper.h"
@@ -186,6 +187,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 		EnhancedInputComponent->BindAction(DefenceAction, ETriggerEvent::Started, this, &AMainCharacter::BeginDefence);
 		EnhancedInputComponent->BindAction(DefenceAction, ETriggerEvent::Completed, this, &AMainCharacter::StopDefence);
+
+		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &AMainCharacter::Roll);
 	}
 	else
 	{
@@ -200,11 +203,56 @@ bool AMainCharacter::Attacking()
 	return bIsMontagePlaying;
 }
 
+bool AMainCharacter::Rolling() const
+{
+	const UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	return AnimInstance && Roll_Montage && AnimInstance->Montage_IsPlaying(Roll_Montage);
+}
+
+bool AMainCharacter::CanJumpInternal_Implementation() const
+{
+	return Super::CanJumpInternal_Implementation() && !Rolling();
+}
+
+void AMainCharacter::Roll()
+{
+	if (!Roll_Montage || Rolling() || Attacking() || GetCharacterMovement()->IsFalling())
+		return;
+
+	// 구르기는 루트 모션이라 캐릭터 정면으로만 이동한다.
+	// 이동 입력이 있으면 그 방향으로 먼저 몸을 돌리고, 없으면 지금 바라보는 방향으로 구른다.
+	// 같은 프레임 안에서 Roll 이벤트가 Move 이벤트보다 먼저 올 수 있어서
+	// AddMovementInput 결과(Pending/LastMovementInput)에 기대지 않고 MoveAction 값을 직접 읽는다.
+	// 액션 값은 이벤트가 발생하기 전에 이미 이번 프레임 값으로 갱신되어 있다.
+	FVector RollDirection = FVector::ZeroVector;
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			if (UEnhancedPlayerInput* PlayerInput = Subsystem->GetPlayerInput())
+			{
+				// Move()와 같은 방식으로 카메라 기준 입력을 월드 방향으로 바꾼다.
+				const FVector2D MovementVector = PlayerInput->GetActionValue(MoveAction).Get<FVector2D>();
+				const FRotator YawRotation(0, Controller->GetControlRotation().Yaw, 0);
+				RollDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X) * MovementVector.Y
+					+ FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y) * MovementVector.X;
+			}
+		}
+	}
+	RollDirection.Z = 0.f;
+	if (RollDirection.Normalize())
+	{
+		SetActorRotation(RollDirection.Rotation());
+	}
+
+	GetMesh()->GetAnimInstance()->Montage_Play(Roll_Montage, 1.0f);
+}
+
 void AMainCharacter::Attack()
 {
 	//UE_LOG(LogTemp, Log, TEXT("Attack %d"), AttackCount);
 
-	if (Attacking())
+	if (Attacking() || Rolling())
 		return;
 
 	if (AttackCount == 0)
@@ -258,7 +306,7 @@ void AMainCharacter::Move(const FInputActionValue& Value)
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr && !Defence && !Attacking())
+	if (Controller != nullptr && !Defence && !Attacking() && !Rolling())
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();

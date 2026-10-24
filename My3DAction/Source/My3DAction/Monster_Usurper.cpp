@@ -58,28 +58,12 @@ void AMonster_Usurper::BeginPlay()
 
 	Health = MaxHealth;
 
-	UE_LOG(LogTemp, Log, TEXT("enter Hear?"));
-
-	// APlayerController의 DefaultPawnClass로 지정되어 있는 APawn은 PlayerController가 Possess해야 호출 가능하지만, Player가 아닌 다른 APawn 객체들은
-	// 자동으로 AAIController가 빙의한다.
-
-	/*if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		UE_LOG(LogTemp, Log, TEXT("enter Hear?"));
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			UE_LOG(LogTemp, Log, TEXT("enter Hear?"));
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}*/
-
 
 	UWorld* World = GetWorld();
 	if (!World) return;
 
 	// 찾고자 하는 월드 아웃라이너 상의 이름 (정확히 일치해야 합니다)
 	FString TargetName = TEXT("TestCube");
-	//AActor* FoundActor = nullptr;
 
 	// 월드의 모든 액터를 순회하는 이터레이터(TActorIterator) 사용
 	for (TActorIterator<AActor> ActorItr(World); ActorItr; ++ActorItr)
@@ -173,7 +157,6 @@ void AMonster_Usurper::UpdateLookAt(float DeltaTime)
 		//UE_LOG(LogTemp, Log, TEXT("MeshRot = (%f, %f, %f)"), MeshComp->GetComponentRotation().Roll, MeshComp->GetComponentRotation().Pitch, MeshComp->GetComponentRotation().Yaw);
 	}
 	
-	//UE_LOG(LogTemp, Log, TEXT("ActorRotation = (%f, %f, %f)"), GetActorRotation().Roll, GetActorRotation().Pitch, GetActorRotation().Yaw);
 
 	// 타겟이 없을 때의 기본값: 정면을 본다(= Alpha가 0으로 빠지므로 실제로는 원본 포즈).
 	FVector DesiredWorldLocation = HeadWorldLocation + ActorRotation.Vector() * 500.f;
@@ -231,10 +214,6 @@ void AMonster_Usurper::UpdateLookAt(float DeltaTime)
 		//TestBox->SetActorLocation(DesiredWorldLocation);
 	}
 
-	/*if (TestBox2)
-	{
-		TestBox2->SetActorLocation(HeadWorldLocation);
-	}*/
 
 }
 
@@ -243,7 +222,8 @@ void AMonster_Usurper::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	UpdateLookAt(DeltaTime);
+	if(EnableLookAt)
+		UpdateLookAt(DeltaTime);
 }
 
 //

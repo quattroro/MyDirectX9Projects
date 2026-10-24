@@ -19,7 +19,7 @@ namespace
 {
 	// Montage_Play 직후 첫 프레임에는 Montage_IsPlaying이 아직 false일 수 있다.
 	// 이 시간이 지나기 전에는 몽타주가 끝났다고 판단하지 않는다.
-	constexpr float MontageStartGraceTime2 = 0.1f;
+	constexpr float MontageStartGraceTime4 = 0.1f;
 }
 
 UBTTask_MonsterRetreat::UBTTask_MonsterRetreat()
@@ -546,7 +546,7 @@ bool UBTTask_MonsterRetreat::IsMontageDone(UAnimInstance* AnimInstance) const
 	}
 
 	// Montage_Play 직후 첫 프레임에는 아직 재생 중으로 잡히지 않을 수 있다.
-	if (ElapsedTime < MontageStartGraceTime2)
+	if (ElapsedTime < MontageStartGraceTime4)
 	{
 		return false;
 	}

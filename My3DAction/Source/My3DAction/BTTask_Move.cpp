@@ -86,7 +86,7 @@ EBTNodeResult::Type UBTTask_Move::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	// TargetActor는 Object(AActor) 키다. GetValueAsVector로 읽으면 값이 아니라
 	// UBlackboardKeyType_Vector::InvalidValue(= FAISystem::InvalidLocation, FLT_MAX)가 돌아오고,
 	// MoveTo는 목적지 유효성 검사에서 걸려 경로 탐색도 하지 않고 Failed를 반환한다.
-	AActor* TargetActor = Cast<AActor>(BlackboardComp->GetValueAsObject(TargetKey.SelectedKeyName));
+	/*AActor**/ TargetActor = Cast<AActor>(BlackboardComp->GetValueAsObject(TargetKey.SelectedKeyName));
 	if (!TargetActor)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PlayMontageAndMove: 블랙보드 키 '%s'에 유효한 액터가 없다."),
@@ -125,6 +125,16 @@ EBTNodeResult::Type UBTTask_Move::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 		bMoveFinished = true;
 		bMoveSucceeded = true;
 		//bMontagePlayStarted = (AnimInstance->Montage_Play(MontageToPlay, PlayRate) > 0.f);
+
+		// 이미 타겟을 바라보고 있으면 기존처럼 즉시 성공 경로로 내려간다.
+		if (bFaceTargetWhenAlreadyAtGoal && !IsFacingTarget(Character, TargetActor))
+		{
+			AIController->SetFocus(TargetActor, EAIFocusPriority::Gameplay);
+			//FaceTarget = TargetActor;
+			bFocusSet = true;
+			bFacingTarget = true;
+			return EBTNodeResult::InProgress;   // 회전이 끝날 때까지 TickTask에서 대기
+		}
 	}
 	else if (UPathFollowingComponent* PathFollowingComp = AIController->GetPathFollowingComponent())
 	{
@@ -147,6 +157,12 @@ EBTNodeResult::Type UBTTask_Move::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	return EBTNodeResult::InProgress;
 }
 
+bool UBTTask_Move::IsFacingTarget(const APawn* Pawn, const AActor* Target) const
+{
+	//return FMath::Abs(FMath::FindDeltaAngleDegrees(Pawn->GetActorRotation().Yaw, Target->Rotation().Yaw)) <= FaceAngleTolerance;
+	const FVector ToTarget = Target->GetActorLocation() - Pawn->GetActorLocation();
+	return FMath::Abs(FMath::FindDeltaAngleDegrees(Pawn->GetActorRotation().Yaw, ToTarget.Rotation().Yaw)) <= FaceAngleTolerance;
+}
 
 void UBTTask_Move::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
 {
