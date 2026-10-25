@@ -68,9 +68,18 @@ class MY3DACTION_API AMainCharacter : public ACharacter
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* Defence_Montage;
 
-	// 루트 모션 구르기 몽타주. 이동 거리는 애니메이션이 결정한다.
+	// 제자리 구르기 몽타주. 이동은 Roll()에서 Root Motion Source로 처리한다.
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* Roll_Montage;
+
+	// 구르기 한 번에 이동하는 거리 (원본 애니메이션의 루트 이동량)
+	UPROPERTY(EditAnywhere, Category = Roll)
+	float RollDistance = 280.f;
+
+	// 구르는 동안의 속도 배율 커브 (X: 0~1 진행도, Y: 배율). 비워두면 등속.
+	// 평균값이 1이어야 실제 이동 거리가 RollDistance와 같아진다.
+	UPROPERTY(EditAnywhere, Category = Roll)
+	class UCurveFloat* RollSpeedCurve = nullptr;
 
 
 	int AttackCount;

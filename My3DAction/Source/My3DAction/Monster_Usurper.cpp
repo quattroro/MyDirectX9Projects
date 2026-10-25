@@ -108,6 +108,9 @@ void AMonster_Usurper::Hit(FVector pos, FVector dir)
 void AMonster_Usurper::ApplyDamage(float DamageAmount)
 {
 	Health = FMath::Clamp(Health - DamageAmount, 0.f, MaxHealth);
+
+
+
 	UE_LOG(LogTemp, Log, TEXT("ApplyDamage: -%f, Health = %f / %f"), DamageAmount, Health, MaxHealth);
 }
 

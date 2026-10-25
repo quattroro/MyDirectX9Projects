@@ -54,7 +54,6 @@ void UBTService_UpdateMonsterState::TickNode(UBehaviorTreeComponent& OwnerComp, 
 		return;
 	}
 
-	//UE_LOG(LogTemp, Log, TEXT("TickNode"));
 
 	// 몬스터의 현재 체력을 받아와서 블랙보드에 기록한다.
 	const float HealthPct = Monster->GetHealthPercent();
@@ -73,15 +72,18 @@ void UBTService_UpdateMonsterState::TickNode(UBehaviorTreeComponent& OwnerComp, 
 	const EMonsterCombatState CurrentState = static_cast<EMonsterCombatState>(BlackboardComp->GetValueAsEnum(CombatStateKey.SelectedKeyName));
 	EMonsterCombatState NewState = CurrentState;
 
+	// 분노상태
 	if (HealthPct <= EnrageHealthPctThreshold && Target)
 	{
 		NewState = EMonsterCombatState::Enrage;
 	}
+	// 플레이어 로스트
 	else if (Target && CurrentState == EMonsterCombatState::Passive)
 	{
 		NewState = EMonsterCombatState::Alert;
 		TimeInAlertState = 0.f;
 	}
+	// 플레이어 발견
 	else if (CurrentState == EMonsterCombatState::Alert)
 	{
 		TimeInAlertState += Interval;
@@ -90,7 +92,15 @@ void UBTService_UpdateMonsterState::TickNode(UBehaviorTreeComponent& OwnerComp, 
 			NewState = EMonsterCombatState::Combat;
 		}
 	}
-	// Combat/Enrage에서 타겟 소실/체력 회복 시 하향 전이는 이번 범위에서 의도적으로 미구현.
+
+	
+
+	// 사망 
+	if (HealthPct <= 0.0)
+	{
+
+	}
+
 
 	if (NewState != CurrentState)
 	{

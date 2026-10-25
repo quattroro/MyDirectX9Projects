@@ -7,6 +7,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/RootMotionSource.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
@@ -169,9 +170,9 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 
-		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		//// Jumping
+		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMainCharacter::Move);
@@ -219,7 +220,7 @@ void AMainCharacter::Roll()
 	if (!Roll_Montage || Rolling() || Attacking() || GetCharacterMovement()->IsFalling())
 		return;
 
-	// 구르기는 루트 모션이라 캐릭터 정면으로만 이동한다.
+	// 구르기는 캐릭터 정면으로만 이동한다.
 	// 이동 입력이 있으면 그 방향으로 먼저 몸을 돌리고, 없으면 지금 바라보는 방향으로 구른다.
 	// 같은 프레임 안에서 Roll 이벤트가 Move 이벤트보다 먼저 올 수 있어서
 	// AddMovementInput 결과(Pending/LastMovementInput)에 기대지 않고 MoveAction 값을 직접 읽는다.
@@ -245,7 +246,28 @@ void AMainCharacter::Roll()
 		SetActorRotation(RollDirection.Rotation());
 	}
 
-	GetMesh()->GetAnimInstance()->Montage_Play(Roll_Montage, 1.0f);
+	float Duration = GetMesh()->GetAnimInstance()->Montage_Play(Roll_Montage, 1.0f);
+	if (Duration <= 0.f)
+		return;
+
+	Duration = 0.57;
+
+	// 애니메이션은 제자리 구르기라서 이동은 CharacterMovement의 Root Motion Source로 준다.
+	// LaunchCharacter는 지상 마찰/감속 때문에 거리가 일정하지 않고, AddMovementInput은 MaxWalkSpeed에 묶인다.
+	// 몽타주 길이와 같은 시간 동안 RollDistance만큼 밀어서 애니메이션과 이동이 같이 끝나게 한다.
+	TSharedPtr<FRootMotionSource_ConstantForce> RollForce = MakeShared<FRootMotionSource_ConstantForce>();
+	RollForce->InstanceName = TEXT("Roll");
+	RollForce->AccumulateMode = ERootMotionAccumulateMode::Override;
+	RollForce->Priority = 5;
+	RollForce->Force = GetActorForwardVector() * (RollDistance / Duration);
+	RollForce->Duration = Duration;
+	RollForce->StrengthOverTime = RollSpeedCurve;
+	// Override 모드에서도 Z 속도는 유지해서, 구르다 낭떠러지를 벗어나면 중력으로 떨어지게 한다.
+	RollForce->Settings.SetFlag(ERootMotionSourceSettingsFlags::IgnoreZAccumulate);
+	// 끝난 뒤 남은 속도로 미끄러지지 않도록 멈춘다.
+	RollForce->FinishVelocityParams.Mode = ERootMotionFinishVelocityMode::SetVelocity;
+	RollForce->FinishVelocityParams.SetVelocity = FVector::ZeroVector;
+	GetCharacterMovement()->ApplyRootMotionSource(RollForce);
 }
 
 void AMainCharacter::Attack()
