@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "BTTask_Move.h"
@@ -16,11 +16,11 @@
 
 namespace
 {
-	// Montage_Play Á÷ÈÄ Ã¹ ÇÁ·¹ÀÓ¿¡´Â Montage_IsPlayingÀÌ ¾ÆÁ÷ falseÀÏ ¼ö ÀÖ´Ù.
-	// ÀÌ ½Ã°£ÀÌ Áö³ª±â Àü¿¡´Â ¸ùÅ¸ÁÖ°¡ ³¡³µ´Ù°í ÆÇ´ÜÇÏÁö ¾Ê´Â´Ù.
+	// Montage_Play ì§í›„ ì²« í”„ë ˆì„ì—ëŠ” Montage_IsPlayingì´ ì•„ì§ falseì¼ ìˆ˜ ìˆë‹¤.
+	// ì´ ì‹œê°„ì´ ì§€ë‚˜ê¸° ì „ì—ëŠ” ëª½íƒ€ì£¼ê°€ ëë‚¬ë‹¤ê³  íŒë‹¨í•˜ì§€ ì•ŠëŠ”ë‹¤.
 	constexpr float MontageStartGraceTime3 = 0.1f;
 
-	// AbortTask¿¡¼­ ¸ùÅ¸ÁÖ¸¦ Á¤Áö½ÃÅ³ ¶§ÀÇ ºí·»µå ¾Æ¿ô ½Ã°£(ÃÊ)
+	// AbortTaskì—ì„œ ëª½íƒ€ì£¼ë¥¼ ì •ì§€ì‹œí‚¬ ë•Œì˜ ë¸”ë Œë“œ ì•„ì›ƒ ì‹œê°„(ì´ˆ)
 	constexpr float AbortBlendOutTime3 = 0.2f;
 }
 
@@ -29,26 +29,26 @@ UBTTask_Move::UBTTask_Move()
 	NodeName = TEXT("Play Move");
 	bNotifyTick = true;
 
-	// ÀÌ ³ëµå´Â ÁøÇà ÁßÀÎ ÀÌµ¿ ID¿Í ¿Ï·á ÇÃ·¡±×¸¦ ¸â¹ö·Î µé°í ÀÖ´Ù.
-	// ³ëµå ÀÎ½ºÅÏ½º¸¦ ¸¸µéÁö ¾ÊÀ¸¸é ±× »óÅÂ¸¦ °°Àº Æ®¸®¸¦ ¾²´Â ¸ğµç ¸ó½ºÅÍ°¡ °øÀ¯ÇØ
-	// ¼­·ÎÀÇ ÀÌµ¿ ¿Ï·á Ã³¸®¸¦ µ¤¾î¾´´Ù.
+	// ì´ ë…¸ë“œëŠ” ì§„í–‰ ì¤‘ì¸ ì´ë™ IDì™€ ì™„ë£Œ í”Œë˜ê·¸ë¥¼ ë©¤ë²„ë¡œ ë“¤ê³  ìˆë‹¤.
+	// ë…¸ë“œ ì¸ìŠ¤í„´ìŠ¤ë¥¼ ë§Œë“¤ì§€ ì•Šìœ¼ë©´ ê·¸ ìƒíƒœë¥¼ ê°™ì€ íŠ¸ë¦¬ë¥¼ ì“°ëŠ” ëª¨ë“  ëª¬ìŠ¤í„°ê°€ ê³µìœ í•´
+	// ì„œë¡œì˜ ì´ë™ ì™„ë£Œ ì²˜ë¦¬ë¥¼ ë®ì–´ì“´ë‹¤.
 	bCreateNodeInstance = true;
 
-	// ºí·¢º¸µå Å°°¡ Æ¯Á¤ Å¬·¡½º ¶Ç´Â ±× ÇÏÀ§ Å¬·¡½ºÀÇ ¿ÀºêÁ§Æ®¸¸ °ªÀ¸·Î °¡Áú ¼ö ÀÖµµ·Ï Á¦ÇÑÇÑ´Ù.
-	// (BTService_UpdateMonsterState¿Í µ¿ÀÏÇÑ ÆĞÅÏ)
+	// ë¸”ë™ë³´ë“œ í‚¤ê°€ íŠ¹ì • í´ë˜ìŠ¤ ë˜ëŠ” ê·¸ í•˜ìœ„ í´ë˜ìŠ¤ì˜ ì˜¤ë¸Œì íŠ¸ë§Œ ê°’ìœ¼ë¡œ ê°€ì§ˆ ìˆ˜ ìˆë„ë¡ ì œí•œí•œë‹¤.
+	// (BTService_UpdateMonsterStateì™€ ë™ì¼í•œ íŒ¨í„´)
 	//TargetKey.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTTask_PlayMontageAndMove, TargetKey), AActor::StaticClass());
 	//AttackType.AddEnumFilter(this, GET_MEMBER_NAME_CHECKED(UBTTask_PlayMontageAndMove, AttackType), StaticEnum<EMonsterAttackType>());
 }
 
-//¿¡¼ÂÀÌ ÁØºñµÇ´Â ´Ü°è(Ã³À½ Æ®¸® ÆÄÀÏÀÌ ¿­¸®°Å³ª ÃÊ±âÈ­µÉ ¶§)¿¡¼­ ´Ü ÇÑ ¹ø¸¸ È£ÃâµÇ¹Ç·Î, Á¤Àû µ¥ÀÌÅÍ ÆÄ½Ì ¹× ÃÊ±âÈ­¿¡ ÃÖÀûÈ­µÇ¾î ÀÖ´Ù.
+//ì—ì…‹ì´ ì¤€ë¹„ë˜ëŠ” ë‹¨ê³„(ì²˜ìŒ íŠ¸ë¦¬ íŒŒì¼ì´ ì—´ë¦¬ê±°ë‚˜ ì´ˆê¸°í™”ë  ë•Œ)ì—ì„œ ë‹¨ í•œ ë²ˆë§Œ í˜¸ì¶œë˜ë¯€ë¡œ, ì •ì  ë°ì´í„° íŒŒì‹± ë° ì´ˆê¸°í™”ì— ìµœì í™”ë˜ì–´ ìˆë‹¤.
 void UBTTask_Move::InitializeFromAsset(UBehaviorTree& Asset)
 {
 	Super::InitializeFromAsset(Asset);
 
 	if (UBlackboardData* BBAsset = GetBlackboardAsset())
 	{
-		// ÀÌ ÇÁ·ÎÆÛÆ¼°¡ »ı±â±â Àü¿¡ ÀúÀåµÈ ³ëµå´Â Å°°¡ ºñ¾î ÀÖ´Ù.
-		// ¿¹Àü µ¿ÀÛ(TargetActor ÇÏµåÄÚµù)°ú ¸ÂÃß±â À§ÇØ ±âº»°ªÀ» Ã¤¿öÁØ´Ù.
+		// ì´ í”„ë¡œí¼í‹°ê°€ ìƒê¸°ê¸° ì „ì— ì €ì¥ëœ ë…¸ë“œëŠ” í‚¤ê°€ ë¹„ì–´ ìˆë‹¤.
+		// ì˜ˆì „ ë™ì‘(TargetActor í•˜ë“œì½”ë”©)ê³¼ ë§ì¶”ê¸° ìœ„í•´ ê¸°ë³¸ê°’ì„ ì±„ì›Œì¤€ë‹¤.
 		if (TargetKey.SelectedKeyName.IsNone())
 		{
 			TargetKey.SelectedKeyName = TEXT("TargetActor");
@@ -59,7 +59,7 @@ void UBTTask_Move::InitializeFromAsset(UBehaviorTree& Asset)
 }
 
 
-// ÀÏ´Ü ÁöÁ¤µÈ À§Ä¡·Î ¿òÁ÷ÀÌ°í ÀÌÈÄ¿¡ ÁöÁ¤µÈ ¸ùÅ¸ÁÖ Àç»ı
+// ì¼ë‹¨ ì§€ì •ëœ ìœ„ì¹˜ë¡œ ì›€ì§ì´ê³  ì´í›„ì— ì§€ì •ëœ ëª½íƒ€ì£¼ ì¬ìƒ
 EBTNodeResult::Type UBTTask_Move::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	AAIController* AIController = OwnerComp.GetAIOwner();
@@ -73,7 +73,7 @@ EBTNodeResult::Type UBTTask_Move::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 		return EBTNodeResult::Failed;
 	}
 
-	// ½ÇÇàÇÒ ¶§¸¶´Ù »óÅÂ¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+	// ì‹¤í–‰í•  ë•Œë§ˆë‹¤ ìƒíƒœë¥¼ ì´ˆê¸°í™”í•œë‹¤.
 	CachedBTComp = &OwnerComp;
 	MoveRequestID = FAIRequestID::InvalidRequest;
 	ElapsedTime = 0.f;
@@ -82,27 +82,27 @@ EBTNodeResult::Type UBTTask_Move::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	bMoveSucceeded = false;
 	bTaskFinished = false;
 
-	// ºí·¢º¸µå¿¡¼­ TargetActor°ªÀ» °¡Á®¿Â´Ù.
-	// TargetActor´Â Object(AActor) Å°´Ù. GetValueAsVector·Î ÀĞÀ¸¸é °ªÀÌ ¾Æ´Ï¶ó
-	// UBlackboardKeyType_Vector::InvalidValue(= FAISystem::InvalidLocation, FLT_MAX)°¡ µ¹¾Æ¿À°í,
-	// MoveTo´Â ¸ñÀûÁö À¯È¿¼º °Ë»ç¿¡¼­ °É·Á °æ·Î Å½»öµµ ÇÏÁö ¾Ê°í Failed¸¦ ¹İÈ¯ÇÑ´Ù.
+	// ë¸”ë™ë³´ë“œì—ì„œ TargetActorê°’ì„ ê°€ì ¸ì˜¨ë‹¤.
+	// TargetActorëŠ” Object(AActor) í‚¤ë‹¤. GetValueAsVectorë¡œ ì½ìœ¼ë©´ ê°’ì´ ì•„ë‹ˆë¼
+	// UBlackboardKeyType_Vector::InvalidValue(= FAISystem::InvalidLocation, FLT_MAX)ê°€ ëŒì•„ì˜¤ê³ ,
+	// MoveToëŠ” ëª©ì ì§€ ìœ íš¨ì„± ê²€ì‚¬ì—ì„œ ê±¸ë ¤ ê²½ë¡œ íƒìƒ‰ë„ í•˜ì§€ ì•Šê³  Failedë¥¼ ë°˜í™˜í•œë‹¤.
 	/*AActor**/ TargetActor = Cast<AActor>(BlackboardComp->GetValueAsObject(TargetKey.SelectedKeyName));
 	if (!TargetActor)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PlayMontageAndMove: ºí·¢º¸µå Å° '%s'¿¡ À¯È¿ÇÑ ¾×ÅÍ°¡ ¾ø´Ù."),
+		UE_LOG(LogTemp, Warning, TEXT("PlayMontageAndMove: ë¸”ë™ë³´ë“œ í‚¤ '%s'ì— ìœ íš¨í•œ ì•¡í„°ê°€ ì—†ë‹¤."),
 			*TargetKey.SelectedKeyName.ToString());
 		CachedBTComp = nullptr;
 		return EBTNodeResult::Failed;
 	}
 
-	// goal actor·Î ¿äÃ»ÇÏ¸é Å¸°ÙÀÌ ¿òÁ÷¿©µµ °æ·Î°¡ °è¼Ó °»½ÅµÈ´Ù.
+	// goal actorë¡œ ìš”ì²­í•˜ë©´ íƒ€ê²Ÿì´ ì›€ì§ì—¬ë„ ê²½ë¡œê°€ ê³„ì† ê°±ì‹ ëœë‹¤.
 	FAIMoveRequest MoveRequest(TargetActor);
 	MoveRequest.SetAcceptanceRadius(AcceptanceRadius);
 
-	// µ¨¸®°ÔÀÌÆ®´Â ¹İµå½Ã MoveTo "µÚ¿¡" °Ç´Ù.
-	// MoveTo´Â ÀÌ¹Ì ¸ñÇ¥¿¡ µµÂøÇØ ÀÖ°Å³ª Áï½Ã ½ÇÆĞÇÑ °æ¿ì È£Ãâ ½ºÅÃ ¾È¿¡¼­ °ğ¹Ù·Î
-	// OnRequestFinished¸¦ ºê·ÎµåÄ³½ºÆ®ÇÑ´Ù. ¹Ì¸® °É¾îµÎ¸é ¸ùÅ¸ÁÖ¸¦ Àç»ıÇÏ±âµµ Àü¿¡
-	// Äİ¹éÀÌ µé¾î¿Í ÅÂ½ºÅ©°¡ ³¡³ª¹ö¸°´Ù.
+	// ë¸ë¦¬ê²Œì´íŠ¸ëŠ” ë°˜ë“œì‹œ MoveTo "ë’¤ì—" ê±´ë‹¤.
+	// MoveToëŠ” ì´ë¯¸ ëª©í‘œì— ë„ì°©í•´ ìˆê±°ë‚˜ ì¦‰ì‹œ ì‹¤íŒ¨í•œ ê²½ìš° í˜¸ì¶œ ìŠ¤íƒ ì•ˆì—ì„œ ê³§ë°”ë¡œ
+	// OnRequestFinishedë¥¼ ë¸Œë¡œë“œìºìŠ¤íŠ¸í•œë‹¤. ë¯¸ë¦¬ ê±¸ì–´ë‘ë©´ ëª½íƒ€ì£¼ë¥¼ ì¬ìƒí•˜ê¸°ë„ ì „ì—
+	// ì½œë°±ì´ ë“¤ì–´ì™€ íƒœìŠ¤í¬ê°€ ëë‚˜ë²„ë¦°ë‹¤.
 	const FPathFollowingRequestResult RequestResult = AIController->MoveTo(MoveRequest);
 	MoveRequestID = RequestResult.MoveId;
 
@@ -110,30 +110,29 @@ EBTNodeResult::Type UBTTask_Move::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 		*GetNameSafe(TargetActor), *TargetActor->GetActorLocation().ToCompactString(),
 		(int32)RequestResult.Code, MoveRequestID.GetID());
 
-	// ÀÌµ¿ °æ·Î Å½»ö ½ÇÆĞ µîÀÇ ÀÌÀ¯·Î ½ÃÀÛÁ¶Â÷ ¸ø ÇÑ °æ¿ì
+	// ì´ë™ ê²½ë¡œ íƒìƒ‰ ì‹¤íŒ¨ ë“±ì˜ ì´ìœ ë¡œ ì‹œì‘ì¡°ì°¨ ëª» í•œ ê²½ìš°
 	if (RequestResult.Code == EPathFollowingRequestResult::Failed)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("PlayMontageAndMove: MoveTo ¿äÃ» ½ÇÆĞ"));
+		//UE_LOG(LogTemp, Warning, TEXT("PlayMontageAndMove: MoveTo ìš”ì²­ ì‹¤íŒ¨"));
 		CachedBTComp = nullptr;
 		return EBTNodeResult::Failed;
 	}
 
-	// ÀÌ¹Ì ¸ñÇ¥Ä¡¿¡ µµ´ŞÇØ ÀÖ´Â µîÀÇ ÀÌÀ¯·Î Áï½Ã ¼º°øÇÑ °æ¿ì.
-	// ÀÌµ¿Àº ³¡³µÁö¸¸ ¸ùÅ¸ÁÖ´Â ¾ÆÁ÷ Àç»ıÇØ¾ß ÇÏ¹Ç·Î ÅÂ½ºÅ©¸¦ ¿©±â¼­ ³¡³»Áö ¾Ê´Â´Ù.
+	// ì´ë¯¸ ëª©í‘œì¹˜ì— ë„ë‹¬í•´ ìˆëŠ” ë“±ì˜ ì´ìœ ë¡œ ì¦‰ì‹œ ì„±ê³µí•œ ê²½ìš°.
+	// ì´ë™ì€ ëë‚¬ì§€ë§Œ ëª½íƒ€ì£¼ëŠ” ì•„ì§ ì¬ìƒí•´ì•¼ í•˜ë¯€ë¡œ íƒœìŠ¤í¬ë¥¼ ì—¬ê¸°ì„œ ëë‚´ì§€ ì•ŠëŠ”ë‹¤.
 	if (RequestResult.Code == EPathFollowingRequestResult::AlreadyAtGoal)
 	{
 		bMoveFinished = true;
 		bMoveSucceeded = true;
 		//bMontagePlayStarted = (AnimInstance->Montage_Play(MontageToPlay, PlayRate) > 0.f);
 
-		// ÀÌ¹Ì Å¸°ÙÀ» ¹Ù¶óº¸°í ÀÖÀ¸¸é ±âÁ¸Ã³·³ Áï½Ã ¼º°ø °æ·Î·Î ³»·Á°£´Ù.
+		// ì´ë¯¸ íƒ€ê²Ÿì„ ë°”ë¼ë³´ê³  ìˆìœ¼ë©´ ê¸°ì¡´ì²˜ëŸ¼ ì¦‰ì‹œ ì„±ê³µ ê²½ë¡œë¡œ ë‚´ë ¤ê°„ë‹¤.
 		if (bFaceTargetWhenAlreadyAtGoal && !IsFacingTarget(Character, TargetActor))
 		{
 			AIController->SetFocus(TargetActor, EAIFocusPriority::Gameplay);
-			//FaceTarget = TargetActor;
 			bFocusSet = true;
 			bFacingTarget = true;
-			return EBTNodeResult::InProgress;   // È¸ÀüÀÌ ³¡³¯ ¶§±îÁö TickTask¿¡¼­ ´ë±â
+			return EBTNodeResult::/*InProgress*/Succeeded;   // íšŒì „ì´ ëë‚  ë•Œê¹Œì§€ TickTaskì—ì„œ ëŒ€ê¸°
 		}
 	}
 	else if (UPathFollowingComponent* PathFollowingComp = AIController->GetPathFollowingComponent())
@@ -141,16 +140,16 @@ EBTNodeResult::Type UBTTask_Move::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 		PathFollowingComp->OnRequestFinished.AddUObject(this, &UBTTask_Move::OnMoveCompleted);
 	}
 
-	// Montage_Play´Â Àç»ı ±æÀÌ¸¦ ¹İÈ¯ÇÑ´Ù. 0ÀÌ¸é Àç»ı¿¡ ½ÇÆĞÇÑ °ÍÀÌ¹Ç·Î ¸ùÅ¸ÁÖ¸¦ ±â´Ù¸®Áö ¾Ê´Â´Ù.
+	// Montage_PlayëŠ” ì¬ìƒ ê¸¸ì´ë¥¼ ë°˜í™˜í•œë‹¤. 0ì´ë©´ ì¬ìƒì— ì‹¤íŒ¨í•œ ê²ƒì´ë¯€ë¡œ ëª½íƒ€ì£¼ë¥¼ ê¸°ë‹¤ë¦¬ì§€ ì•ŠëŠ”ë‹¤.
 	//bMontagePlayStarted = (AnimInstance->Montage_Play(MontageToPlay, PlayRate) > 0.f);
 
-	// ÀÌµ¿ÀÌ ÀÌ¹Ì ³¡³µ°í ¸ùÅ¸ÁÖ¸¦ ±â´Ù¸± ÇÊ¿äµµ ¾øÀ¸¸é °ğ¹Ù·Î ¼º°ø Ã³¸®
+	// ì´ë™ì´ ì´ë¯¸ ëë‚¬ê³  ëª½íƒ€ì£¼ë¥¼ ê¸°ë‹¤ë¦´ í•„ìš”ë„ ì—†ìœ¼ë©´ ê³§ë°”ë¡œ ì„±ê³µ ì²˜ë¦¬
 	if (bMoveFinished && (!bWaitForCompletion || !bMontagePlayStarted))
 	{
 		UnbindMoveDelegate(AIController);
 		CachedBTComp = nullptr;
 		bTaskFinished = true;
-		UE_LOG(LogTemp, Log, TEXT("PlayMontageAndMove: Áï½Ã ¼º°ø(AlreadyAtGoal)"));
+		UE_LOG(LogTemp, Log, TEXT("PlayMontageAndMove: ì¦‰ì‹œ ì„±ê³µ(AlreadyAtGoal)"));
 		return EBTNodeResult::Succeeded;
 	}
 
@@ -171,8 +170,8 @@ void UBTTask_Move::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingR
 		return;
 	}
 
-	// OnRequestFinished´Â ÄÁÆ®·Ñ·¯ÀÇ PathFollowingComponent°¡ µé°í ÀÖ´Â °ø¿ë µ¨¸®°ÔÀÌÆ®´Ù.
-	// ÀÌ ÅÂ½ºÅ©°¡ ³½ ¿äÃ»ÀÌ ¾Æ´Ï¸é(¿¹: °°Àº Æ®¸®ÀÇ ±âº» BTTask_MoveTo) ¹«½ÃÇØ¾ß ÇÑ´Ù.
+	// OnRequestFinishedëŠ” ì»¨íŠ¸ë¡¤ëŸ¬ì˜ PathFollowingComponentê°€ ë“¤ê³  ìˆëŠ” ê³µìš© ë¸ë¦¬ê²Œì´íŠ¸ë‹¤.
+	// ì´ íƒœìŠ¤í¬ê°€ ë‚¸ ìš”ì²­ì´ ì•„ë‹ˆë©´(ì˜ˆ: ê°™ì€ íŠ¸ë¦¬ì˜ ê¸°ë³¸ BTTask_MoveTo) ë¬´ì‹œí•´ì•¼ í•œë‹¤.
 	if (MoveRequestID.IsValid() && !RequestID.IsEquivalent(MoveRequestID))
 	{
 		return;
@@ -180,7 +179,7 @@ void UBTTask_Move::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingR
 
 	UBehaviorTreeComponent& OwnerComp = *CachedBTComp;
 
-	// ´ÙÀ½ ÀÌµ¿À» À§ÇØ µ¨¸®°ÔÀÌÆ® ¹ÙÀÎµù ÇØÁ¦
+	// ë‹¤ìŒ ì´ë™ì„ ìœ„í•´ ë¸ë¦¬ê²Œì´íŠ¸ ë°”ì¸ë”© í•´ì œ
 	UnbindMoveDelegate(OwnerComp.GetAIOwner());
 
 	bMoveFinished = true;
@@ -189,21 +188,21 @@ void UBTTask_Move::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingR
 	UE_LOG(LogTemp, Log, TEXT("PlayMontageAndMove: OnMoveCompleted MoveId=%u Success=%d Code=%d"),
 		RequestID.GetID(), bMoveSucceeded ? 1 : 0, (int32)Result.Code);
 
-	// ÀÌµ¿ ½ÇÆĞ´Â ¸ùÅ¸ÁÖ Á¾·á¸¦ ±â´Ù¸®Áö ¾Ê°í Áï½Ã ½ÇÆĞ Ã³¸®ÇÑ´Ù.
+	// ì´ë™ ì‹¤íŒ¨ëŠ” ëª½íƒ€ì£¼ ì¢…ë£Œë¥¼ ê¸°ë‹¤ë¦¬ì§€ ì•Šê³  ì¦‰ì‹œ ì‹¤íŒ¨ ì²˜ë¦¬í•œë‹¤.
 	if (!bMoveSucceeded)
 	{
 		FinishTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
 
-	// Montage_Play´Â Àç»ı ±æÀÌ¸¦ ¹İÈ¯ÇÑ´Ù. 0ÀÌ¸é Àç»ı¿¡ ½ÇÆĞÇÑ °ÍÀÌ¹Ç·Î ¸ùÅ¸ÁÖ¸¦ ±â´Ù¸®Áö ¾Ê´Â´Ù.
+	// Montage_PlayëŠ” ì¬ìƒ ê¸¸ì´ë¥¼ ë°˜í™˜í•œë‹¤. 0ì´ë©´ ì¬ìƒì— ì‹¤íŒ¨í•œ ê²ƒì´ë¯€ë¡œ ëª½íƒ€ì£¼ë¥¼ ê¸°ë‹¤ë¦¬ì§€ ì•ŠëŠ”ë‹¤.
 	//AAIController* AIController = OwnerComp.GetAIOwner();
 	//ACharacter* Character = Cast<ACharacter>(AIController->GetPawn());
 	//UAnimInstance* AnimInstance = Character->GetMesh()->GetAnimInstance();
 	//bMontagePlayStarted = (AnimInstance->Montage_Play(MontageToPlay, PlayRate) > 0.f);
 
 
-	// ºñÇìÀÌºñ¾î Æ®¸®¿¡¼­ ºñµ¿±â·Î µ¿ÀÛÇÏ´Â Ä¿½ºÅÒ ÅÂ½ºÅ©ÀÇ ÀÛ¾÷ ¿Ï·á¸¦ ½Ã½ºÅÛ¿¡ ¾Ë¸®°í ´ÙÀ½ ³ëµå·Î ³Ñ¾î°¡±â À§ÇØ È£ÃâÇÏ´Â ÇÔ¼ö
+	// ë¹„í—¤ì´ë¹„ì–´ íŠ¸ë¦¬ì—ì„œ ë¹„ë™ê¸°ë¡œ ë™ì‘í•˜ëŠ” ì»¤ìŠ¤í…€ íƒœìŠ¤í¬ì˜ ì‘ì—… ì™„ë£Œë¥¼ ì‹œìŠ¤í…œì— ì•Œë¦¬ê³  ë‹¤ìŒ ë…¸ë“œë¡œ ë„˜ì–´ê°€ê¸° ìœ„í•´ í˜¸ì¶œí•˜ëŠ” í•¨ìˆ˜
 	TryFinish(OwnerComp);
 }
 
@@ -219,7 +218,7 @@ void UBTTask_Move::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory
 
 	if (!GetAnimInstance(OwnerComp))
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("PlayMontageAndMove: AnimInstance ¼Ò½Ç"));
+		//UE_LOG(LogTemp, Warning, TEXT("PlayMontageAndMove: AnimInstance ì†Œì‹¤"));
 		FinishTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
@@ -256,7 +255,7 @@ void UBTTask_Move::TryFinish(UBehaviorTreeComponent& OwnerComp)
 	/*UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
 	BlackboardComp->SetValueAsEnum(AttackType.SelectedKeyName, static_cast<uint8>(EMonsterAttackType::AK_None));*/
 
-	UE_LOG(LogTemp, Log, TEXT("PlayMontageAndMove: ¿Ï·á (ÀÌµ¿ ¼º°ø=%d)"), bMoveSucceeded ? 1 : 0);
+	UE_LOG(LogTemp, Log, TEXT("PlayMontageAndMove: ì™„ë£Œ (ì´ë™ ì„±ê³µ=%d)"), bMoveSucceeded ? 1 : 0);
 	FinishTask(OwnerComp, bMoveSucceeded ? EBTNodeResult::Succeeded : EBTNodeResult::Failed);
 }
 
@@ -267,7 +266,7 @@ void UBTTask_Move::TryFinish(UBehaviorTreeComponent& OwnerComp)
 //		return true;
 //	}
 //
-//	// Montage_Play Á÷ÈÄ Ã¹ ÇÁ·¹ÀÓ¿¡´Â ¾ÆÁ÷ Àç»ı ÁßÀ¸·Î ÀâÈ÷Áö ¾ÊÀ» ¼ö ÀÖ´Ù.
+//	// Montage_Play ì§í›„ ì²« í”„ë ˆì„ì—ëŠ” ì•„ì§ ì¬ìƒ ì¤‘ìœ¼ë¡œ ì¡íˆì§€ ì•Šì„ ìˆ˜ ìˆë‹¤.
 //	if (ElapsedTime < MontageStartGraceTime3)
 //	{
 //		return false;

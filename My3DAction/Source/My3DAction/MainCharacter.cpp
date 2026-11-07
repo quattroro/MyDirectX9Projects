@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/PrimitiveComponent.h"
+#include "Components/BoxComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/RootMotionSource.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -87,18 +88,33 @@ void AMainCharacter::BeginPlay()
 
 
 	// Sword 컴포넌트를 이름으로 찾아 Overlap 충돌 이벤트를 바인딩
-	TArray<UStaticMeshComponent*> MeshComps;
+	/*TArray<UStaticMeshComponent*> MeshComps;
 	GetComponents<UStaticMeshComponent>(MeshComps);
 	for (UStaticMeshComponent* Comp : MeshComps)
 	{
 		if (Comp->GetName() == TEXT("Sword"))
 		{
-			UE_LOG(LogTemp, Log, TEXT("Find Sword"));
 			SwordMeshComp = Comp;
 			SwordMeshComp->OnComponentBeginOverlap.AddDynamic(this, &AMainCharacter::OnSwordBeinOverlap);
 			break;
 		}
-	}
+	}*/
+
+    // SwordHitBox로 변경
+    TArray<UBoxComponent*> MeshComps;
+    GetComponents<UBoxComponent>(MeshComps);
+    for (UBoxComponent* Comp : MeshComps)
+    {
+        if (Comp->GetName() == TEXT("CSwordHitBox"))
+        {
+            SwordHitBox = Comp;
+            SwordHitBox->OnComponentBeginOverlap.AddDynamic(this, &AMainCharacter::OnSwordBeinOverlap);
+            // 공격구간 (AttackNotifyState) 밖에서는 꺼둔다
+            SwordHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+            break;
+        }
+    }
+   
 }
 
 
@@ -107,13 +123,22 @@ void AMainCharacter::EnableWeaponCollision()
 	//UE_LOG(LogTemp, Log, TEXT("EnableWeaponCollision"));
 	bWeaponCollisionEnable = true;
 	bWeaponHasHitThisSwing = false;
+    if (SwordHitBox)
+    {
+        SwordHitBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+    }
 }
 
 void AMainCharacter::DisableWeaponCollision()
 {
 	//UE_LOG(LogTemp, Log, TEXT("DisableWeaponCollision"));
 	bWeaponCollisionEnable = false;
+    if (SwordHitBox)
+    {
+        SwordHitBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    }
 }
+
 
 // OverlappedComp -> 이벤트가 발생한 자기 자신의 컴포넌트
 // OtherActor -> 자기 자신의 컴포넌트와 겹치게 된 상대 액터
@@ -132,7 +157,8 @@ void AMainCharacter::OnSwordBeinOverlap(UPrimitiveComponent* OverlappedComp, AAc
 	{
 		// bFromSweep이 false인 순간 이동성 오버랩이라 SweepResult가 비어있으므로,
 		// OtherComp(몬스터의 스켈레탈 메시)에서 검 위치와 가장 가까운 표면 지점을 직접 구한다.
-		FVector SwordLocation = SwordMeshComp->GetComponentLocation();
+		//FVector SwordLocation = SwordMeshComp->GetComponentLocation();
+        FVector SwordLocation = SwordHitBox->GetComponentLocation();
 		FVector ImpactPoint = SwordLocation;
 		FVector ImpactNormal = FVector::UpVector;
 
@@ -190,6 +216,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EnhancedInputComponent->BindAction(DefenceAction, ETriggerEvent::Completed, this, &AMainCharacter::StopDefence);
 
 		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &AMainCharacter::Roll);
+
+        EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &AMainCharacter::Zoom);
 	}
 	else
 	{
@@ -321,6 +349,18 @@ void AMainCharacter::StopDefence()
 	Defence = false;
 	//GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+}
+
+void AMainCharacter::Zoom(const FInputActionValue& Value)
+{
+    const float WheelDelta = Value.Get<float>();
+    DestArmLength = FMath::Clamp(DestArmLength - WheelDelta * ZoomStep, MinArmLength, MaxArmLength);
+}
+
+void AMainCharacter::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+    CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, DestArmLength, DeltaTime, ZoomInterpSpeed);
 }
 
 void AMainCharacter::Move(const FInputActionValue& Value)

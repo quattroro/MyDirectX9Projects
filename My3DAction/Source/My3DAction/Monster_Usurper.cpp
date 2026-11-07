@@ -4,6 +4,10 @@
 #include "Monster_Usurper.h"
 #include "MonsterRangeDebugComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/WidgetComponent.h"
+#include "AIController.h"
+#include "BrainComponent.h"
+#include "MonsterUIWidget.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -58,32 +62,80 @@ void AMonster_Usurper::BeginPlay()
 
 	Health = MaxHealth;
 
+    if (UWidgetComponent* WidgetComp = FindComponentByClass<UWidgetComponent>())
+    {
+        HealthWidget = Cast<UMonsterUIWidget>(WidgetComp->GetUserWidgetObject());
+    }
 
-	UWorld* World = GetWorld();
-	if (!World) return;
+    UpdateHealthUI();
 
-	// 찾고자 하는 월드 아웃라이너 상의 이름 (정확히 일치해야 합니다)
-	FString TargetName = TEXT("TestCube");
+	//UWorld* World = GetWorld();
+	//if (!World) return;
 
-	// 월드의 모든 액터를 순회하는 이터레이터(TActorIterator) 사용
-	for (TActorIterator<AActor> ActorItr(World); ActorItr; ++ActorItr)
-	{
-		AActor* Actor = *ActorItr;
+	//// 찾고자 하는 월드 아웃라이너 상의 이름 (정확히 일치해야 합니다)
+	//FString TargetName = TEXT("TestCube");
 
-		// 에디터 상의 이름(Actor Label)이 우리가 찾는 이름과 같은지 확인
-		if (Actor && Actor->GetActorLabel() == TargetName)
-		{
-			TestBox = Actor;
-		}
-		else if (Actor && Actor->GetActorLabel() == TEXT("TestCube2"))
-		{
-			TestBox2 = Actor;
-		}
-		else if (Actor && Actor->GetActorLabel() == TEXT("TestCube3"))
-		{
-			TestBox3 = Actor;
-		}
-	}
+	//// 월드의 모든 액터를 순회하는 이터레이터(TActorIterator) 사용
+	//for (TActorIterator<AActor> ActorItr(World); ActorItr; ++ActorItr)
+	//{
+	//	AActor* Actor = *ActorItr;
+
+	//	// 에디터 상의 이름(Actor Label)이 우리가 찾는 이름과 같은지 확인
+	//	if (Actor && Actor->GetActorLabel() == TargetName)
+	//	{
+	//		TestBox = Actor;
+	//	}
+	//	else if (Actor && Actor->GetActorLabel() == TEXT("TestCube2"))
+	//	{
+	//		TestBox2 = Actor;
+	//	}
+	//	else if (Actor && Actor->GetActorLabel() == TEXT("TestCube3"))
+	//	{
+	//		TestBox3 = Actor;
+	//	}
+	//}
+}
+
+void AMonster_Usurper::Die()
+{
+    // 재생중인 몽타주가 슬롯에서 상태머신을 덮어쓰지 않도록 정지
+    if (UAnimInstance* AnimInst = GetMesh()->GetAnimInstance())
+    {
+        AnimInst->StopAllMontages(0.2f);
+    }
+
+    // AI 정지
+    if (AAIController* AI = Cast<AAIController>(GetController()))
+    {
+        AI->StopMovement();
+        if (AI->BrainComponent)
+        {
+            // "Dead"라는 사유와 함께 AI 로직을 중지
+            AI->BrainComponent->StopLogic(TEXT("Dead"));
+        }
+    }
+
+    GetCharacterMovement()->DisableMovement();
+
+    // 플레이어가 시체에 막히지 않게 Pawn 채널만 무시
+   // GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+}
+
+void AMonster_Usurper::UpdateHealthUI()
+{
+    if (HealthWidget)
+    {
+        HealthWidget->SetHealthPercent(GetHealthPercent());
+    }
+
+    // 죽으면 체력바를 숨긴다
+    if (IsDead())
+    {
+        if (UWidgetComponent* WidgetComp = FindComponentByClass<UWidgetComponent>())
+        {
+            WidgetComp->SetVisibility(false);
+        }
+    }
 }
 
 void AMonster_Usurper::Hit(FVector pos, FVector dir)
@@ -108,9 +160,7 @@ void AMonster_Usurper::Hit(FVector pos, FVector dir)
 void AMonster_Usurper::ApplyDamage(float DamageAmount)
 {
 	Health = FMath::Clamp(Health - DamageAmount, 0.f, MaxHealth);
-
-
-
+    UpdateHealthUI();
 	UE_LOG(LogTemp, Log, TEXT("ApplyDamage: -%f, Health = %f / %f"), DamageAmount, Health, MaxHealth);
 }
 
@@ -212,10 +262,10 @@ void AMonster_Usurper::UpdateLookAt(float DeltaTime)
 
 	LookAtLocation = DesiredWorldLocation;
 
-	if (TestBox)
-	{
-		//TestBox->SetActorLocation(DesiredWorldLocation);
-	}
+	//if (TestBox)
+	//{
+	//	//TestBox->SetActorLocation(DesiredWorldLocation);
+	//}
 
 
 }

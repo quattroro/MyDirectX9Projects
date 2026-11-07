@@ -82,6 +82,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Look At", meta = (AllowPrivateAccess = "true"))
 	bool EnableLookAt = true;
 
+    // 체력바 UI Widget
+    UPROPERTY()
+    TObjectPtr<class UMonsterUIWidget> HealthWidget;
+
+    void UpdateHealthUI();
+
 	// 현재 쳐다보고 있는 대상. AIController가 Perception 이벤트로 넣어준다.
 	TWeakObjectPtr<AActor> LookAtTarget;
 
@@ -105,6 +111,8 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Look At")
 	AActor* GetLookAtTarget() const { return LookAtTarget.Get(); }
+
+    void Die();
 
 public:
 	UFUNCTION(BlueprintCallable)

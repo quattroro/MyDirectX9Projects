@@ -58,6 +58,10 @@ class MY3DACTION_API AMainCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* RollAction;
 
+    /** Zoom Input Action */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+    UInputAction* ZoomAction;
+
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* Attack1_Montage;
 
@@ -98,7 +102,24 @@ class MY3DACTION_API AMainCharacter : public ACharacter
 	bool bWeaponCollisionEnable = false;
 	bool bWeaponHasHitThisSwing = false;
 
-	
+    UPROPERTY()
+    class UBoxComponent* SwordHitBox;
+    
+	// Zoom 관련
+    UPROPERTY(EditAnywhere, Category = "Camera")
+    float ZoomStep = 50.f;
+
+    UPROPERTY(EditAnywhere, Category = "Camera")
+    float MinArmLength = 400.f;
+
+    UPROPERTY(EditAnywhere, Category = "Camera")
+    float MaxArmLength = 1200.f;
+
+    UPROPERTY(EditAnywhere, Category = "Camera")
+    float ZoomInterpSpeed = 10.0f;
+
+    UPROPERTY(EditAnywhere, Category = "Camera")
+    float DestArmLength = 800.f;
 	
 	UFUNCTION()
 	void OnSwordBeinOverlap(UPrimitiveComponent* OverlappedComp, AActor* OthreActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -107,6 +128,8 @@ public:
 	AMainCharacter();
 	
 protected:
+
+    void Zoom(const FInputActionValue& Value);
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -138,6 +161,7 @@ protected:
 	// To add mapping context
 	virtual void BeginPlay();
 
+    virtual void Tick(float DeltaTime) override;
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
