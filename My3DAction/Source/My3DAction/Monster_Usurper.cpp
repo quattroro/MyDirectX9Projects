@@ -49,6 +49,8 @@ AMonster_Usurper::AMonster_Usurper()
 	// 디버그 시각화. 그리기 전용이라 게임플레이에는 영향이 없고,
 	// Shipping 빌드에서는 ENABLE_DRAW_DEBUG가 꺼져 그리기 코드가 전부 빠진다.
 	RangeDebugComp = CreateDefaultSubobject<UMonsterRangeDebugComponent>(TEXT("RangeDebugComp"));
+
+    Health = MaxHealth;
 }
 
 // Called when the game starts or when spawned
@@ -94,6 +96,20 @@ void AMonster_Usurper::BeginPlay()
 	//		TestBox3 = Actor;
 	//	}
 	//}
+
+  /*  TArray<USkeletalMeshComponent*> MeshComps;
+    GetComponents<USkeletalMeshComponent>(MeshComps);
+    for (USkeletalMeshComponent* Comp : MeshComps)
+    {
+        if (Comp->GetName() == TEXT("Sword"))
+        {
+            SwordMeshComp = Comp;
+            SwordMeshComp->OnComponentBeginOverlap.AddDynamic(this, &AMainCharacter::OnSwordBeinOverlap);
+            break;
+        }
+    }*/
+    MonsterMeshComp = /*FindComponentByClass<USkeletalMeshComponent>();*/GetMesh();
+    MonsterMeshComp->OnComponentBeginOverlap.AddDynamic(this, &AMonster_Usurper::OnMonsterAttackBeinOverlap);
 }
 
 void AMonster_Usurper::Die()
@@ -164,16 +180,12 @@ void AMonster_Usurper::ApplyDamage(float DamageAmount)
 	UE_LOG(LogTemp, Log, TEXT("ApplyDamage: -%f, Health = %f / %f"), DamageAmount, Health, MaxHealth);
 }
 
-//void AMonster_Usurper::TestTrigger()
-//{
-//	UE_LOG(LogTemp, Log, TEXT("MonsterTrigger"));
-//	Hit();
-//}
+
+
 
 //
 // --- Head Look At ---
 //
-
 void AMonster_Usurper::SetLookAtTarget(AActor* NewTarget)
 {
 	LookAtTarget = NewTarget;
@@ -262,12 +274,6 @@ void AMonster_Usurper::UpdateLookAt(float DeltaTime)
 
 	LookAtLocation = DesiredWorldLocation;
 
-	//if (TestBox)
-	//{
-	//	//TestBox->SetActorLocation(DesiredWorldLocation);
-	//}
-
-
 }
 
 // Called every frame
@@ -278,6 +284,54 @@ void AMonster_Usurper::Tick(float DeltaTime)
 	if(EnableLookAt)
 		UpdateLookAt(DeltaTime);
 }
+
+
+void AMonster_Usurper::OnMonsterAttackBeinOverlap(UPrimitiveComponent* OverlappedComp, AActor* OthreActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+
+    UE_LOG(LogTemp, Log, TEXT("Monster Attack Hit : %s"), *OthreActor->GetName());
+    //UE_LOG(LogTemp, Log, TEXT("ImpactPoint = %s, ImpactNormal = %s"), *ImpactPoint.ToString(), *ImpactNormal.ToString());
+
+    //if (!bWeaponCollisionEnable || bWeaponHasHitThisSwing)
+    //    return;
+
+
+    //AMonster_Usurper* monster = Cast<AMonster_Usurper>(OthreActor);
+    //if (monster)
+    //{
+    //    // bFromSweep이 false인 순간 이동성 오버랩이라 SweepResult가 비어있으므로,
+    //    // OtherComp(몬스터의 스켈레탈 메시)에서 검 위치와 가장 가까운 표면 지점을 직접 구한다.
+    //    //FVector SwordLocation = SwordMeshComp->GetComponentLocation();
+    //    FVector SwordLocation = SwordHitBox->GetComponentLocation();
+    //    FVector ImpactPoint = SwordLocation;
+    //    FVector ImpactNormal = FVector::UpVector;
+
+    //    // UPrimitiveComponent::GetClosestPointOnCollision(Point, OutPoint)는 BoneName을 안 넘기면
+    //    // PhysicsAsset의 '루트 바디' 하나(예: 골반)만 검사한다 (엔진 주석: "A name of NAME_None indicates 'root body'").
+    //    // 그래서 머리를 때리든 다리를 때리든 항상 같은 body의 표면점을 반환했었다.
+    //    // PhysicsAsset의 모든 바디를 대상으로 진짜 가장 가까운 지점을 찾으려면 GetClosestPointOnPhysicsAsset을 써야 한다.
+    //    if (USkeletalMeshComponent* MonsterMesh = Cast<USkeletalMeshComponent>(OtherComp))
+    //    {
+    //        FClosestPointOnPhysicsAsset ClosestPoint;
+    //        if (MonsterMesh->GetClosestPointOnPhysicsAsset(SwordLocation, ClosestPoint, true))
+    //        {
+    //            ImpactPoint = ClosestPoint.ClosestWorldPosition;
+    //            ImpactNormal = ClosestPoint.Normal;
+    //        }
+    //    }
+    //    else
+    //    {
+    //        OtherComp->GetClosestPointOnCollision(SwordLocation, ImpactPoint);
+    //        ImpactNormal = (SwordLocation - ImpactPoint).GetSafeNormal();
+    //    }
+
+    //    monster->Hit(ImpactPoint, ImpactNormal);
+    //    monster->ApplyDamage(50.f); // TODO: 무기 데미지 스탯 시스템이 생기면 고정값을 대체
+    //    bWeaponHasHitThisSwing = true;
+    //    UE_LOG(LogTemp, Log, TEXT("ImpactPoint = %s, ImpactNormal = %s"), *ImpactPoint.ToString(), *ImpactNormal.ToString());
+    //}
+}
+
 
 //
 // 해당 함수는 PlayerController가 Player를 possess할 때 호출되는 함수이기 때문에 여기서는 호출되지 않는다.

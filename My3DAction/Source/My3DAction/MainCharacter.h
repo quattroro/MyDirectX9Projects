@@ -174,4 +174,9 @@ public:
 	// 런타임에 생성한 다이나믹 머티리얼 인스턴스 저장용
 	UPROPERTY(EditAnywhere)
 	class UMaterialInstanceDynamic* DynamicMaterialInst;
+
+    // 몬스터 클래스에서 해당 함수를 호출해서 캐릭터의 피격을 수행하도록 한다
+    // 왜냐면 몬스터의 공격 패턴에 따라서 다양한 피격 형태가 존재할 수 있기 때문 
+    UFUNCTION(BlueprintCallable)
+    void Hit();
 };

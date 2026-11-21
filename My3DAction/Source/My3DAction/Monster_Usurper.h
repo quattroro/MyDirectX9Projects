@@ -136,4 +136,9 @@ public:
 	// Called to bind functionality to input
 	//`virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+    UFUNCTION()
+    void OnMonsterAttackBeinOverlap(UPrimitiveComponent* OverlappedComp, AActor* OthreActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+    UPROPERTY(EditAnywhere)
+    class USkeletalMeshComponent* MonsterMeshComp;
 };

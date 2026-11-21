@@ -115,8 +115,18 @@ void AMainCharacter::BeginPlay()
         }
     }
    
+
+    // 캐릭터 HitBox 충돌 감지
+    {
+
+    }
 }
 
+
+void AMainCharacter::Hit()
+{
+
+}
 
 void AMainCharacter::EnableWeaponCollision()
 {
